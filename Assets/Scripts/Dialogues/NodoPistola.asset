@@ -12,5 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: efa7d26fa46c57940a0db6c3fc4e7917, type: 3}
   m_Name: NodoPistola
   m_EditorClassIdentifier: 
-  texto: 
-  opciones: []
+  texto: Si es una magnum calibre ...
+  opciones:
+  - textoOpcion: Mola
+    siguienteNodo: {fileID: 0}
+  - textoOpcion: "Adi\xF3s"
+    siguienteNodo: {fileID: 11400000, guid: 64689f862d97c2c45b1714e96b69b225, type: 2}

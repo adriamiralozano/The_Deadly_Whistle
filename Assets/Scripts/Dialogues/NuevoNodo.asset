@@ -12,5 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: efa7d26fa46c57940a0db6c3fc4e7917, type: 3}
   m_Name: NuevoNodo
   m_EditorClassIdentifier: 
-  texto: 
-  opciones: []
+  texto: Bueno yo he estado aqui tranquilo
+  opciones:
+  - textoOpcion: atras
+    siguienteNodo: {fileID: 11400000, guid: dc8fdc7a9bdf39642a00b071acfe1f29, type: 2}
+  - textoOpcion: pistola
+    siguienteNodo: {fileID: 11400000, guid: 1902fea9650b3aa41aca4534dc99a72b, type: 2}

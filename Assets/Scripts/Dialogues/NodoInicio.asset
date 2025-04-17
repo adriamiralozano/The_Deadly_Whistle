@@ -12,5 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: efa7d26fa46c57940a0db6c3fc4e7917, type: 3}
   m_Name: NodoInicio
   m_EditorClassIdentifier: 
-  texto: 
-  opciones: []
+  texto: "Buenas tardes \xBFComo est\xE1s?"
+  opciones:
+  - textoOpcion: hola
+    siguienteNodo: {fileID: 11400000, guid: 02957abeac3696145ad1b61372eb2317, type: 2}
+  - textoOpcion: adios
+    siguienteNodo: {fileID: 11400000, guid: 02957abeac3696145ad1b61372eb2317, type: 2}
