@@ -10,11 +10,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: efa7d26fa46c57940a0db6c3fc4e7917, type: 3}
-  m_Name: NodoInicio
+  m_Name: DialogueNode
   m_EditorClassIdentifier: 
-  texto: "Buenas tardes \xBFComo est\xE1s?"
-  opciones:
-  - textoOpcion: hola
-    siguienteNodo: {fileID: 11400000, guid: 02957abeac3696145ad1b61372eb2317, type: 2}
-  - textoOpcion: adios
-    siguienteNodo: {fileID: 11400000, guid: 02957abeac3696145ad1b61372eb2317, type: 2}
+  dialogueText: "Hola\xBFque tal?"
+  options:
+  - optionText: Bien
+    nextNode: {fileID: 11400000, guid: eaec9062b444bec4e8c953cf56edd663, type: 2}
+    onSelectEvent:
+      m_PersistentCalls:
+        m_Calls: []
+  - optionText: Mal. No quiero hablar
+    nextNode: {fileID: 0}
+    onSelectEvent:
+      m_PersistentCalls:
+        m_Calls: []
