@@ -1470,7 +1470,7 @@ MonoBehaviour:
   previousOptionButton: {fileID: 652371086}
   nextOptionButton: {fileID: 885121603}
   selectOptionButton: {fileID: 170463795}
-  loopOptions: 1
+  loopOptions: 0
 --- !u!4 &1907636147
 Transform:
   m_ObjectHideFlags: 0

@@ -68,6 +68,29 @@ public class DialogueManager : MonoBehaviour
         }
     }
 
+    void Update()
+    {
+        if (currentNode == null || currentNode.options.Count == 0) return;
+
+        // Detección de teclado
+        if (Input.GetKeyDown(KeyCode.LeftArrow))
+        {
+            SelectPreviousOption();
+        }
+        else if (Input.GetKeyDown(KeyCode.RightArrow))
+        {
+            SelectNextOption();
+        }
+        else if (Input.GetKeyDown(KeyCode.Return)) // Enter para confirmar
+        {
+            ConfirmSelection();
+        }
+        else if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter))
+        {
+            ConfirmSelection();
+        }
+    }
+
     void SelectPreviousOption()
     {
         if (currentNode.options.Count <= 1) return;
@@ -85,15 +108,9 @@ public class DialogueManager : MonoBehaviour
     {
         if (currentNode.options.Count <= 1) return;
 
-        currentOptionIndex++;
-        if (currentOptionIndex >= currentNode.options.Count)
-        {
-            currentOptionIndex = loopOptions ? 0 : currentNode.options.Count - 1;
-        }
-
+        currentOptionIndex = (currentOptionIndex + 1) % currentNode.options.Count;
         UpdateDialogueUI();
     }
-
     void ConfirmSelection()
     {
         if (currentNode.options.Count == 0)
