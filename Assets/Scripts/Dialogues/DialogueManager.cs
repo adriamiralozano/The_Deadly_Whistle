@@ -51,9 +51,10 @@ public class DialogueManager : MonoBehaviour
 
         // Manejar visibilidad de controles de opción
         bool hasOptions = currentNode.options.Count > 0;
+        bool hasMultipleOptions = currentNode.options.Count > 1;
         optionText.gameObject.SetActive(hasOptions);
-        previousOptionButton.gameObject.SetActive(hasOptions);
-        nextOptionButton.gameObject.SetActive(hasOptions);
+        previousOptionButton.gameObject.SetActive(hasMultipleOptions);
+        nextOptionButton.gameObject.SetActive(hasMultipleOptions);
         selectOptionButton.gameObject.SetActive(hasOptions);
 
         if (hasOptions)
