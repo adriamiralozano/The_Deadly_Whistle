@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: efa7d26fa46c57940a0db6c3fc4e7917, type: 3}
+  m_Name: DialogueNode 2
+  m_EditorClassIdentifier: 
+  dialogueText: Me alegro mucho
+  options:
+  - optionText: Continue...
+    nextNode: {fileID: 0}
+    onSelectEvent:
+      m_PersistentCalls:
+        m_Calls: []

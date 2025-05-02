@@ -1,0 +1,17 @@
+fileFormatVersion: 2
+guid: ab8f768a07c173c48a2988cdbc8bd063
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - startNode: {fileID: 11400000, guid: f9fdc0115d22b0442a7d3b3b1c3e2fde, type: 2}
+  - dialogueText: {instanceID: 0}
+  - optionText: {instanceID: 0}
+  - previousOptionButton: {instanceID: 0}
+  - nextOptionButton: {instanceID: 0}
+  - selectOptionButton: {instanceID: 0}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
