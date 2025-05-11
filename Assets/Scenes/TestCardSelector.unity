@@ -257,7 +257,10 @@ MonoBehaviour:
   hoverManualTiltAmount: 15
   hoverAutoTiltAmount: 2
   hoverTiltSpeed: 10
-  hoverShakeStrength: 30
+  hoverShakeStrength: 25
+  hoverExitDelay: 0.08
+  hoverEnterDelay: 0.02
+  shakeCooldown: 0.3
   lerpSpeed: 15
   hoverScale: 1.2
 --- !u!225 &931298014

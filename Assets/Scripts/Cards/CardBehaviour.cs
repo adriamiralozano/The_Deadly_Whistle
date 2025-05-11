@@ -18,10 +18,11 @@ public class CardBehaviour : MonoBehaviour,
     private bool isIdle = true;
     private float idleTime = 0f;
     private bool isHovering = false;
-    private Vector2 hoverLocalCursor;
     private Quaternion targetRotation;
     private Vector3 targetScale;
-
+    private Coroutine exitCoroutine;
+    private Coroutine enterCoroutine;
+    private float lastShakeTime = -10f;
 
     [Header("Hover Settings")]
     [SerializeField] private float hoverDuration = 0.2f;
@@ -29,7 +30,9 @@ public class CardBehaviour : MonoBehaviour,
     [SerializeField] private float hoverAutoTiltAmount = 2f;    // Controla el bamboleo automático
     [SerializeField] private float hoverTiltSpeed = 10f;        // Velocidad de interpolación
     [SerializeField] private float hoverShakeStrength = 8f;
-
+    [SerializeField] private float hoverExitDelay = 0.2f; //Retrasar la salida del hover para evitar el parpadeo
+    [SerializeField] private float hoverEnterDelay = 0.02f; //Retrasar la entrada del hover para evitar el parpadeo
+    [SerializeField] private float shakeCooldown = 0.2f; // Tiempo mínimo entre shakes (en segundos)
 
     [Header("Drag Settings")]
     [SerializeField] private float lerpSpeed = 10f;
@@ -41,9 +44,6 @@ public class CardBehaviour : MonoBehaviour,
     private Coroutine scaleCoroutine;
     private Coroutine moveCoroutine;
     private Coroutine shakeCoroutine;
-
-    private Vector2 lastCursorPosition;
-    private bool cursorStopped = false;
     private Vector2 currentTargetPosition;
     private Quaternion shakeOffset = Quaternion.identity;
 
@@ -89,7 +89,7 @@ public class CardBehaviour : MonoBehaviour,
             float sine = Mathf.Sin(Time.time + savedIndex);
             float cosine = Mathf.Cos(Time.time + savedIndex);
 
-            float tiltX = -normY * hoverManualTiltAmount + sine * hoverAutoTiltAmount;
+            float tiltX = normY * hoverManualTiltAmount + sine * hoverAutoTiltAmount;
             float tiltY = -normX * hoverManualTiltAmount + cosine * hoverAutoTiltAmount;
 
             targetRotation = Quaternion.Euler(tiltX, tiltY, 0);
@@ -108,7 +108,7 @@ public class CardBehaviour : MonoBehaviour,
             float sine = Mathf.Sin(Time.time + savedIndex);
             float cosine = Mathf.Cos(Time.time + savedIndex);
 
-            float tiltX = -normY * hoverManualTiltAmount + sine * hoverAutoTiltAmount;
+            float tiltX = normY * hoverManualTiltAmount + sine * hoverAutoTiltAmount;
             float tiltY = -normX * hoverManualTiltAmount + cosine * hoverAutoTiltAmount;
 
             targetRotation = Quaternion.Euler(tiltX, tiltY, 0);
@@ -194,16 +194,17 @@ public class CardBehaviour : MonoBehaviour,
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        isIdle = false;
-        isHovering = true;
-        if (shakeCoroutine != null)
-            StopCoroutine(shakeCoroutine);
-        shakeCoroutine = StartCoroutine(HoverShake(0.12f, hoverShakeStrength));
+        if (exitCoroutine != null)
+            StopCoroutine(exitCoroutine);
+        if (enterCoroutine != null)
+            StopCoroutine(enterCoroutine);
+        enterCoroutine = StartCoroutine(HoverEnterDelay());
     }
     public void OnPointerExit(PointerEventData eventData)
     {
-        isIdle = true;
-        isHovering = false;
+        if (exitCoroutine != null)
+            StopCoroutine(exitCoroutine);
+        exitCoroutine = StartCoroutine(HoverExitDelay());
     }
 
     private System.Collections.IEnumerator ScaleCard(Vector3 targetScale)
@@ -253,5 +254,28 @@ public class CardBehaviour : MonoBehaviour,
         moveCoroutine = null;
         if (activateIdle)
             isIdle = true;
+    }
+    private System.Collections.IEnumerator HoverExitDelay()
+    {
+        yield return new WaitForSeconds(hoverExitDelay);
+        isIdle = true;
+        isHovering = false;
+        exitCoroutine = null;
+    }
+    private System.Collections.IEnumerator HoverEnterDelay()
+    {
+        yield return new WaitForSeconds(hoverEnterDelay);
+        isIdle = false;
+        isHovering = true;
+
+        // Solo permite un shake si ha pasado suficiente tiempo desde el último
+        if (Time.time - lastShakeTime > shakeCooldown)
+        {
+            lastShakeTime = Time.time;
+            if (shakeCoroutine != null)
+                StopCoroutine(shakeCoroutine);
+            shakeCoroutine = StartCoroutine(HoverShake(0.12f, hoverShakeStrength));
+        }
+        enterCoroutine = null;
     }
 }
