@@ -1,64 +1,64 @@
 // CardManager.cs
 using UnityEngine;
-using System.Collections.Generic; // Para List
-using TMPro; // Para TextMeshProUGUI
-using System; // Para Action y Func
+using System.Collections.Generic;
+using TMPro;
+using System;
+using System.Linq; // Necesario para .FirstOrDefault() si lo usas en el futuro, aunque no directamente aquí
 
 public class CardManager : MonoBehaviour
 {
-    // --- Configuración General ---
     [Header("Configuration")]
     [SerializeField] private DeckData playerStartingDeckData;
 
-    // --- UI References (CardManager ahora SOLO necesita actualizar su propio Deck Count) ---
+    [Header("UI References")]
     [SerializeField] private TextMeshProUGUI deckCountText;
+    [SerializeField] private TextMeshProUGUI discardPileCountText;
 
-    // --- Lógica de las pilas de cartas ---
     private List<CardData> currentDeck = new List<CardData>();
     private List<CardData> playerHand = new List<CardData>();
     private List<CardData> discardPile = new List<CardData>();
+    private List<CardData> playedCardsThisTurn = new List<CardData>(); // Para futuras expansiones si las cartas "jugadas" no van al descarte inmediatamente
 
-    // El número máximo de cartas que el jugador puede tener en la mano (para su lógica interna).
     private const int MAX_HAND_SIZE = 5;
 
-    // --- Eventos (para notificar a otros scripts) ---
-    // Este evento será disparado por CardManager cuando la mano cambie.
     public static event Action<int> OnHandCountUpdated;
-    // Este evento será disparado por CardManager cuando se descarta una carta.
     public static event Action OnCardDiscarded;
+    public static event Action<CardData> OnCardPlayed;
 
 
     void OnEnable()
     {
-        // Suscribirse a los eventos del TurnManager
-        TurnManager.OnRequestDrawCard += DrawCard; // TurnManager pide que CardManager robe una carta.
-        TurnManager.OnRequestHandCount += GetHandCount; // TurnManager pide el conteo de la mano.
-        TurnManager.OnRequestDiscardCard += DiscardRandomCardFromHand; // Temporal: TurnManager pide descartar (para prueba)
+        Debug.Log("[CardManager] OnEnable: Suscribiendo a eventos.");
+        TurnManager.OnRequestDrawCard += DrawCard;
+        TurnManager.OnRequestHandCount += GetHandCount;
+        // TurnManager.OnRequestDiscardCard ahora se suscribe a DiscardFirstCardFromHandIfOverLimit
+        TurnManager.OnRequestDiscardCard += DiscardFirstCardFromHandIfOverLimit; // <--- ¡CAMBIO AQUÍ!
+        TurnManager.OnRequestPlayFirstCard += PlayFirstCardFromHand;
     }
 
     void OnDisable()
     {
-        // Desuscribirse para evitar errores cuando los objetos se destruyen.
+        Debug.Log("[CardManager] OnDisable: Desuscribiendo de eventos.");
         TurnManager.OnRequestDrawCard -= DrawCard;
         TurnManager.OnRequestHandCount -= GetHandCount;
-        TurnManager.OnRequestDiscardCard -= DiscardRandomCardFromHand;
+        // TurnManager.OnRequestDiscardCard ahora se desuscribe de DiscardFirstCardFromHandIfOverLimit
+        TurnManager.OnRequestDiscardCard -= DiscardFirstCardFromHandIfOverLimit; // <--- ¡CAMBIO AQUÍ!
+        TurnManager.OnRequestPlayFirstCard -= PlayFirstCardFromHand;
     }
 
     void Start()
     {
         InitializeCombatDeck();
         UpdateDeckCountDisplay();
-        OnHandCountUpdated?.Invoke(playerHand.Count); // Dispara el evento al inicio para que la UI se actualice.
+        UpdateDiscardPileCountDisplay();
     }
 
-    /// <summary>
-    /// Inicializa el mazo del jugador para el combate usando el DeckData predefinido.
-    /// </summary>
     public void InitializeCombatDeck()
     {
         currentDeck.Clear();
         playerHand.Clear();
         discardPile.Clear();
+        playedCardsThisTurn.Clear();
 
         if (playerStartingDeckData == null)
         {
@@ -71,9 +71,6 @@ public class CardManager : MonoBehaviour
         Debug.Log($"[CardManager] Mazo de combate inicializado con {currentDeck.Count} cartas y barajado.");
     }
 
-    /// <summary>
-    /// Baraja las cartas en el mazo actual del jugador (Algoritmo Fisher-Yates).
-    /// </summary>
     public void ShuffleDeck()
     {
         System.Random rng = new System.Random();
@@ -89,18 +86,8 @@ public class CardManager : MonoBehaviour
         Debug.Log("[CardManager] Mazo barajado.");
     }
 
-    /// <summary>
-    /// Roba una carta del mazo y la añade a la mano lógica del jugador.
-    /// Llamado por TurnManager.
-    /// </summary>
-    /// <returns>La CardData de la carta robada, o null si no se pudo robar.</returns>
     public void DrawCard()
     {
-        // CardManager no necesita preocuparse por el MAX_HAND_SIZE aquí,
-        // ya que la lógica de "si la mano está llena, no robes"
-        // se manejará a nivel del TurnManager o una capa superior.
-        // Aquí solo nos preocupamos por si hay cartas en el mazo.
-
         if (currentDeck.Count == 0)
         {
             if (discardPile.Count > 0)
@@ -113,7 +100,7 @@ public class CardManager : MonoBehaviour
             else
             {
                 Debug.LogWarning("[CardManager] Mazo y pila de descarte vacíos. No se pueden robar más cartas.");
-                return; 
+                return;
             }
         }
 
@@ -123,24 +110,34 @@ public class CardManager : MonoBehaviour
         playerHand.Add(drawnCardData);
 
         UpdateDeckCountDisplay();
-        OnHandCountUpdated?.Invoke(playerHand.Count); // Dispara el evento de actualización de la mano.
+        OnHandCountUpdated?.Invoke(playerHand.Count);
         Debug.Log($"[CardManager] Carta robada: {drawnCardData.cardID}. Mazo restante: {currentDeck.Count}. Cartas en mano: {playerHand.Count}.");
     }
 
     /// <summary>
-    /// Descarta una carta específica de la mano lógica a la pila de descarte lógica.
-    /// Este será el método real para descartar por interacción del jugador.
+    /// Mueve una carta de la mano a la pila de descarte.
+    /// Este método es el core de la operación de descarte.
     /// </summary>
-    /// <param name="cardToDiscard">La CardData de la carta a descartar.</param>
-    public void DiscardCard(CardData cardToDiscard)
+    /// <param name="cardToDiscard">La carta a descartar.</param>
+    
+    private void UpdateDiscardPileCountDisplay()
+    {
+        if (discardPileCountText != null)
+        {
+            discardPileCountText.text = $"Mazo de descartes: {discardPile.Count}";
+        }
+    }
+
+    private void DiscardCardInternal(CardData cardToDiscard)
     {
         if (playerHand.Contains(cardToDiscard))
         {
             playerHand.Remove(cardToDiscard);
             discardPile.Add(cardToDiscard);
             Debug.Log($"[CardManager] Carta '{cardToDiscard.cardID}' descartada. Cartas en mano: {playerHand.Count}. Cartas en descarte: {discardPile.Count}.");
-            OnHandCountUpdated?.Invoke(playerHand.Count); // Actualiza la UI de la mano.
-            OnCardDiscarded?.Invoke(); // Notifica que una carta ha sido descartada.
+            OnHandCountUpdated?.Invoke(playerHand.Count);
+            OnCardDiscarded?.Invoke();
+            UpdateDiscardPileCountDisplay();
         }
         else
         {
@@ -149,43 +146,64 @@ public class CardManager : MonoBehaviour
     }
 
     /// <summary>
-    /// TEMPORAL: Descarta la primera carta de la mano para pruebas de la fase de descarte.
-    /// Este método será reemplazado por la interacción real del jugador.
-    /// Llamado por TurnManager.
+    /// Descarta la primera carta de la mano del jugador, solo si la mano excede el límite.
+    /// Este es el método público para el botón "Descartar Carta" o la barra espaciadora en DiscardPhase.
+    /// También es llamado por el TurnManager a través del evento OnRequestDiscardCard.
     /// </summary>
-    public void DiscardRandomCardFromHand()
+    public void DiscardFirstCardFromHandIfOverLimit()
     {
-        if (playerHand.Count > 0)
+        if (playerHand.Count > MAX_HAND_SIZE)
         {
-            CardData cardToDiscard = playerHand[0]; // Descartamos la primera carta
-            DiscardCard(cardToDiscard); // Llama al método DiscardCard real
+            if (playerHand.Count > 0)
+            {
+                CardData cardToDiscard = playerHand[0];
+                DiscardCardInternal(cardToDiscard);
+            }
+            else
+            {
+                Debug.LogWarning("[CardManager] No hay cartas en mano para descartar.");
+            }
         }
         else
         {
-            Debug.LogWarning("[CardManager] No hay cartas en mano para descartar (intento de descarte aleatorio).");
+            Debug.LogWarning($"[CardManager] Mano en el límite ({playerHand.Count}/{MAX_HAND_SIZE}). No se puede descartar voluntariamente.");
         }
     }
 
-
     /// <summary>
-    /// Obtiene el conteo actual de cartas en la mano.
-    /// Llamado por TurnManager (a través del evento OnRequestHandCount).
+    /// Intenta "jugar" la primera carta de la mano.
+    /// Por ahora, simplemente la mueve a la pila de descarte (como si se "gastara").
     /// </summary>
-    /// <returns>El número de cartas en la mano.</returns>
+    public void PlayFirstCardFromHand()
+    {
+        if (playerHand.Count > 0)
+        {
+            CardData playedCard = playerHand[0];
+            playerHand.RemoveAt(0);
+
+            discardPile.Add(playedCard);
+            Debug.Log($"[CardManager] Carta '{playedCard.cardID}' jugada y movida a descarte. Cartas en mano: {playerHand.Count}.");
+
+            OnHandCountUpdated?.Invoke(playerHand.Count);
+            OnCardPlayed?.Invoke(playedCard);
+            UpdateDiscardPileCountDisplay();
+        }
+        else
+        {
+            Debug.LogWarning("[CardManager] No hay cartas en mano para jugar.");
+        }
+    }
+
     public int GetHandCount()
     {
         return playerHand.Count;
     }
 
-    /// <summary>
-    /// Obtiene una copia de la lista de cartas en la mano (para inspección externa).
-    /// </summary>
     public IReadOnlyList<CardData> GetPlayerHand()
     {
         return playerHand.AsReadOnly();
     }
 
-    // --- Métodos de Actualización de UI Interna ---
     private void UpdateDeckCountDisplay()
     {
         if (deckCountText != null)
@@ -193,10 +211,4 @@ public class CardManager : MonoBehaviour
             deckCountText.text = $"Mazo: {currentDeck.Count}";
         }
     }
-
-    // Quitamos el Update() de aquí ya que TurnManager manejará las entradas
-    // void Update()
-    // {
-    //     // Esto se moverá a TurnManager o a un InputManager.
-    // }
 }
