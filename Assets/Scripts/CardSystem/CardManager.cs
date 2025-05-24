@@ -1,9 +1,10 @@
 // CardManager.cs
 using UnityEngine;
 using System.Collections.Generic;
-using TMPro;
+using TMPro; // Necesario para deckCountText y discardPileCountText
 using System;
 using System.Linq; // Necesario para .FirstOrDefault() si lo usas en el futuro, aunque no directamente aquí
+using UnityEngine.UI; // ¡IMPORTANTE! Necesario para LayoutRebuilder
 
 public class CardManager : MonoBehaviour
 {
@@ -14,10 +15,19 @@ public class CardManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI deckCountText;
     [SerializeField] private TextMeshProUGUI discardPileCountText;
 
+    // --- REFERENCIAS DE UI DE CARTA ---
+    [Header("Card UI References")]
+    [SerializeField] private GameObject cardUIPrefab; // Asigna tu CardUI_Prefab aquí en el Inspector
+    [SerializeField] private Transform handContainer; // Asigna tu HandContainer aquí en el Inspector
+
     private List<CardData> currentDeck = new List<CardData>();
     private List<CardData> playerHand = new List<CardData>();
     private List<CardData> discardPile = new List<CardData>();
     private List<CardData> playedCardsThisTurn = new List<CardData>(); // Para futuras expansiones si las cartas "jugadas" no van al descarte inmediatamente
+
+    // Mapea el instanceID de la CardData (string) a su GameObject de UI correspondiente.
+    // Esto es clave para manejar múltiples copias de la misma CardData.
+    private Dictionary<string, GameObject> handUIInstances = new Dictionary<string, GameObject>(); // <-- ¡CAMBIO AQUÍ! (Tipo de clave)
 
     private const int MAX_HAND_SIZE = 5;
 
@@ -31,8 +41,7 @@ public class CardManager : MonoBehaviour
         Debug.Log("[CardManager] OnEnable: Suscribiendo a eventos.");
         TurnManager.OnRequestDrawCard += DrawCard;
         TurnManager.OnRequestHandCount += GetHandCount;
-        // TurnManager.OnRequestDiscardCard ahora se suscribe a DiscardFirstCardFromHandIfOverLimit
-        TurnManager.OnRequestDiscardCard += DiscardFirstCardFromHandIfOverLimit; // <--- ¡CAMBIO AQUÍ!
+        TurnManager.OnRequestDiscardCard += DiscardFirstCardFromHandIfOverLimit;
         TurnManager.OnRequestPlayFirstCard += PlayFirstCardFromHand;
     }
 
@@ -41,8 +50,7 @@ public class CardManager : MonoBehaviour
         Debug.Log("[CardManager] OnDisable: Desuscribiendo de eventos.");
         TurnManager.OnRequestDrawCard -= DrawCard;
         TurnManager.OnRequestHandCount -= GetHandCount;
-        // TurnManager.OnRequestDiscardCard ahora se desuscribe de DiscardFirstCardFromHandIfOverLimit
-        TurnManager.OnRequestDiscardCard -= DiscardFirstCardFromHandIfOverLimit; // <--- ¡CAMBIO AQUÍ!
+        TurnManager.OnRequestDiscardCard -= DiscardFirstCardFromHandIfOverLimit;
         TurnManager.OnRequestPlayFirstCard -= PlayFirstCardFromHand;
     }
 
@@ -51,6 +59,7 @@ public class CardManager : MonoBehaviour
         InitializeCombatDeck();
         UpdateDeckCountDisplay();
         UpdateDiscardPileCountDisplay();
+        UpdateHandVisuals(); // Llama a esto al inicio para asegurar que la mano se muestre (si hay cartas iniciales)
     }
 
     public void InitializeCombatDeck()
@@ -60,13 +69,28 @@ public class CardManager : MonoBehaviour
         discardPile.Clear();
         playedCardsThisTurn.Clear();
 
+        // Limpia las instancias UI existentes en la mano al inicializar el mazo
+        foreach (var uiInstance in handUIInstances.Values)
+        {
+            Destroy(uiInstance);
+        }
+        handUIInstances.Clear(); // <-- ¡CAMBIO AQUÍ! También limpia el diccionario.
+
+
         if (playerStartingDeckData == null)
         {
             Debug.LogError("¡ERROR! No se ha asignado un 'Player Starting Deck Data' en el CardManager. Por favor, asigna tu asset 'PlayerStartingDeck' en el Inspector!", this);
             return;
         }
 
-        currentDeck.AddRange(playerStartingDeckData.InitialCards);
+        // --- ¡CAMBIO CLAVE AQUÍ! CLONAMOS LAS CARTAS ---
+        currentDeck.Clear(); // Asegúrate de que el mazo esté vacío antes de añadir clones
+        foreach (CardData card in playerStartingDeckData.InitialCards)
+        {
+            currentDeck.Add(card.Clone()); // Cada carta en el mazo es ahora una INSTANCIA ÚNICA
+        }
+        // --- FIN CAMBIO CLAVE ---
+
         ShuffleDeck();
         Debug.Log($"[CardManager] Mazo de combate inicializado con {currentDeck.Count} cartas y barajado.");
     }
@@ -95,6 +119,7 @@ public class CardManager : MonoBehaviour
                 Debug.Log("[CardManager] Mazo vacío. Barajando cartas de descarte de nuevo al mazo.");
                 currentDeck.AddRange(discardPile);
                 discardPile.Clear();
+                UpdateDiscardPileCountDisplay(); // Actualiza display de descarte
                 ShuffleDeck();
             }
             else
@@ -109,23 +134,27 @@ public class CardManager : MonoBehaviour
 
         playerHand.Add(drawnCardData);
 
+        // --- Lógica de UI para la carta robada ---
+        // Instanciamos el prefab de la carta UI en el contenedor de la mano.
+        GameObject cardUI = Instantiate(cardUIPrefab, handContainer);
+        CardUI uiScript = cardUI.GetComponent<CardUI>();
+        if (uiScript != null)
+        {
+            uiScript.SetCardData(drawnCardData); // Pasamos los datos para que la instancia de UI los conozca.
+            // USAR INSTANCEID COMO CLAVE
+            handUIInstances.Add(drawnCardData.instanceID, cardUI); // <-- ¡CAMBIO AQUÍ! Guardamos la referencia por su instanceID.
+        }
+        else
+        {
+            Debug.LogError($"[CardManager] El prefab {cardUIPrefab.name} no tiene el script CardUI. Asegúrate de que CardUI.cs está adjunto al prefab de la carta.");
+        }
+        // --- Fin Lógica de UI ---
+
         UpdateDeckCountDisplay();
         OnHandCountUpdated?.Invoke(playerHand.Count);
-        Debug.Log($"[CardManager] Carta robada: {drawnCardData.cardID}. Mazo restante: {currentDeck.Count}. Cartas en mano: {playerHand.Count}.");
-    }
-
-    /// <summary>
-    /// Mueve una carta de la mano a la pila de descarte.
-    /// Este método es el core de la operación de descarte.
-    /// </summary>
-    /// <param name="cardToDiscard">La carta a descartar.</param>
-    
-    private void UpdateDiscardPileCountDisplay()
-    {
-        if (discardPileCountText != null)
-        {
-            discardPileCountText.text = $"Mazo de descartes: {discardPile.Count}";
-        }
+        // Añadido para debuggear el instanceID
+        Debug.Log($"[CardManager] Carta robada: {drawnCardData.cardID} (Instance ID: {drawnCardData.instanceID}). Mazo restante: {currentDeck.Count}. Cartas en mano: {playerHand.Count}."); // <-- ¡CAMBIO AQUÍ!
+        UpdateHandVisuals(); // Asegura que la mano se visualice correctamente después de robar.
     }
 
     private void DiscardCardInternal(CardData cardToDiscard)
@@ -134,16 +163,106 @@ public class CardManager : MonoBehaviour
         {
             playerHand.Remove(cardToDiscard);
             discardPile.Add(cardToDiscard);
-            Debug.Log($"[CardManager] Carta '{cardToDiscard.cardID}' descartada. Cartas en mano: {playerHand.Count}. Cartas en descarte: {discardPile.Count}.");
+
+            // --- Lógica de UI para la carta descartada ---
+            // USAR INSTANCEID COMO CLAVE
+            if (handUIInstances.ContainsKey(cardToDiscard.instanceID)) // <-- ¡CAMBIO AQUÍ!
+            {
+                Destroy(handUIInstances[cardToDiscard.instanceID]); // Destruye la instancia visual de la carta.
+                handUIInstances.Remove(cardToDiscard.instanceID); // Remueve la entrada del diccionario.
+            }
+            // --- Fin Lógica de UI ---
+
+            // Añadido para debuggear el instanceID
+            Debug.Log($"[CardManager] Carta '{cardToDiscard.cardID}' (Instance ID: {cardToDiscard.instanceID}) descartada. Cartas en mano: {playerHand.Count}. Cartas en descarte: {discardPile.Count}."); // <-- ¡CAMBIO AQUÍ!
             OnHandCountUpdated?.Invoke(playerHand.Count);
             OnCardDiscarded?.Invoke();
-            UpdateDiscardPileCountDisplay();
+            UpdateDiscardPileCountDisplay(); // Actualiza display de descarte
+            UpdateHandVisuals(); // Asegura que la mano se visualice correctamente después de descartar.
         }
         else
         {
             Debug.LogWarning($"[CardManager] Intento de descartar carta '{cardToDiscard.cardID}' que no está en la mano.");
         }
     }
+
+    public void PlayFirstCardFromHand()
+    {
+        if (playerHand.Count > 0)
+        {
+            CardData playedCard = playerHand[0];
+            playerHand.RemoveAt(0);
+
+            discardPile.Add(playedCard); // Por ahora, las cartas jugadas van al descarte.
+
+            // --- Lógica de UI para la carta jugada ---
+            // USAR INSTANCEID COMO CLAVE
+            if (handUIInstances.ContainsKey(playedCard.instanceID)) // <-- ¡CAMBIO AQUÍ!
+            {
+                Destroy(handUIInstances[playedCard.instanceID]); // Destruye la instancia visual de la carta jugada.
+                handUIInstances.Remove(playedCard.instanceID); // Remueve la entrada del diccionario.
+            }
+            // --- Fin Lógica de UI ---
+
+            // Añadido para debuggear el instanceID
+            Debug.Log($"[CardManager] Carta '{playedCard.cardID}' (Instance ID: {playedCard.instanceID}) jugada y movida a descarte. Cartas en mano: {playerHand.Count}."); // <-- ¡CAMBIO AQUÍ!
+
+            OnHandCountUpdated?.Invoke(playerHand.Count);
+            OnCardPlayed?.Invoke(playedCard);
+            UpdateDiscardPileCountDisplay();
+            UpdateHandVisuals(); // Asegura que la mano se visualice correctamente después de jugar.
+        }
+        else
+        {
+            Debug.LogWarning("[CardManager] No hay cartas en mano para jugar.");
+        }
+    }
+
+    /// <summary>
+    /// Este método sincroniza las representaciones visuales de las cartas en la mano
+    /// con la lista 'playerHand'. Asegura que se muestren solo las cartas que realmente tienes.
+    /// </summary>
+    private void UpdateHandVisuals()
+    {
+        // Limpiamos handUIInstances y luego la reconstruimos basándonos en playerHand.
+        // Esto es menos eficiente para muchos cambios, pero más robusto para este caso
+        // y para garantizar la sincronización con cartas repetidas.
+
+        // Destruir todos los elementos UI existentes
+        foreach (var uiInstance in handUIInstances.Values)
+        {
+            Destroy(uiInstance);
+        }
+        handUIInstances.Clear(); // Limpiar el diccionario de instancias UI
+
+        // Recrear las instancias UI para cada carta en playerHand
+        foreach (var cardData in playerHand)
+        {
+            // No necesitamos comprobar ContainsKey aquí porque acabamos de limpiar el diccionario
+            GameObject cardUI = Instantiate(cardUIPrefab, handContainer);
+            CardUI uiScript = cardUI.GetComponent<CardUI>();
+            if (uiScript != null)
+            {
+                uiScript.SetCardData(cardData);
+                handUIInstances.Add(cardData.instanceID, cardUI); // <-- ¡CAMBIO AQUÍ! Usamos instanceID como clave
+            }
+            else
+            {
+                Debug.LogError($"[CardManager] El prefab {cardUIPrefab.name} no tiene el script CardUI.");
+            }
+        }
+
+        // Forzar al Layout Group a reorganizar los elementos.
+        if (handContainer != null)
+        {
+            LayoutRebuilder.ForceRebuildLayoutImmediate(handContainer.GetComponent<RectTransform>());
+        }
+        else
+        {
+            Debug.LogError("[CardManager] El HandContainer no está asignado. Asegúrate de arrastrarlo en el Inspector.");
+        }
+    }
+
 
     /// <summary>
     /// Descarta la primera carta de la mano del jugador, solo si la mano excede el límite.
@@ -157,6 +276,8 @@ public class CardManager : MonoBehaviour
             if (playerHand.Count > 0)
             {
                 CardData cardToDiscard = playerHand[0];
+                // Aquí, si necesitas un descarte específico (ej. no el primero), necesitarías una UI interactiva
+                // para que el jugador elija qué carta descartar. Por ahora, es la primera.
                 DiscardCardInternal(cardToDiscard);
             }
             else
@@ -170,29 +291,6 @@ public class CardManager : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Intenta "jugar" la primera carta de la mano.
-    /// Por ahora, simplemente la mueve a la pila de descarte (como si se "gastara").
-    /// </summary>
-    public void PlayFirstCardFromHand()
-    {
-        if (playerHand.Count > 0)
-        {
-            CardData playedCard = playerHand[0];
-            playerHand.RemoveAt(0);
-
-            discardPile.Add(playedCard);
-            Debug.Log($"[CardManager] Carta '{playedCard.cardID}' jugada y movida a descarte. Cartas en mano: {playerHand.Count}.");
-
-            OnHandCountUpdated?.Invoke(playerHand.Count);
-            OnCardPlayed?.Invoke(playedCard);
-            UpdateDiscardPileCountDisplay();
-        }
-        else
-        {
-            Debug.LogWarning("[CardManager] No hay cartas en mano para jugar.");
-        }
-    }
 
     public int GetHandCount()
     {
@@ -209,6 +307,14 @@ public class CardManager : MonoBehaviour
         if (deckCountText != null)
         {
             deckCountText.text = $"Mazo: {currentDeck.Count}";
+        }
+    }
+
+    private void UpdateDiscardPileCountDisplay()
+    {
+        if (discardPileCountText != null)
+        {
+            discardPileCountText.text = $"Descarte: {discardPile.Count}";
         }
     }
 }
