@@ -192,3 +192,4 @@ MonoBehaviour:
   hoverVerticalOffset: 50
   dragLerpSpeed: 10
   hoverScale: 1.2
+  returnSpeed: 8

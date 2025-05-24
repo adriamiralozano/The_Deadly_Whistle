@@ -60,7 +60,6 @@ public class CardBehaviour2 : MonoBehaviour,
     [SerializeField] private float hoverScale = 1.2f;
     [SerializeField] private float returnSpeed = 8f; 
 
-    private Vector3 lastLoggedLocalPosition = Vector3.zero; 
     private bool basePositionInitialized = false; 
 
     private void Awake()
@@ -73,20 +72,15 @@ public class CardBehaviour2 : MonoBehaviour,
 
         originalScale = transform.localScale; 
         currentLocalOffset = Vector3.zero; 
-
-        Debug.Log($"[Awake - {gameObject.name}] localPosition: {rectTransform.localPosition}, anchoredPosition: {rectTransform.anchoredPosition}");
-        Debug.Log($"[Awake - {gameObject.name}] LayoutElement.enabled: {layoutElement.enabled}");
     }
 
     private void Start()
     {
         StartCoroutine(InitializeBasePosition());
-        Debug.Log($"[Start - {gameObject.name}] Started InitializeBasePosition Coroutine.");
     }
 
     private IEnumerator InitializeBasePosition()
     {
-        // Espera dos frames para que el Layout Group se construya y la UI se renderice
         yield return null; 
         yield return null; 
 
@@ -95,14 +89,8 @@ public class CardBehaviour2 : MonoBehaviour,
             LayoutRebuilder.ForceRebuildLayoutImmediate(rectTransform.parent.GetComponent<RectTransform>());
         }
 
-        // Captura la posición local que el Layout Group le ha asignado inicialmente
-        // Esta es la posición "verdadera" que el Layout Group le da.
         trueBaseLayoutPosition = rectTransform.localPosition; 
         basePositionInitialized = true; 
-
-        Debug.Log($"[InitializeBasePosition - {gameObject.name}] trueBaseLayoutPosition set to: {trueBaseLayoutPosition} (After delay and force rebuild)");
-        Debug.Log($"[InitializeBasePosition - {gameObject.name}] current localPosition: {rectTransform.localPosition}");
-        Debug.Log($"[InitializeBasePosition - {gameObject.name}] LayoutElement.enabled: {layoutElement.enabled}");
     }
 
     private void Update()
@@ -112,21 +100,6 @@ public class CardBehaviour2 : MonoBehaviour,
             return; 
         }
 
-        // --- DEBUGGING: Detección de reseteo a ZERO o cambio brusco ---
-        if (rectTransform.localPosition != lastLoggedLocalPosition)
-        {
-            if (rectTransform.localPosition == Vector3.zero && Time.frameCount > 10 && !isDragging && !isReturning)
-            {
-                Debug.LogWarning($"[Update ALERT - {gameObject.name}] localPosition REVERTED to ZERO! | Frame: {Time.frameCount} | Last known: {lastLoggedLocalPosition} | isDragging: {isDragging}, isReturning: {isReturning}");
-            }
-            if (!isDragging && !isReturning && Vector3.Distance(rectTransform.localPosition, lastLoggedLocalPosition) > 1f)
-            {
-                 Debug.Log($"[Update DEBUG - {gameObject.name}] localPosition changed unexpectedly. From: {lastLoggedLocalPosition} To: {rectTransform.localPosition} | Frame: {Time.frameCount} | isDragging: {isDragging}, isReturning: {isReturning}");
-            }
-            lastLoggedLocalPosition = rectTransform.localPosition;
-        }
-
-        // Interpolación de Rotación y Escala (siempre se aplica)
         rectTransform.rotation = Quaternion.Lerp(
             rectTransform.rotation,
             targetRotation * shakeOffset, 
@@ -138,7 +111,6 @@ public class CardBehaviour2 : MonoBehaviour,
             hoverDuration * Time.deltaTime
         );
 
-        // --- Lógica de Estado Principal para Determinar Target (Rotación, Escala, Offset) ---
         if (isDragging)
         {
             Vector2 localPoint;
@@ -157,10 +129,8 @@ public class CardBehaviour2 : MonoBehaviour,
             targetScale = originalScale * hoverScale;
             currentLocalOffset = Vector3.up * hoverVerticalOffset; 
         }
-        // Si no estamos arrastrando Y NO estamos en el proceso de retorno animado
         else if (!isReturning) 
         {
-            // Lógica de Hover y Idle
             if (isHovering)
             {
                 Vector3 cardScreenPos = RectTransformUtility.WorldToScreenPoint(canvas.worldCamera, rectTransform.position);
@@ -209,8 +179,6 @@ public class CardBehaviour2 : MonoBehaviour,
                 currentLocalOffset = Vector3.zero; 
             }
 
-            // Interpolación de la Posición Local para Hover/Idle
-            // SUMAR currentLocalOffset a trueBaseLayoutPosition
             Vector3 targetPositionWithOffset = trueBaseLayoutPosition + currentLocalOffset;
             rectTransform.localPosition = Vector3.Lerp(
                 rectTransform.localPosition,
@@ -222,14 +190,10 @@ public class CardBehaviour2 : MonoBehaviour,
 
     public void OnBeginDrag(PointerEventData eventData)
     {
-        Debug.Log($"[OnBeginDrag - {gameObject.name}] Drag Started. Current localPosition: {rectTransform.localPosition}");
-        Debug.Log($"[OnBeginDrag - {gameObject.name}] LayoutElement.enabled: {layoutElement.enabled}");
-
         if (!selectable.interactable) return;
 
         if (returnAnimationCoroutine != null) StopCoroutine(returnAnimationCoroutine);
         isReturning = false; 
-        Debug.Log($"[OnBeginDrag - {gameObject.name}] isReturning set to FALSE.");
 
         isIdleAnimationActive = false; 
         isHovering = false; 
@@ -237,13 +201,13 @@ public class CardBehaviour2 : MonoBehaviour,
 
         canvasGroup.blocksRaycasts = false; 
 
-        // CRÍTICO: DESHABILITAR el LayoutElement al inicio del drag.
+        trueBaseLayoutPosition = rectTransform.localPosition; 
+
         if (layoutElement != null)
         {
             layoutElement.enabled = false;
         }
-        Debug.Log($"[OnBeginDrag - {gameObject.name}] LayoutElement.enabled set to FALSE.");
-
+        
         Vector2 localCursorPointInCanvas;
         RectTransformUtility.ScreenPointToLocalPointInRectangle(
             canvas.transform as RectTransform,
@@ -252,8 +216,6 @@ public class CardBehaviour2 : MonoBehaviour,
             out localCursorPointInCanvas
         );
         initialDragOffset = rectTransform.anchoredPosition - localCursorPointInCanvas;
-        
-        Debug.Log($"[OnBeginDrag - {gameObject.name}] initialDragOffset calculated: {initialDragOffset}");
     }
 
     public void OnDrag(PointerEventData eventData)
@@ -263,20 +225,15 @@ public class CardBehaviour2 : MonoBehaviour,
 
     public void OnEndDrag(PointerEventData eventData)
     {
-        Debug.Log($"[OnEndDrag - {gameObject.name}] Drag Ended. Current localPosition: {rectTransform.localPosition}");
-        Debug.Log($"[OnEndDrag - {gameObject.name}] LayoutElement.enabled (before logic): {layoutElement.enabled}"); 
-
         if (!isDragging) return;
 
         isDragging = false; 
         canvasGroup.blocksRaycasts = true; 
 
         if (returnAnimationCoroutine != null) StopCoroutine(returnAnimationCoroutine);
-        Debug.Log($"[OnEndDrag - {gameObject.name}] Stopped previous return animation (if any).");
         
         isReturning = true;
         returnAnimationCoroutine = StartCoroutine(ReturnToOriginalPosition());
-        Debug.Log($"[OnEndDrag - {gameObject.name}] Started ReturnToOriginalPosition Coroutine. isReturning set to TRUE.");
 
         isHovering = false; 
     }
@@ -299,28 +256,21 @@ public class CardBehaviour2 : MonoBehaviour,
     private IEnumerator ReturnToOriginalPosition()
     {
         Vector3 startPosition = rectTransform.localPosition; 
-        // El destino es la posición 'verdadera' del Layout Group.
         Vector3 endPosition = trueBaseLayoutPosition;  
 
         float t = 0f; 
 
-        Debug.Log($"[ReturnToOriginalPosition - {gameObject.name}] Starting return animation. From: {startPosition} To: {endPosition}");
-        Debug.Log($"[ReturnToOriginalPosition - {gameObject.name}] LayoutElement.enabled at start of coroutine: {layoutElement.enabled}"); 
-
         float distance = Vector3.Distance(startPosition, endPosition);
         if (distance < 0.1f) 
         {
-            Debug.Log($"[ReturnToOriginalPosition - {gameObject.name}] Card already very close to target. Skipping animation.");
             rectTransform.localPosition = endPosition; 
             if (layoutElement != null)
             {
                 layoutElement.enabled = true;
-                Debug.Log($"[ReturnToOriginalPosition - {gameObject.name}] LayoutElement.enabled set to TRUE (skipped anim).");
             }
             if (rectTransform.parent != null)
             {
                 LayoutRebuilder.ForceRebuildLayoutImmediate(rectTransform.parent.GetComponent<RectTransform>());
-                Debug.Log($"[ReturnToOriginalPosition - {gameObject.name}] Layout Rebuilt (skipped anim).");
             }
             isReturning = false; 
             isIdleAnimationActive = true; 
@@ -328,12 +278,10 @@ public class CardBehaviour2 : MonoBehaviour,
             yield break;
         }
 
-
         while (t < 1f)
         {
             if (isDragging) 
             {
-                Debug.LogWarning($"[ReturnToOriginalPosition - {gameObject.name}] Animation INTERRUPTED by new drag. Exiting coroutine.");
                 isReturning = false;
                 yield break; 
             }
@@ -345,29 +293,21 @@ public class CardBehaviour2 : MonoBehaviour,
         }
 
         rectTransform.localPosition = endPosition; 
-        Debug.Log($"[ReturnToOriginalPosition - {gameObject.name}] Animation finished. Final localPosition: {rectTransform.localPosition}");
 
         if (layoutElement != null)
         {
             layoutElement.enabled = true;
-            Debug.Log($"[ReturnToOriginalPosition - {gameObject.name}] LayoutElement.enabled set to TRUE.");
         }
 
-        // MUY IMPORTANTE: Recapturar trueBaseLayoutPosition aquí.
-        // Después de que el Layout Group ha re-integrado la carta, su posición real
-        // dentro del layout podría haber cambiado si otras cartas se movieron o añadieron/quitaron.
         if (rectTransform.parent != null)
         {
             LayoutRebuilder.ForceRebuildLayoutImmediate(rectTransform.parent.GetComponent<RectTransform>());
-            trueBaseLayoutPosition = rectTransform.localPosition; // ¡CAPTURA LA NUEVA POSICIÓN REAL DEL LAYOUT!
-            Debug.Log($"[ReturnToOriginalPosition - {gameObject.name}] Layout Rebuilt after animation completion. NEW trueBaseLayoutPosition: {trueBaseLayoutPosition}");
+            trueBaseLayoutPosition = rectTransform.localPosition; 
         }
-
 
         isReturning = false; 
         isIdleAnimationActive = true; 
         returnAnimationCoroutine = null; 
-        Debug.Log($"[ReturnToOriginalPosition - {gameObject.name}] Coroutine completed. isReturning set to FALSE.");
     }
 
     private System.Collections.IEnumerator HoverShake(float duration = 0.12f, float strength = 8f)
