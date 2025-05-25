@@ -13,6 +13,9 @@ GameObject:
   - component: {fileID: 7099936145891521719}
   - component: {fileID: 6981496036426178601}
   - component: {fileID: 3702157704991688254}
+  - component: {fileID: 5458956470717492836}
+  - component: {fileID: 6819664742587377201}
+  - component: {fileID: 6803760993509530036}
   m_Layer: 5
   m_Name: CardUI_Prefab
   m_TagString: Untagged
@@ -36,8 +39,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -417, y: -423}
-  m_SizeDelta: {x: 100, y: 150}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &7541458717211241447
 CanvasRenderer:
@@ -90,8 +93,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   weaponColor: {r: 1, g: 0, b: 0, a: 1}
-  effectColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
-  passiveColor: {r: 0, g: 0, b: 1, a: 1}
+  effectColor: {r: 0.8930817, g: 0.64162445, b: 0.21063234, a: 1}
+  passiveColor: {r: 0.11352392, g: 0.4302076, b: 0.8805031, a: 1}
   defaultColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!114 &3702157704991688254
 MonoBehaviour:
@@ -134,3 +137,59 @@ MonoBehaviour:
     m_DisabledTrigger: Disabled
   m_Interactable: 1
   m_TargetGraphic: {fileID: 7099936145891521719}
+--- !u!225 &5458956470717492836
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5547775891163656974}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
+--- !u!114 &6819664742587377201
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5547775891163656974}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 306cc8c2b49d7114eaa3623786fc2126, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_IgnoreLayout: 0
+  m_MinWidth: -1
+  m_MinHeight: -1
+  m_PreferredWidth: 100
+  m_PreferredHeight: 150
+  m_FlexibleWidth: -1
+  m_FlexibleHeight: -1
+  m_LayoutPriority: 1
+--- !u!114 &6803760993509530036
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5547775891163656974}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b675980ad7bed6f4fb718d51777c63d1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  hoverDuration: 0.2
+  hoverManualTiltAmount: 10
+  hoverAutoTiltAmount: 2
+  hoverTiltSpeed: 10
+  hoverShakeStrength: 8
+  hoverExitDelay: 0.2
+  hoverEnterDelay: 0.02
+  shakeCooldown: 0.2
+  hoverVerticalOffset: 20
+  dragLerpSpeed: 10
+  hoverScale: 1
+  returnSpeed: 8
