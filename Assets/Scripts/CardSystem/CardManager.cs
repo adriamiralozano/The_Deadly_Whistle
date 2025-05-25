@@ -38,7 +38,6 @@ public class CardManager : MonoBehaviour
 
     void OnEnable()
     {
-        Debug.Log("[CardManager] OnEnable: Suscribiendo a eventos.");
         TurnManager.OnRequestDrawCard += DrawCard;
         TurnManager.OnRequestHandCount += GetHandCount;
         TurnManager.OnRequestDiscardCard += DiscardFirstCardFromHandIfOverLimit;
@@ -47,7 +46,6 @@ public class CardManager : MonoBehaviour
 
     void OnDisable()
     {
-        Debug.Log("[CardManager] OnDisable: Desuscribiendo de eventos.");
         TurnManager.OnRequestDrawCard -= DrawCard;
         TurnManager.OnRequestHandCount -= GetHandCount;
         TurnManager.OnRequestDiscardCard -= DiscardFirstCardFromHandIfOverLimit;
