@@ -1,3 +1,4 @@
+// TurnManager.cs
 using UnityEngine;
 using System; // Para Action y Func
 using TMPro; // Para TextMeshProUGUI
@@ -44,9 +45,9 @@ public class TurnManager : MonoBehaviour
 
     // --- Eventos para comunicación con CardManager ---
     public static event Action OnRequestDrawCard;        // Solicita al CardManager que robe una carta
-    public static event Func<int> OnRequestHandCount;     // Solicita al CardManager el conteo de la mano
-    public static event Action OnRequestDiscardCard;     // Solicita al CardManager que descarte una carta
-    public static event Action OnRequestPlayFirstCard;   // Solicita al CardManager que "juegue" la primera carta de la mano
+    public static event Func<int> OnRequestHandCount;    // Solicita al CardManager el conteo de la mano
+    public static event Action OnRequestDiscardCard;    // Solicita al CardManager que descarte una carta
+    public static event Action OnRequestPlayFirstCard;  // Solicita al CardManager que "juegue" la primera carta de la mano
 
     
     void Awake()
@@ -82,7 +83,6 @@ public class TurnManager : MonoBehaviour
 
 
     /// Inicia el juego y el primer turno del jugador.
-
     public void StartGame()
     {
         currentTurnNumber = 0; // Resetea el contador de turnos al inicio del juego.
@@ -96,6 +96,19 @@ public class TurnManager : MonoBehaviour
         currentTurnNumber++; // Incrementa el contador para el nuevo turno.
         Debug.Log($"--- Inicio del Turno {currentTurnNumber} del Jugador ---");
         OnTurnStart?.Invoke(currentTurnNumber); // Notifica a los suscriptores que el turno ha comenzado.
+
+        // --- LÓGICA DE LIMPIEZA DE EFECTOS AL INICIO DEL TURNO ---
+        // ¡Esta es la sección que faltaba en tu implementación anterior de StartPlayerTurn!
+        if (PlayerStats.Instance != null)
+        {
+            Debug.Log("[TurnManager] Limpiando efectos del turno anterior."); // Log para confirmar la limpieza
+            PlayerStats.Instance.ClearAllEffects(); // Llama al método de PlayerStats para ocultar el cuadradito
+        }
+        else
+        {
+            Debug.LogError("[TurnManager] PlayerStats.Instance es null al inicio del turno. Asegúrate de que PlayerStats está en la escena.");
+        }
+        // --------------------------------------------------
 
         // Inicia la primera fase del turno.
         SetPhase(TurnPhase.DrawPhase);
@@ -140,7 +153,9 @@ public class TurnManager : MonoBehaviour
         {
             case TurnPhase.None:
             case TurnPhase.EndTurn:
-                SetPhase(TurnPhase.DrawPhase); // Después de EndTurn o None, siempre se va a DrawPhase
+                // Después de EndTurn o None, StartPlayerTurn ya se encarga de iniciar la siguiente fase (DrawPhase).
+                // No llamamos a SetPhase aquí para evitar doble inicio.
+                Debug.LogWarning("[TurnManager] AdvancePhase llamado desde None/EndTurn. Se espera que StartPlayerTurn ya inicie el siguiente ciclo.");
                 break;
 
             case TurnPhase.DrawPhase:
@@ -290,7 +305,6 @@ public class TurnManager : MonoBehaviour
     }
 
     /// Obtiene el conteo actual de cartas en la mano del jugador.
-
     private int GetHandCount()
     {
         if (OnRequestHandCount != null)
@@ -303,7 +317,6 @@ public class TurnManager : MonoBehaviour
     // --- Métodos de Actualización de UI ---
 
     /// Actualiza el texto de la fase de turno en la UI.
-
     private void UpdateTurnPhaseDisplay()
     {
         if (turnPhaseText != null)
