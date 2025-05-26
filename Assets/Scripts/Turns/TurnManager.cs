@@ -10,6 +10,9 @@ public class TurnManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI turnPhaseText; // Para el texto de fase de turno
     [SerializeField] private TextMeshProUGUI handCountText; // Para el conteo de la mano
 
+    // --- Singleton ---
+    public static TurnManager Instance { get; private set; }
+
 
     // --- Enumeración de Fases de Turno ---
     public enum TurnPhase
@@ -22,9 +25,13 @@ public class TurnManager : MonoBehaviour
     }
 
     // --- Variables de Estado del Turno ---
-    private TurnPhase currentTurnPhase = TurnPhase.None;
     private int currentTurnNumber = 0;
     private const int MAX_HAND_SIZE = 5;
+
+    // --- Inicialización del Singleton ---
+    private TurnPhase currentTurnPhase = TurnPhase.None;
+    // Asegura que solo haya una instancia de TurnManager en la escena.
+    public TurnPhase CurrentPhase { get { return currentTurnPhase; } }
 
     // Para optimizar actualizaciones de UI
     private string lastTurnPhaseText = "";
@@ -40,6 +47,19 @@ public class TurnManager : MonoBehaviour
     public static event Func<int> OnRequestHandCount;     // Solicita al CardManager el conteo de la mano
     public static event Action OnRequestDiscardCard;     // Solicita al CardManager que descarte una carta
     public static event Action OnRequestPlayFirstCard;   // Solicita al CardManager que "juegue" la primera carta de la mano
+
+    
+    void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+        }
+        else
+        {
+            Instance = this;
+        }
+    }
 
     // --- Suscripción/Desuscripción a Eventos ---
     void OnEnable()

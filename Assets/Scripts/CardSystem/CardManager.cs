@@ -35,6 +35,22 @@ public class CardManager : MonoBehaviour
     public static event Action OnCardDiscarded;
     public static event Action<CardData> OnCardPlayed;
 
+    // Singleton instance
+    public static CardManager Instance { get; private set; }
+
+    // Asegúrate de que este Awake se llame antes de cualquier otro script que dependa de CardManager
+    void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+        }
+        else
+        {
+            Instance = this;
+        }
+    }
+
 
     void OnEnable()
     {
@@ -155,7 +171,7 @@ public class CardManager : MonoBehaviour
         UpdateHandVisuals(); // Asegura que la mano se visualice correctamente después de robar.
     }
 
-    private void DiscardCardInternal(CardData cardToDiscard)
+    public void DiscardCardInternal(CardData cardToDiscard)
     {
         if (playerHand.Contains(cardToDiscard))
         {
@@ -214,6 +230,45 @@ public class CardManager : MonoBehaviour
         {
             Debug.LogWarning("[CardManager] No hay cartas en mano para jugar.");
         }
+    }
+
+    public bool PlayCard(CardData cardToPlay)
+    {
+        if (!playerHand.Contains(cardToPlay))
+        {
+            Debug.LogWarning($"[CardManager] Intentando jugar carta '{cardToPlay.cardID}' (Instance ID: {cardToPlay.instanceID}), pero no está en la mano del jugador.");
+            return false;
+        }
+
+        // Lógica de jugar la carta:
+        // 1. Quitar la carta de la mano lógica
+        playerHand.Remove(cardToPlay);
+
+        // 2. Añadir la carta a la pila de descarte lógica (ya que las cartas jugadas terminan aquí)
+        discardPile.Add(cardToPlay);
+
+        // 3. Destruir la instancia UI de la carta de la escena
+        if (handUIInstances.ContainsKey(cardToPlay.instanceID))
+        {
+            GameObject uiInstance = handUIInstances[cardToPlay.instanceID];
+            handUIInstances.Remove(cardToPlay.instanceID); // Quitar del diccionario de la mano
+
+            Destroy(uiInstance); 
+            Debug.Log($"[CardManager] Instancia UI de '{cardToPlay.cardID}' destruida (carta jugada y movida a descarte lógico).");
+        }
+        else
+        {
+            Debug.LogWarning($"[CardManager] No se encontró la instancia UI para la carta '{cardToPlay.cardID}' (Instance ID: {cardToPlay.instanceID}) en handUIInstances al jugar. Esto puede indicar un problema de sincronización.");
+        }
+
+        // 4. Actualizar contadores y visuales
+        OnHandCountUpdated?.Invoke(playerHand.Count);
+        OnCardPlayed?.Invoke(cardToPlay); // Disparar evento de carta jugada (si lo necesitas para otros sistemas)
+        UpdateDiscardPileCountDisplay();
+        UpdateHandVisuals(); // Reconstruye la mano para que la carta jugada desaparezca.
+
+        Debug.Log($"[CardManager] Carta '{cardToPlay.cardID}' (Instance ID: {cardToPlay.instanceID}) JUGADA y movida a descarte. Cartas restantes en mano: {playerHand.Count}. Cartas en descarte: {discardPile.Count}.");
+        return true; 
     }
 
     /// <summary>
