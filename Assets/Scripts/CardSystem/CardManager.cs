@@ -54,16 +54,14 @@ public class CardManager : MonoBehaviour
     {
         TurnManager.OnRequestDrawCard += DrawCard;
         TurnManager.OnRequestHandCount += GetHandCount;
-        TurnManager.OnRequestDiscardCard += DiscardFirstCardFromHandIfOverLimit;
-        TurnManager.OnRequestPlayFirstCard += PlayFirstCardFromHand;
+        //TurnManager.OnRequestPlayFirstCard += PlayFirstCardFromHand;
     }
 
     void OnDisable()
     {
         TurnManager.OnRequestDrawCard -= DrawCard;
         TurnManager.OnRequestHandCount -= GetHandCount;
-        TurnManager.OnRequestDiscardCard -= DiscardFirstCardFromHandIfOverLimit;
-        TurnManager.OnRequestPlayFirstCard -= PlayFirstCardFromHand;
+        //TurnManager.OnRequestPlayFirstCard -= PlayFirstCardFromHand;
     }
 
     void Start()
@@ -189,7 +187,7 @@ public class CardManager : MonoBehaviour
         }
     }
 
-    public void PlayFirstCardFromHand()
+/*     public void PlayFirstCardFromHand()
     {
         if (playerHand.Count > 0)
         {
@@ -215,7 +213,7 @@ public class CardManager : MonoBehaviour
         {
             Debug.LogWarning("[CardManager] No hay cartas en mano para jugar.");
         }
-    }
+    } */
 
     public bool PlayCard(CardData cardToPlay)
     {
@@ -254,7 +252,7 @@ public class CardManager : MonoBehaviour
     /// Aplica las reglas de la Fase de Descarte y el límite de mano.
     /// Esta es la función centralizada para el botón de descarte y el DropTarget.
     /// </summary>
-    /// <param name="cardToDiscard">La CardData de la carta que se intenta descartar.</param>
+
     /// <returns>True si la carta fue descartada exitosamente, false en caso contrario.</returns>
     public bool AttemptManualDiscard(CardData cardToDiscard) // <--- ¡Asegúrate de que este método está en tu archivo!
     {
@@ -272,9 +270,9 @@ public class CardManager : MonoBehaviour
             return false;
         }
 
-        if (TurnManager.Instance.CurrentPhase != TurnManager.TurnPhase.DiscardPhase)
+        if (TurnManager.Instance.CurrentPhase != TurnManager.TurnPhase.ActionPhase)
         {
-            Debug.LogWarning($"[CardManager] Falló el descarte: Solo se puede descartar en la Fase de Descarte. Fase actual: {TurnManager.Instance.CurrentPhase}.");
+            Debug.LogWarning($"[CardManager] Falló el descarte: Solo se puede descartar en la Fase de Acción. Fase actual: {TurnManager.Instance.CurrentPhase}.");
             return false;
         }
 
@@ -293,34 +291,6 @@ public class CardManager : MonoBehaviour
         return true;
     }
 
-    public void DiscardFirstCardFromHandIfOverLimit()
-    {
-        if (playerHand.Count > MAX_HAND_SIZE)
-        {
-            if (playerHand.Count > 0)
-            {
-                CardData cardToDiscard = playerHand[0];
-                // Ahora, llamamos a la función unificada AttemptManualDiscard
-                bool discarded = AttemptManualDiscard(cardToDiscard);
-                if (discarded)
-                {
-                    Debug.Log($"[CardManager] Descarte forzado de la primera carta '{cardToDiscard.cardID}' completado.");
-                }
-                else
-                {
-                    Debug.LogWarning($"[CardManager] Descarte forzado de la primera carta fallido. (Razón ya loggeada por AttemptManualDiscard).");
-                }
-            }
-            else
-            {
-                Debug.LogWarning("[CardManager] No hay cartas en mano para descartar, a pesar de que se solicitó un descarte por límite.");
-            }
-        }
-        else
-        {
-            Debug.LogWarning($"[CardManager] Mano en el límite ({playerHand.Count}/{MAX_HAND_SIZE}). No se requiere descarte forzado en este momento.");
-        }
-    }
 
     private void UpdateHandVisuals()
     {

@@ -21,7 +21,6 @@ public class TurnManager : MonoBehaviour
         None,           // Estado inicial o entre turnos
         DrawPhase,      // Fase de robo: robar una carta.
         ActionPhase,    // Fase de acción: jugar cartas.
-        DiscardPhase,   // Fase de descarte: si la mano excede el límite.
         EndTurn         // Fase final del turno: limpieza y preparación para el siguiente.
     }
 
@@ -49,7 +48,7 @@ public class TurnManager : MonoBehaviour
     public static event Action OnRequestDiscardCard;    // Solicita al CardManager que descarte una carta
     public static event Action OnRequestPlayFirstCard;  // Solicita al CardManager que "juegue" la primera carta de la mano
 
-    
+
     void Awake()
     {
         if (Instance != null && Instance != this)
@@ -134,9 +133,6 @@ public class TurnManager : MonoBehaviour
             case TurnPhase.ActionPhase:
                 HandleActionPhase();
                 break;
-            case TurnPhase.DiscardPhase:
-                HandleDiscardPhase();
-                break;
             case TurnPhase.EndTurn:
                 StartCoroutine(HandleEndTurnPhaseRoutine()); // Usamos una corrutina para el fin de turno.
                 break;
@@ -167,7 +163,7 @@ public class TurnManager : MonoBehaviour
                 // De lo contrario, pasa directamente a EndTurn.
                 if (CheckIfHandExceedsLimit())
                 {
-                    SetPhase(TurnPhase.DiscardPhase);
+                    Debug.LogWarning($"Aún tienes {GetHandCount()} cartas en mano. Debes descartar hasta tener {MAX_HAND_SIZE} para pasar de turno.");    
                 }
                 else
                 {
@@ -175,19 +171,7 @@ public class TurnManager : MonoBehaviour
                 }
                 break;
 
-            case TurnPhase.DiscardPhase:
-                // Si la mano ya no excede el límite después de la DiscardPhase, se va a EndTurn.
-                // Si aún excede, se mantiene en DiscardPhase hasta que el jugador descarte.
-                if (!CheckIfHandExceedsLimit())
-                {
-                    SetPhase(TurnPhase.EndTurn);
-                }
-                else
-                {
-                    Debug.LogWarning($"Aún tienes {GetHandCount()} cartas en mano. Debes descartar hasta tener {MAX_HAND_SIZE} para pasar de turno.");
-                    // No avanza, se mantiene en DiscardPhase
-                }
-                break;
+
         }
     }
     // --- Métodos de Manejo de Fases Específicas ---
@@ -216,12 +200,6 @@ public class TurnManager : MonoBehaviour
         // El jugador debe usar el botón "End Turn" (o barra espaciadora) para terminar esta fase.
     }
 
-    private void HandleDiscardPhase()
-    {
-        Debug.Log($"Iniciando Fase de Descarte: Tu mano tiene {GetHandCount()} cartas. Debes descartar hasta tener {MAX_HAND_SIZE}.");
-        // El juego espera a que el jugador descarte. El botón de EndTurn está restringido en AdvancePhase().
-    }
-
     /// Corrutina para manejar la fase de fin de turno. Permite limpieza y prepara el siguiente turno.
     private IEnumerator HandleEndTurnPhaseRoutine()
     {
@@ -244,7 +222,7 @@ public class TurnManager : MonoBehaviour
     public void EndPlayerTurnButton()
     {
         // Si estamos en la fase de descarte y la mano aún excede el límite, no se permite terminar el turno.
-        if (currentTurnPhase == TurnPhase.DiscardPhase && CheckIfHandExceedsLimit())
+        if (currentTurnPhase == TurnPhase.ActionPhase && CheckIfHandExceedsLimit())
         {
             Debug.LogWarning("No puedes terminar el turno. Debes descartar cartas para reducir tu mano al límite.");
             return; // Sale del método sin avanzar la fase.
@@ -252,42 +230,6 @@ public class TurnManager : MonoBehaviour
 
         Debug.Log("Solicitud de finalizar turno del jugador.");
         AdvancePhase(); // Si las condiciones son adecuadas, avanza a la siguiente fase.
-    }
-
-    /// Método llamado por el botón "Usar Carta".
-    /// Solo permite jugar cartas durante la Fase de Acción.
-    public void PlayFirstCardButton()
-    {
-        Debug.Log($"[PlayFirstCardButton Debug] EL BOTÓN HA SIDO PULSADO. Fase actual: {currentTurnPhase}");
-        if (currentTurnPhase != TurnPhase.ActionPhase) // Comprobación clave: solo en Fase de Acción
-        {
-            Debug.LogWarning("Solo puedes usar cartas durante la Fase de Acción.");
-            return;
-        }
-        Debug.Log("[TurnManager] Solicitando usar la primera carta de la mano.");
-        OnRequestPlayFirstCard?.Invoke(); // Dispara el evento para que CardManager la juegue.
-    }
-
-    /// Método llamado por el botón "Descartar Carta" dedicado.
-    /// Solo permite el descarte manual en la Fase de Descarte y si la mano excede el límite.
-    public void DiscardCardButton()
-    {
-        Debug.Log($"[DiscardCardButton Debug] Pulsado. Fase actual: {currentTurnPhase}."); // <-- Log de depuración
-
-        if (currentTurnPhase != TurnPhase.DiscardPhase) // <--- ¡Esta es la comprobación clave!
-        {
-            Debug.LogWarning($"Solo puedes descartar cartas manualmente durante la Fase de Descarte si tu mano excede el límite. Actualmente estás en: {currentTurnPhase}.");
-            return; // Si no es DiscardPhase, salimos.
-        }
-        // Si la fase es DiscardPhase, entonces verificamos el límite de la mano.
-        if (!CheckIfHandExceedsLimit())
-        {
-            Debug.LogWarning("Tu mano no excede el límite. No necesitas descartar cartas.");
-            return;
-        }
-
-        Debug.Log("[TurnManager] Solicitando descarte de carta desde TurnManager (botón de descarte).");
-        OnRequestDiscardCard?.Invoke(); // Dispara el evento para que CardManager descarte.
     }
 
 
@@ -357,49 +299,6 @@ public class TurnManager : MonoBehaviour
         }
     }
 
-    // --- DEBUG: Entrada de Teclado para pruebas rápidas ---
-    void Update()
-    {
-        // Tecla Espacio: Para avanzar fases o descartar en DiscardPhase
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            Debug.Log($"[DEBUG] Barra espaciadora presionada en fase: {currentTurnPhase}");
-            if (currentTurnPhase == TurnPhase.DiscardPhase)
-            {
-                // En DiscardPhase, la barra espaciadora actúa como el botón de descarte manual.
-                DiscardCardButton();
-            }
-            else
-            {
-                // En otras fases (principalmente ActionPhase), intenta finalizar el turno.
-                EndPlayerTurnButton();
-            }
-        }
-        // Tecla R: Para robar una carta extra (solo en ActionPhase para depuración)
-        if (Input.GetKeyDown(KeyCode.R))
-        {
-            if (currentTurnPhase == TurnPhase.ActionPhase)
-            {
-                Debug.Log("[DEBUG] Robando una carta extra con 'R' (Solo para pruebas en fase de Acción).");
-                OnRequestDrawCard?.Invoke();
-            }
-            else
-            {
-                Debug.LogWarning("[DEBUG] La tecla 'R' (Robar extra) solo funciona en la Fase de Acción.");
-            }
-        }
-        // Tecla P: Para jugar la primera carta (solo en ActionPhase para depuración)
-        if (Input.GetKeyDown(KeyCode.P))
-        {
-            if (currentTurnPhase == TurnPhase.ActionPhase)
-            {
-                Debug.Log("[DEBUG] Tecla 'P' presionada. Intentando usar la primera carta.");
-                PlayFirstCardButton(); // Llama al método del botón para usar la misma lógica de restricción.
-            }
-            else
-            {
-                Debug.LogWarning("[DEBUG] La tecla 'P' (Usar Carta) solo funciona en la Fase de Acción.");
-            }
-        }
-    }
+    void Update() { }
+    
 }
