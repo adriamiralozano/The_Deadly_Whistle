@@ -190,6 +190,6 @@ MonoBehaviour:
   hoverEnterDelay: 0.02
   shakeCooldown: 0.2
   hoverVerticalOffset: 20
-  dragLerpSpeed: 10
+  dragLerpSpeed: 20
   hoverScale: 1
   returnSpeed: 8
