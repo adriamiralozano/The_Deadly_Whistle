@@ -9,9 +9,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3d3472fa5d6348943846108958e8ab29, type: 3}
-  m_Name: Card_08
+  m_Script: {fileID: 11500000, guid: d1ca5a8fd1ea92f4492bff8570d6de02, type: 3}
+  m_Name: Caliber45BulletCard
   m_EditorClassIdentifier: 
-  cardID: Card_08
-  artwork: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
-  type: 3
+  cardID: 
+  artwork: {fileID: 0}
+  type: 0
+  bulletCardID: Caliber45Bullet

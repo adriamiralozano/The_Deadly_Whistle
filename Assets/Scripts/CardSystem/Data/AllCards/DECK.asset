@@ -10,12 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 966421b94c503994a9eb4cb6db0b2656, type: 3}
-  m_Name: PlayerStartingDeck
+  m_Name: DECK
   m_EditorClassIdentifier: 
   initialCards:
-  - {fileID: 11400000, guid: bfbb7fcd0a543f940811711dcdf869f2, type: 2}
-  - {fileID: 11400000, guid: bec20202b090a9f49bbf50cb2e117e9a, type: 2}
-  - {fileID: 11400000, guid: 13eebe3cebdba0a49bd111d254d2ade6, type: 2}
+  - {fileID: 11400000, guid: 2cc85209b216be9459ed1945593619a2, type: 2}
+  - {fileID: 11400000, guid: 2cc85209b216be9459ed1945593619a2, type: 2}
+  - {fileID: 11400000, guid: 2cc85209b216be9459ed1945593619a2, type: 2}
   - {fileID: 11400000, guid: 11e152700c3039f4a9af36b62125d9be, type: 2}
   - {fileID: 11400000, guid: 87802da78bc30c542afac95c475ed8ea, type: 2}
   - {fileID: 11400000, guid: 513f5924d8974b441996b9e131409276, type: 2}

@@ -45,8 +45,7 @@ public class TurnManager : MonoBehaviour
     // --- Eventos para comunicación con CardManager ---
     public static event Action OnRequestDrawCard;        // Solicita al CardManager que robe una carta
     public static event Func<int> OnRequestHandCount;    // Solicita al CardManager el conteo de la mano
-    public static event Action OnRequestDiscardCard;    // Solicita al CardManager que descarte una carta
-    public static event Action OnRequestPlayFirstCard;  // Solicita al CardManager que "juegue" la primera carta de la mano
+
 
 
     void Awake()
