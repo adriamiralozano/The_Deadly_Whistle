@@ -2,7 +2,7 @@
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "NewCaliber45BulletCard", menuName = "Card System/Caliber 45 Bullet Card Data")]
-public class Caliber45BulletCardData : PassiveCardData // <--- ¡Importante! Ahora hereda de PassiveCardData
+public class Caliber45BulletCardData : PassiveCardData //hereda de PassiveCardData
 {
     public string bulletCardID = "Caliber45Bullet"; // Para identificarla fácilmente en el código
 
