@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1006eb5c0baa35c48a659acae626bdf9, type: 3}
   m_Name: RevolverCard
   m_EditorClassIdentifier: 
-  cardID: RevolverCard_01
+  cardID: Revolver
   artwork: {fileID: 21300000, guid: 9054955a5d23d7249857f3f2e8e98a42, type: 3}
   type: 1
   baseDamagePerHit: 1

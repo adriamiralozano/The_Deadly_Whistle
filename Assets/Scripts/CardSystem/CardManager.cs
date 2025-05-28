@@ -13,7 +13,7 @@ public class CardManager : MonoBehaviour
 
     [Header("UI References")]
     // CORRECCIÓN: TextMeshProUGUI (la 'I' al final, no 'U')
-    [SerializeField] private TextMeshProUGUI deckCountText; 
+    [SerializeField] private TextMeshProUGUI deckCountText;
     [SerializeField] private TextMeshProUGUI discardPileCountText;
 
     // --- REFERENCIAS DE UI DE CARTA ---
@@ -54,14 +54,14 @@ public class CardManager : MonoBehaviour
     {
         TurnManager.OnRequestDrawCard += DrawCard;
         TurnManager.OnRequestHandCount += GetHandCount;
-        //TurnManager.OnRequestPlayFirstCard += PlayFirstCardFromHand;
+        TurnManager.OnTurnStart += UpdateRevolverStatusLog;
     }
 
     void OnDisable()
     {
         TurnManager.OnRequestDrawCard -= DrawCard;
         TurnManager.OnRequestHandCount -= GetHandCount;
-        //TurnManager.OnRequestPlayFirstCard -= PlayFirstCardFromHand;
+        TurnManager.OnTurnStart -= UpdateRevolverStatusLog;
     }
 
     void Start()
@@ -187,34 +187,6 @@ public class CardManager : MonoBehaviour
         }
     }
 
-/*     public void PlayFirstCardFromHand()
-    {
-        if (playerHand.Count > 0)
-        {
-            CardData playedCard = playerHand[0];
-            playerHand.RemoveAt(0);
-
-            discardPile.Add(playedCard);
-
-            if (handUIInstances.ContainsKey(playedCard.instanceID))
-            {
-                Destroy(handUIInstances[playedCard.instanceID]);
-                handUIInstances.Remove(playedCard.instanceID);
-            }
-
-            Debug.Log($"[CardManager] Carta '{playedCard.cardID}' (Instance ID: {playedCard.instanceID}) jugada y movida a descarte. Cartas en mano: {playerHand.Count}.");
-
-            OnHandCountUpdated?.Invoke(playerHand.Count);
-            OnCardPlayed?.Invoke(playedCard);
-            UpdateDiscardPileCountDisplay();
-            UpdateHandVisuals();
-        }
-        else
-        {
-            Debug.LogWarning("[CardManager] No hay cartas en mano para jugar.");
-        }
-    } */
-
     public bool PlayCard(CardData cardToPlay)
     {
         if (!playerHand.Contains(cardToPlay))
@@ -230,7 +202,7 @@ public class CardManager : MonoBehaviour
         {
             GameObject uiInstance = handUIInstances[cardToPlay.instanceID];
             handUIInstances.Remove(cardToPlay.instanceID);
-            Destroy(uiInstance); 
+            Destroy(uiInstance);
             Debug.Log($"[CardManager] Instancia UI de '{cardToPlay.cardID}' destruida (carta jugada y movida a descarte lógico).");
         }
         else
@@ -244,14 +216,9 @@ public class CardManager : MonoBehaviour
         UpdateHandVisuals();
 
         Debug.Log($"[CardManager] Carta '{cardToPlay.cardID}' (Instance ID: {cardToPlay.instanceID}) JUGADA y movida a descarte. Cartas restantes en mano: {playerHand.Count}. Cartas en descarte: {discardPile.Count}.");
-        return true; 
+        return true;
     }
 
-    /// <summary>
-    /// Intenta descartar una carta específica de la mano del jugador.
-    /// Aplica las reglas de la Fase de Descarte y el límite de mano.
-    /// Esta es la función centralizada para el botón de descarte y el DropTarget.
-    /// </summary>
 
     /// <returns>True si la carta fue descartada exitosamente, false en caso contrario.</returns>
     public bool AttemptManualDiscard(CardData cardToDiscard) // <--- ¡Asegúrate de que este método está en tu archivo!
@@ -285,9 +252,9 @@ public class CardManager : MonoBehaviour
 
         // Si todas las condiciones se cumplen, proceder con el descarte interno
         Debug.Log($"[CardManager] Intentando descartar carta '{cardToDiscard.cardID}' (Instance ID: {cardToDiscard.instanceID}). Mano actual antes: {playerHand.Count}.");
-        
+
         // Llamada a la función interna que hace el trabajo real de mover la carta y destruir la UI
-        DiscardCardInternal(cardToDiscard); 
+        DiscardCardInternal(cardToDiscard);
         return true;
     }
 
@@ -350,4 +317,123 @@ public class CardManager : MonoBehaviour
             discardPileCountText.text = $"Descarte: {discardPile.Count}";
         }
     }
+
+    public int CountCardsInHand(string targetCardID)
+    {
+        if (playerHand == null)
+        {
+            Debug.LogWarning("[CardManager] La lista 'playerHand' es nula al intentar contar cartas.");
+            return 0;
+        }
+
+        // Usamos LINQ para una forma más concisa de contar, si no, un foreach normal está bien.
+        // Asegúrate de tener 'using System.Linq;' en la parte superior del script.
+        int count = playerHand.Count(card => card != null && card.cardID == targetCardID); // <--- CAMBIO: Añadimos 'int' aquí
+
+        Debug.Log($"[CardManager DEBUG] Se encontraron {count} cartas con ID '{targetCardID}' en la mano.");
+        return count;
+    }
+    public void DiscardSpecificCardsFromHand(string targetCardID, int countToDiscard)
+    {
+        if (playerHand == null) // <-- CAMBIO: Usar 'playerHand'
+        {
+            Debug.LogWarning("[CardManager] La lista 'playerHand' es nula al intentar descartar cartas específicas.");
+            return;
+        }
+
+        if (discardPile == null)
+        {
+            Debug.LogError("[CardManager] La pila de descarte es nula. ¡Asegúrate de inicializarla!");
+            return;
+        }
+
+        List<CardData> cardsFoundAndToDiscard = new List<CardData>();
+
+        // Itera la mano para encontrar las cartas a remover, hasta que encuentres la cantidad necesaria.
+        foreach (CardData card in playerHand) // <-- CAMBIO: Usar 'playerHand'
+        {
+            if (card != null && card.cardID == targetCardID)
+            {
+                cardsFoundAndToDiscard.Add(card);
+                if (cardsFoundAndToDiscard.Count >= countToDiscard)
+                {
+                    break;
+                }
+            }
+        }
+
+        int actualDiscardedCount = 0;
+        foreach (CardData card in cardsFoundAndToDiscard)
+        {
+            if (playerHand.Remove(card)) // <-- CAMBIO: Usar 'playerHand'
+            {
+                discardPile.Add(card);
+                actualDiscardedCount++;
+
+                if (handUIInstances.ContainsKey(card.instanceID))
+                {
+                    Destroy(handUIInstances[card.instanceID]);
+                    handUIInstances.Remove(card.instanceID);
+                    Debug.Log($"[CardManager DEBUG] Instancia UI de '{card.cardID}' (instancia: {card.instanceID}) destruida al descartar.");
+                }
+                else
+                {
+                    Debug.LogWarning($"[CardManager] No se encontró la instancia UI para la carta '{card.cardID}' (Instance ID: {card.instanceID}) en handUIInstances al descartar. Posible problema de sincronización.");
+                }
+            }
+        }
+
+        if (actualDiscardedCount > 0)
+        {
+            OnHandCountUpdated?.Invoke(playerHand.Count);
+            OnCardDiscarded?.Invoke();
+            UpdateDiscardPileCountDisplay();
+            UpdateHandVisuals();
+            Debug.Log($"[CardManager DEBUG] Se descartaron {actualDiscardedCount} cartas '{targetCardID}' de la mano y se movieron al descarte.");
+        }
+        else
+        {
+            Debug.LogWarning($"[CardManager] No se encontraron suficientes cartas '{targetCardID}' para descartar la cantidad solicitada ({countToDiscard}). Se encontraron {cardsFoundAndToDiscard.Count}.");
+        }
+    }
+    
+    /// Comprueba si el Revolver está equipado y actualiza el mensaje de debug sobre los disparos disponibles.
+    /// Se llama al inicio de cada turno.
+
+    private void UpdateRevolverStatusLog(int turnNumber) // <-- ADD the 'int turnNumber' parameter
+    {
+        Debug.Log($"[CardManager] Actualizando estado del Revolver al inicio del turno {turnNumber}..."); // Use turnNumber if you want
+
+        if (PlayerStats.Instance == null)
+        {
+            Debug.LogError("[CardManager] PlayerStats.Instance no encontrado. No se puede verificar el arma equipada.");
+            return;
+        }
+
+        // 1. Comprobar si hay un arma equipada
+        if (!PlayerStats.Instance.HasWeaponEquipped)
+        {
+            Debug.Log("[CardManager] No hay arma equipada actualmente.");
+            return;
+        }
+
+        // 2. Comprobar si el arma equipada es el Revolver
+        // Asegúrate de que tu RevolverCardData tiene un cardID que usas aquí.
+        // Por ejemplo, "RevolverWeapon" (el que definimos antes).
+        if (PlayerStats.Instance.CurrentEquippedWeapon is RevolverCardData revolverCard)
+        {
+            // El Revolver está equipado, ahora contamos las balas
+            int bulletCount = CountCardsInHand("Caliber45Bullet"); // <-- Usa el mismo ID que en tus SO de bala
+            int shotsToFire = Mathf.Min(bulletCount, 3); // Límite de 3 disparos
+
+            // --- ESTE ES EL MENSAJE ACTUALIZADO CADA TURNO ---
+            Debug.Log($"[REVOLVER STATUS DEBUG - Inicio de Turno] Revolver '{revolverCard.cardID}' equipado. Puedes hacer {shotsToFire} ataque(s) con las balas Calibre .45 disponibles en tu mano ({bulletCount} balas encontradas).");
+            // ----------------------------------------------------
+        }
+        else
+        {
+            Debug.Log($"[CardManager] Arma equipada no es un Revolver: {PlayerStats.Instance.CurrentEquippedWeapon.cardID}");
+        }
+    }
+
 }

@@ -51,7 +51,7 @@ public class DropTarget : MonoBehaviour, IDropHandler, IPointerEnterHandler, IPo
     // Se llama cuando un objeto dragueable se suelta en el área de este DropTarget
     public void OnDrop(PointerEventData eventData)
     {
-        Debug.Log($"Carta soltada en {gameObject.name} (Tipo de objetivo: {myTargetType})");
+        //Debug.Log($"Carta soltada en {gameObject.name} (Tipo de objetivo: {myTargetType})");
 
         if (targetImage != null)
         {
@@ -114,24 +114,73 @@ public class DropTarget : MonoBehaviour, IDropHandler, IPointerEnterHandler, IPo
                             // Lógica para cartas de tipo WEAPON
                             if (droppedCardData.type == CardType.Weapon)
                             {
-                                if (PlayerStats.Instance.HasWeaponEquipped)
+                                // AHORA: Intentamos castear a RevolverCardData para aplicar su lógica específica
+                                if (droppedCardData is RevolverCardData revolverCard) // <--- CAMBIO IMPORTANTE: Agregamos esta línea
                                 {
-                                    Debug.LogWarning($"[DropTarget] No se puede equipar '{droppedCardData.cardID}'. El jugador ya tiene un arma equipada.");
-                                    // La carta regresará a su posición original automáticamente
-                                    return;
-                                }
-                                else
-                                {
-                                    PlayerStats.Instance.EquipWeapon();
-                                    bool played = CardManager.Instance.PlayCard(droppedCardData);
-
-                                    if (played)
+                                    if (PlayerStats.Instance.HasWeaponEquipped)
                                     {
-                                        Debug.Log($"[DropTarget] Arma '{droppedCardData.cardID}' equipada y jugada exitosamente en el Player.");
+                                        Debug.LogWarning($"[DropTarget] No se puede equipar '{revolverCard.cardID}'. El jugador ya tiene un arma equipada. La carta volverá a la mano.");
+                                        return;
                                     }
                                     else
                                     {
-                                        Debug.LogWarning($"[DropTarget] Falló al jugar la carta de arma '{droppedCardData.cardID}'.");
+                                        // 1. Marcar el jugador como que tiene un arma equipada
+                                        PlayerStats.Instance.EquipWeapon(revolverCard); // <--- CORRECCIÓN CLAVE: PASAR 'revolverCard'
+                                        //Debug.Log($"[DropTarget] Revolver '{revolverCard.cardID}' equipado.");
+
+                                        // 2. Contar las cartas de bala en la mano del jugador (para el mensaje de debug)
+                                        int bulletCount = CardManager.Instance.CountCardsInHand("Caliber45Bullet");
+                                        int shotsToFire = Mathf.Min(bulletCount, 3); // Límite de 3 disparos
+
+                                        // --- AQUÍ VA EL MENSAJE DE LOG PARA EL DESARROLLADOR ---
+                                        Debug.Log($"[REVOLVER STATUS DEBUG] Revolver en uso. Puedes hacer {shotsToFire} ataque(s) con las balas Calibre .45 disponibles en tu mano ({bulletCount} balas encontradas).");
+                                        // --------------------------------------------------------
+
+                                        // 3. Aplicar el daño por cada disparo (simulado o real)
+                                        for (int i = 0; i < shotsToFire; i++)
+                                        {
+                                            Debug.Log($"[DropTarget] Disparo {i + 1} del Revolver: {revolverCard.baseDamagePerHit} de daño al enemigo.");
+                                            // **AQUÍ: Llama a tu sistema de daño real al enemigo.**
+                                            // Ejemplo: EnemyHealthManager.Instance.TakeDamage(revolverCard.baseDamagePerHit);
+                                        }
+
+                                        // 4. Descartar las cartas de bala utilizadas de la mano (solo si se realizaron disparos)
+                                        // Esta línea está comentada para NO descartar las balas automáticamente.
+                                        if (shotsToFire > 0)
+                                        {
+                                            // CardManager.Instance.DiscardSpecificCardsFromHand("Caliber45Bullet", shotsToFire); // COMENTADO: No descartar balas automáticamente
+                                        }
+                                        
+                                        // 5. Mover la carta del Revolver al descarte (se considera "jugada" y consumida)
+                                        bool played = CardManager.Instance.PlayCard(revolverCard); 
+                                        if (played)
+                                        {
+                                            Debug.Log($"[DropTarget] Revolver '{revolverCard.cardID}' jugado y movido a descarte.");
+                                        }
+                                        else
+                                            Debug.LogWarning($"[DropTarget] Falló al jugar el Revolver '{revolverCard.cardID}'.");
+                                    }
+                                }
+                                else // <--- CAMBIO IMPORTANTE: Agregamos este 'else' para otras armas genéricas
+                                {
+                                    // Esta es la lógica que tenías antes para las armas genéricas, ahora en un 'else'
+                                    if (PlayerStats.Instance.HasWeaponEquipped)
+                                    {
+                                        Debug.LogWarning($"[DropTarget] No se puede equipar '{droppedCardData.cardID}'. El jugador ya tiene un arma equipada. La carta volverá a la mano.");
+                                        return;
+                                    }
+                                    else
+                                    {
+                                        PlayerStats.Instance.EquipWeapon(droppedCardData); // <--- CORRECCIÓN CLAVE: PASAR 'droppedCardData'
+                                        bool played = CardManager.Instance.PlayCard(droppedCardData);
+                                        if (played)
+                                        {
+                                            Debug.Log($"[DropTarget] Arma genérica '{droppedCardData.cardID}' equipada y jugada exitosamente en el Player.");
+                                        }
+                                        else
+                                        {
+                                            Debug.LogWarning($"[DropTarget] Falló al jugar la carta de arma genérica '{droppedCardData.cardID}'.");
+                                        }
                                     }
                                 }
                             }
@@ -170,7 +219,7 @@ public class DropTarget : MonoBehaviour, IDropHandler, IPointerEnterHandler, IPo
                         else
                         {
                             Debug.LogWarning($"[DropTarget] No se puede jugar la carta '{droppedCardData.cardID}' en objetivo '{myTargetType}' durante la fase {TurnManager.Instance.CurrentPhase}. Las cartas solo pueden jugarse en la Fase de Acción.");
-                            // La carta regresará a su posición original automáticamente por CardBehaviour2 si no se puede jugar en esta fase.
+                            // La carta regresará a su posición original automáticamente.
                         }
                     }
                     // Si el objetivo es 'Enemy' (o cualquier otra zona de juego que no sea del jugador)
@@ -207,7 +256,7 @@ public class DropTarget : MonoBehaviour, IDropHandler, IPointerEnterHandler, IPo
                         bool discarded = CardManager.Instance.AttemptManualDiscard(droppedCardData);
                         if (discarded)
                         {
-                             Debug.Log($"[DropTarget] Carta '{droppedCardData.cardID}' descartada exitosamente en la zona de descarte manual.");
+                               Debug.Log($"[DropTarget] Carta '{droppedCardData.cardID}' descartada exitosamente en la zona de descarte manual.");
                         }
                         else
                         {

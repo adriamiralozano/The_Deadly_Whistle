@@ -10,10 +10,13 @@ public class PlayerStats : MonoBehaviour
     // --- Indicador de Arma Equipada ---
     private bool _hasWeaponEquipped = false;
 
+    // NUEVO: Propiedad para almacenar la CardData del arma actualmente equipada
+    public CardData CurrentEquippedWeapon { get; private set; } // <--- AÑADE ESTA LÍNEA AQUÍ
+
     [Header("UI References")]
     [SerializeField] private GameObject weaponEquippedIndicator; // Asigna tu cuadrado rojo aquí (para el arma)
-    [SerializeField] private GameObject effectActiveIndicator;   // Asigna tu cuadrado naranja aquí (para el efecto)
-    [SerializeField] private TextMeshProUGUI effectCountText;    // Asigna aquí un componente TextMeshProUGUI para el contador de efectos
+    [SerializeField] private GameObject effectActiveIndicator;   // Asigna tu cuadrado naranja aquí (para el efecto)
+    [SerializeField] private TextMeshProUGUI effectCountText;    // Asigna aquí un componente TextMeshProUGUI para el contador de efectos
 
     public bool HasWeaponEquipped
     {
@@ -24,11 +27,6 @@ public class PlayerStats : MonoBehaviour
             if (weaponEquippedIndicator != null)
             {
                 weaponEquippedIndicator.SetActive(_hasWeaponEquipped);
-                Debug.Log($"[PlayerStats] Indicador de arma actualizado: {(_hasWeaponEquipped ? "Visible" : "Oculto")}");
-            }
-            else
-            {
-                Debug.LogWarning("[PlayerStats] El indicador de arma NO ESTÁ ASIGNADO en el Inspector del PlayerStats.");
             }
         }
     }
@@ -52,8 +50,6 @@ public class PlayerStats : MonoBehaviour
     void OnDisable()
     {
         // Desuscribirse del evento para evitar errores cuando el objeto se desactiva o destruye
-        // Es importante hacer esta comprobación defensiva, ya que TurnManager.Instance podría ser null
-        // si el TurnManager ya ha sido destruido (ej: al salir del juego).
         if (TurnManager.Instance != null) 
         {
             TurnManager.OnTurnStart -= OnTurnStartHandler;
@@ -62,9 +58,6 @@ public class PlayerStats : MonoBehaviour
 
     private void Start()
     {
-        // --- CAMBIO CLAVE: Suscribirse en Start() en lugar de OnEnable() ---
-        // Start() se llama después de que todos los Awake() de todos los scripts han terminado,
-        // lo que asegura que TurnManager.Instance ya esté asignado.
         if (TurnManager.Instance != null)
         {
             TurnManager.OnTurnStart += OnTurnStartHandler;
@@ -77,6 +70,7 @@ public class PlayerStats : MonoBehaviour
 
         // Inicializa el estado al comienzo del juego
         HasWeaponEquipped = false; // Asegura que no hay arma equipada al inicio
+        CurrentEquippedWeapon = null; // <--- AÑADE ESTA LÍNEA para limpiar la referencia del arma
         _activeEffectCount = 0; // Asegura que el contador de efectos está en 0
         UpdateEffectDisplay(); // Actualiza la UI de efectos (ocultando el indicador y poniendo el contador a 0)
     }
@@ -94,30 +88,39 @@ public class PlayerStats : MonoBehaviour
     }
 
     /// <summary>
-    /// Establece que el jugador tiene un arma equipada.
+    /// Establece que el jugador tiene un arma equipada y almacena la CardData del arma.
     /// Este método es llamado por DropTarget cuando se juega una carta de tipo Weapon.
     /// </summary>
-    public void EquipWeapon()
+    public void EquipWeapon(CardData weaponCard) // <--- MODIFICADO: Ahora recibe CardData
     {
+        if (weaponCard == null)
+        {
+            Debug.LogError("[PlayerStats] Intentando equipar un arma nula.");
+            return;
+        }
+
         if (!HasWeaponEquipped)
         {
             HasWeaponEquipped = true; // Activa el indicador de arma
-            Debug.Log("[PlayerStats] Arma equipada.");
+            CurrentEquippedWeapon = weaponCard; // <--- AÑADIDO: Guarda la CardData del arma
+            Debug.Log($"[PlayerStats] Arma '{weaponCard.cardID}' equipada.");
         }
         else
         {
-            Debug.LogWarning("[PlayerStats] Intentando equipar arma, pero el jugador ya tiene una.");
+            Debug.LogWarning($"[PlayerStats] Intentando equipar arma '{weaponCard.cardID}', pero el jugador ya tiene equipada: {CurrentEquippedWeapon.cardID}");
+            // Opcional: Aquí podrías añadir lógica para reemplazar el arma si se desea
         }
     }
 
     /// <summary>
-    /// Desequipa el arma.
+    /// Desequipa el arma y limpia la referencia a su CardData.
     /// </summary>
     public void UnequipWeapon()
     {
         if (HasWeaponEquipped)
         {
             HasWeaponEquipped = false; // Desactiva el indicador de arma
+            CurrentEquippedWeapon = null; // <--- AÑADIDO: Limpia la referencia al arma
             Debug.Log("[PlayerStats] Arma desequipada.");
         }
         else
