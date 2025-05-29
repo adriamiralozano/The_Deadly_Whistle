@@ -25,7 +25,7 @@ public class TurnManager : MonoBehaviour
     }
 
     // --- Variables de Estado del Turno ---
-    private int currentTurnNumber = 0;
+    public int currentTurnNumber { get; private set; } = 0;
     private const int MAX_HAND_SIZE = 5;
 
     // --- Inicialización del Singleton ---
@@ -40,7 +40,7 @@ public class TurnManager : MonoBehaviour
     // --- Eventos de Turno ---
     public static event Action<int> OnTurnStart;        // Se dispara al inicio de un nuevo turno
     public static event Action<TurnPhase> OnPhaseChange; // Se dispara cada vez que la fase de turno cambia
-    public static event Action OnPlayerTurnEnded;       // Se dispara cuando el turno del jugador termina (antes de iniciar el siguiente)
+    public static event Action OnPlayerTurnEnded;      // Se dispara cuando el turno del jugador termina (antes de iniciar el siguiente)
 
     // --- Eventos para comunicación con CardManager ---
     public static event Action OnRequestDrawCard;        // Solicita al CardManager que robe una carta
@@ -93,18 +93,19 @@ public class TurnManager : MonoBehaviour
     {
         currentTurnNumber++; // Incrementa el contador para el nuevo turno.
         Debug.Log($"--- Inicio del Turno {currentTurnNumber} del Jugador ---");
-        OnTurnStart?.Invoke(currentTurnNumber); // Notifica a los suscriptores que el turno ha comenzado.
+
+        // --- ¡IMPORTANTE! Notifica a los suscriptores (como CardManager) que el turno ha comenzado. ---
+        OnTurnStart?.Invoke(currentTurnNumber);
 
         // --- LÓGICA DE LIMPIEZA DE EFECTOS AL INICIO DEL TURNO ---
-        // ¡Esta es la sección que faltaba en tu implementación anterior de StartPlayerTurn!
+        // Esto asegura que, al comienzo de cada turno, se intenten limpiar los efectos visuales anteriores.
         if (PlayerStats.Instance != null)
         {
-            Debug.Log("[TurnManager] Limpiando efectos del turno anterior."); // Log para confirmar la limpieza
             PlayerStats.Instance.ClearAllEffects(); // Llama al método de PlayerStats para ocultar el cuadradito
         }
         else
         {
-            Debug.LogError("[TurnManager] PlayerStats.Instance es null al inicio del turno. Asegúrate de que PlayerStats está en la escena.");
+            Debug.LogError("[TurnManager] PlayerStats.Instance es null al inicio del turno en StartPlayerTurn(). Asegúrate de que PlayerStats está en la escena y tiene un Singleton configurado.");
         }
         // --------------------------------------------------
 
@@ -121,7 +122,7 @@ public class TurnManager : MonoBehaviour
         currentTurnPhase = newPhase;
         OnPhaseChange?.Invoke(currentTurnPhase); // Notifica a los suscriptores sobre el cambio de fase.
         UpdateTurnPhaseDisplay(); // Actualiza el texto de la fase en la UI.
-        Debug.Log($"[TurnManager] Cambiando a: {currentTurnPhase.ToString()} (Turno {currentTurnNumber}).");
+        /*         Debug.Log($"[TurnManager] Cambiando a: {currentTurnPhase.ToString()} (Turno {currentTurnNumber})."); */
 
         // Llama al manejador de la nueva fase.
         switch (currentTurnPhase)
@@ -162,35 +163,21 @@ public class TurnManager : MonoBehaviour
                 // De lo contrario, pasa directamente a EndTurn.
                 if (CheckIfHandExceedsLimit())
                 {
-                    Debug.LogWarning($"Aún tienes {GetHandCount()} cartas en mano. Debes descartar hasta tener {MAX_HAND_SIZE} para pasar de turno.");    
+                    Debug.LogWarning($"Aún tienes {GetHandCount()} cartas en mano. Debes descartar hasta tener {MAX_HAND_SIZE} para pasar de turno.");
                 }
                 else
                 {
                     SetPhase(TurnPhase.EndTurn);
                 }
                 break;
-
-
         }
     }
     // --- Métodos de Manejo de Fases Específicas ---
     private void HandleDrawPhase()
     {
         Debug.Log("Iniciando Fase de Robo...");
-        if (currentTurnNumber == 1) // Si es el primer turno del juego
-        {
-            Debug.Log($"[TurnManager] Es el primer turno. Robando {MAX_HAND_SIZE} cartas iniciales.");
-            for (int i = 0; i < MAX_HAND_SIZE; i++)
-            {
-                OnRequestDrawCard?.Invoke(); // Pide al CardManager que robe una carta.
-            }
-        }
-        else // Es un turno posterior, robar una carta normal
-        {
-            Debug.Log("[TurnManager] Robando una carta normal.");
-            OnRequestDrawCard?.Invoke(); // Pide al CardManager que robe una carta.
-        }
-        AdvancePhase(); // Avanza inmediatamente a la fase de acción después de robar.
+        // ¡Esta es la ÚNICA línea que debe quedar aquí!
+        StartCoroutine(DrawCardsAndLogRevolverRoutine());
     }
 
     private void HandleActionPhase()
@@ -220,7 +207,7 @@ public class TurnManager : MonoBehaviour
     /// Método llamado por el botón "End Turn" para intentar avanzar la fase.
     public void EndPlayerTurnButton()
     {
-        // Si estamos en la fase de descarte y la mano aún excede el límite, no se permite terminar el turno.
+        // Si estamos en la fase de acción y la mano aún excede el límite, no se permite terminar el turno.
         if (currentTurnPhase == TurnPhase.ActionPhase && CheckIfHandExceedsLimit())
         {
             Debug.LogWarning("No puedes terminar el turno. Debes descartar cartas para reducir tu mano al límite.");
@@ -298,6 +285,78 @@ public class TurnManager : MonoBehaviour
         }
     }
 
+    private IEnumerator DrawCardsAndLogRevolverRoutine()
+    {
+        // Lógica de robo de cartas (movida desde el antiguo HandleDrawPhase)
+        if (currentTurnNumber == 1) // Si es el primer turno del juego
+        {
+            Debug.Log($"[TurnManager] Es el primer turno. Robando {MAX_HAND_SIZE} cartas iniciales.");
+            for (int i = 0; i < MAX_HAND_SIZE; i++)
+            {
+                OnRequestDrawCard?.Invoke(); // Pide al CardManager que robe una carta.
+                // Opcional: añadir un pequeño retraso visual entre cada carta robada
+                // yield return new WaitForSeconds(0.05f); 
+            }
+            // Espera hasta que la mano tenga el tamaño completo de MAX_HAND_SIZE.
+            // Esto asegura que todas las cartas iniciales se hayan procesado en CardManager.
+            yield return new WaitUntil(() => GetHandCount() == MAX_HAND_SIZE); 
+        }
+        else // Es un turno posterior, robar una carta normal
+        {
+            OnRequestDrawCard?.Invoke(); // Pide al CardManager que robe una carta.
+            // Espera un frame para que CardManager procese la solicitud y añada la carta.
+            yield return null; 
+            // O, una espera más robusta:
+            // yield return new WaitUntil(() => GetHandCount() > (MAX_HAND_SIZE - 1) || currentTurnNumber == 0); // Asume que la mano tiene 4 o menos cartas antes de robar 1.
+        }
+
+        // --- Este es el punto donde la corrutina espera a que el robo termine ---
+        // y luego solicita la actualización del log del Revolver.
+        if (CardManager.Instance != null)
+        {
+            CardManager.Instance.RequestRevolverStatusUpdate();
+        }
+        else
+        {
+            Debug.LogError("[TurnManager] CardManager.Instance es null. No se puede actualizar el estado del Revolver después de robar.");
+        }
+
+        AdvancePhase(); // Avanza la fase SOLO después de que el robo y el log del Revolver se han actualizado.
+    }
+    /// Método llamado por el botón "Fire Revolver" para intentar disparar el Revolver.
+        public void OnFireRevolverButtonPressed()
+    {
+        // 1. Verificar la fase actual del turno
+        if (CurrentPhase != TurnPhase.ActionPhase)
+        {
+            Debug.LogWarning("[TurnManager] No puedes disparar el Revolver fuera de la Fase de Acción.");
+            return;
+        }
+
+        // 2. Intentar el disparo a través de CardManager
+        if (CardManager.Instance == null)
+        {
+            Debug.LogError("[TurnManager] CardManager.Instance es null. No se puede intentar el disparo del Revolver.");
+            return;
+        }
+
+        bool shotSuccessful = CardManager.Instance.AttemptRevolverShot();
+
+        if (shotSuccessful)
+        {
+            Debug.Log("[TurnManager] ¡Disparo de Revolver exitoso!");
+            // Si disparar el revolver consume una acción o un punto de energía,
+            // lo gestionarías aquí. Por ahora, solo se descartan las balas.
+            // Si el disparo también avanza la fase o termina el turno, lo harías aquí.
+            // Por ejemplo: AdvancePhase();
+        }
+        else
+        {
+            Debug.Log("[TurnManager] Falló el intento de disparo del Revolver (ver logs para más detalles).");
+        }
+    }
     void Update() { }
+    
+
     
 }

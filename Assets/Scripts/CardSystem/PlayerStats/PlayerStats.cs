@@ -61,7 +61,7 @@ public class PlayerStats : MonoBehaviour
         if (TurnManager.Instance != null)
         {
             TurnManager.OnTurnStart += OnTurnStartHandler;
-            Debug.Log("[PlayerStats] Suscrito a TurnManager.OnTurnStart en Start().");
+/*             Debug.Log("[PlayerStats] Suscrito a TurnManager.OnTurnStart en Start()."); */
         }
         else
         {
@@ -84,7 +84,7 @@ public class PlayerStats : MonoBehaviour
     {
         // Al final de cada turno, reiniciamos el contador de efectos.
         ClearAllEffects();
-        Debug.Log($"[PlayerStats] Turno {turnNumber} iniciado. Contador de efectos reiniciado.");
+/*         Debug.Log($"[PlayerStats] Turno {turnNumber} iniciado. Contador de efectos reiniciado."); */
     }
 
     /// <summary>
@@ -169,10 +169,10 @@ public class PlayerStats : MonoBehaviour
             Debug.Log($"[PlayerStats] Limpiando {_activeEffectCount} efectos activos.");
             _activeEffectCount = 0; // Reinicia el contador a cero
         }
-        else
+/*         else
         {
             Debug.Log("[PlayerStats] Se intentó limpiar efectos, pero no había ninguno activo.");
-        }
+        } */
         UpdateEffectDisplay(); // Asegura que la UI refleje el contador en cero y oculte el indicador.
     }
 
@@ -200,7 +200,7 @@ public class PlayerStats : MonoBehaviour
         if (effectCountText != null)
         {
             effectCountText.text = _activeEffectCount.ToString();
-            Debug.Log($"[PlayerStats] Texto del contador de efectos actualizado a: {_activeEffectCount}");
+/*             Debug.Log($"[PlayerStats] Texto del contador de efectos actualizado a: {_activeEffectCount}"); */
         }
         else
         {

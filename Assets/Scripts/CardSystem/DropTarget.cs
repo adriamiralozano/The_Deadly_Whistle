@@ -72,7 +72,7 @@ public class DropTarget : MonoBehaviour, IDropHandler, IPointerEnterHandler, IPo
 
                 if (droppedCardData != null)
                 {
-                    Debug.Log($"[DEBUG - DropTarget] La carta '{droppedCardData.cardID}' (ID de instancia: {droppedCardData.instanceID}) dropeada es de TIPO: {droppedCardData.type}");
+/*                     Debug.Log($"[DEBUG - DropTarget] La carta '{droppedCardData.cardID}' (ID de instancia: {droppedCardData.instanceID}) dropeada es de TIPO: {droppedCardData.type}"); */
 
                     // --- Validaciones de Managers (asegurarse de que los Singletons están accesibles) ---
                     if (TurnManager.Instance == null)
@@ -250,7 +250,7 @@ public class DropTarget : MonoBehaviour, IDropHandler, IPointerEnterHandler, IPo
                     else if (myTargetType == TargetType.Discard)
                     {
                         // Las cartas pasivas (y todas las demás) SÍ pueden ser descartadas aquí.
-                        Debug.Log($"[DropTarget] Soltada carta '{droppedCardData.cardID}' (ID de instancia: {droppedCardData.instanceID}) en objetivo 'Discard'. Intentando descarte manual.");
+/*                         Debug.Log($"[DropTarget] Soltada carta '{droppedCardData.cardID}' (ID de instancia: {droppedCardData.instanceID}) en objetivo 'Discard'. Intentando descarte manual."); */
 
                         // Usamos AttemptManualDiscard de CardManager, que ya tiene las validaciones de fase y límite de mano.
                         bool discarded = CardManager.Instance.AttemptManualDiscard(droppedCardData);
