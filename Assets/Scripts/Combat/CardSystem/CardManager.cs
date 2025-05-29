@@ -37,6 +37,7 @@ public class CardManager : MonoBehaviour
     // Singleton instance
     public static CardManager Instance { get; private set; }
 
+
     void Awake()
     {
         if (Instance != null && Instance != this)
@@ -458,17 +459,14 @@ public class CardManager : MonoBehaviour
             return false;
         }
 
-        // 1. Comprobar si hay un arma equipada y si es un Revolver
-        // Asegúrate de que tu RevolverCardData es el tipo correcto y tiene el cardID "RevolverWeapon" (o el que uses)
         if (!PlayerStats.Instance.HasWeaponEquipped || !(PlayerStats.Instance.CurrentEquippedWeapon is RevolverCardData))
         {
             Debug.LogWarning("[CardManager] No se puede disparar: El Revolver no está equipado.");
             return false;
         }
 
-        // 2. Contar las balas .45 en la mano
-        int bulletCountInHand = CountCardsInHand("Caliber45Bullet"); // Reutilizamos tu método existente
-        int maxShotsAllowed = 3; // Límite de disparos por turno
+        int bulletCountInHand = CountCardsInHand("Caliber45Bullet");
+        int maxShotsAllowed = 3;
 
         int shotsToFire = Mathf.Min(bulletCountInHand, maxShotsAllowed);
 
@@ -476,19 +474,30 @@ public class CardManager : MonoBehaviour
         {
             Debug.Log($"[CardManager] ¡Revolver DISPARADO! Consumiendo {shotsToFire} bala(s) Caliber .45.");
 
-            // 3. Descartar las balas consumidas de la mano
-            // Tu método DiscardSpecificCardsFromHand ya hace el trabajo de remover de la mano y actualizar la UI.
+            // 1. Descartar las balas de la mano (representa el consumo)
             DiscardSpecificCardsFromHand("Caliber45Bullet", shotsToFire);
 
-            // --- LÓGICA DE COMBATE REAL AQUÍ (ej. infligir daño al enemigo) ---
-            // Esto es un placeholder. Aquí es donde realmente aplicarías el efecto del disparo.
-            // Por ejemplo: CombatManager.Instance.DealDamageToEnemy(shotsToFire * damagePerBullet);
-            Debug.Log($"[CardManager] Lógica de combate: Se simulan {shotsToFire} disparos al enemigo.");
-            // Si tu RevolverCardData tiene una propiedad de daño, la usarías aquí.
+            // 2. --- LÓGICA CLAVE: ENCONTRAR UN ENEMIGO EN LA ESCENA Y APLICAR DAÑO ---
+            // IMPORTANTE: Esta búsqueda FindObjectOfType<Enemy>() encontrará el primer enemigo
+            // activo en la escena. Si tienes múltiples enemigos, solo afectará a uno.
+            // Para seleccionar un enemigo específico, necesitarías un sistema de targeting.
+            Enemy targetEnemy = FindObjectOfType<Enemy>(); 
 
-            // Puedes disparar un evento aquí si quieres que otros sistemas (ej. animaciones, efectos de sonido) reaccionen.
-            // public static event Action<int> OnRevolverFired;
-            // OnRevolverFired?.Invoke(shotsToFire);
+            if (targetEnemy != null)
+            {
+                // Llamamos al método TakeDamage del enemigo.
+                targetEnemy.TakeDamage(shotsToFire);
+                Debug.Log($"[CardManager] {shotsToFire} disparos impactaron a '{targetEnemy.Data.enemyName}'.");
+            }
+            else
+            {
+                Debug.LogWarning("[CardManager] No se encontró ningún enemigo activo en la escena para disparar.");
+            }
+            // -----------------------------------------------------------------------
+
+            // 3. Log de balas restantes (ya lo tenías)
+            int remainingBullets = CountCardsInHand("Caliber45Bullet");
+            Debug.Log($"[CardManager] Balas Calibre .45 restantes en mano: {remainingBullets}.");
 
             return true; // El disparo fue exitoso
         }
@@ -498,5 +507,4 @@ public class CardManager : MonoBehaviour
             return false; // No hay balas para disparar
         }
     }
-
 }
