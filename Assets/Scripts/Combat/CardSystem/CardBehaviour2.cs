@@ -14,8 +14,13 @@ public class CardBehaviour2 : MonoBehaviour,
     IPointerEnterHandler,
     IPointerExitHandler
 {
+    // === NUEVO: Bandera estática para controlar el dragging global ===
+    public static bool IsAnyCardDragging = false;
+    // ===============================================================
+
     private RectTransform rectTransform;
-    private Canvas canvas;
+    private Canvas parentCanvas; // El Canvas principal que contiene esta carta (ej. "HandCanvas")
+    private Canvas cardCanvas;   // El Canvas propio de esta carta (para el sorting order)
     private CanvasGroup canvasGroup;
     private Selectable selectable;
     private LayoutElement layoutElement;
@@ -27,13 +32,11 @@ public class CardBehaviour2 : MonoBehaviour,
 
     private float idleTime = 0f;
     private Quaternion targetRotation;
-    private Vector3 targetScale; // Esta variable controla la escala a la que se lerpea
-    private Vector3 originalScale; // Almacena la escala original del GameObject
+    private Vector3 targetScale; 
+    private Vector3 originalScale; 
     
-    // RENOMBRADA: Esta es la posición base que el Layout Group le da a la carta.
-    // Debería ser la "verdadera" posición del slot en el layout.
     private Vector3 trueBaseLayoutPosition; 
-    private Vector3 currentLocalOffset; // Offset para animaciones (hover, etc.)
+    private Vector3 currentLocalOffset; 
 
     private Coroutine exitCoroutine;
     private Coroutine enterCoroutine;
@@ -44,6 +47,16 @@ public class CardBehaviour2 : MonoBehaviour,
     private Quaternion shakeOffset = Quaternion.identity; 
 
     private Vector2 initialDragOffset; 
+
+    private int originalSortingOrder; // Guarda el sorting order base de la carta
+
+    // === NUEVO: Variable para el desplazamiento aleatorio de la fase del idle tilt ===
+    private float randomIdlePhaseOffset; 
+    // =================================================================================
+
+    [Header("Sorting Settings (UI)")]
+    [SerializeField] private int hoverUISortingOrder = 500; // Sorting Order para el estado de hover
+    [SerializeField] private int draggingUISortingOrder = 1000; // Sorting Order para el estado de arrastre (más alto)
 
     [Header("Hover Settings")]
     [SerializeField] private float hoverDuration = 0.2f;
@@ -61,7 +74,7 @@ public class CardBehaviour2 : MonoBehaviour,
     [Header("Drag Settings")]
     [SerializeField] private float dragLerpSpeed = 10f; 
     [SerializeField] private float returnSpeed = 8f; 
-    [SerializeField] private float dragScaleSpeed = 20f; // <--- Esta es la velocidad para el arrastre
+    [SerializeField] private float dragScaleSpeed = 20f; 
 
 
     private bool basePositionInitialized = false; 
@@ -69,14 +82,40 @@ public class CardBehaviour2 : MonoBehaviour,
     private void Awake()
     {
         rectTransform = GetComponent<RectTransform>();
-        canvas = GetComponentInParent<Canvas>();
+        parentCanvas = GetComponentInParent<Canvas>(); // Canvas padre (ej. el de la mano)
         canvasGroup = GetComponent<CanvasGroup>();
         selectable = GetComponent<Selectable>();
         layoutElement = GetComponent<LayoutElement>();
+        
+        cardCanvas = GetComponent<Canvas>();
+        if (cardCanvas == null)
+        {
+            cardCanvas = gameObject.AddComponent<Canvas>();
+        }
+        if (GetComponent<GraphicRaycaster>() == null)
+        {
+            gameObject.AddComponent<GraphicRaycaster>();
+        }
+
+        // --- Configuración del Canvas de la carta para el orden de renderizado ---
+        // Esto asegura que esta carta siempre gestione su propio orden.
+        cardCanvas.overrideSorting = true; 
+        cardCanvas.sortingLayerID = parentCanvas.sortingLayerID; // Hereda la capa de sorting del Canvas padre
+        cardCanvas.renderMode = parentCanvas.renderMode; // Hereda el modo de renderizado
+        cardCanvas.worldCamera = parentCanvas.worldCamera; // Hereda la cámara del Canvas padre
+
+        // Guarda el sorting order inicial de esta carta (será su orden "normal" o "idle")
+        originalSortingOrder = cardCanvas.sortingOrder; 
+        // --------------------------------------------------------------------------
 
         originalScale = transform.localScale; 
         targetScale = originalScale; 
         currentLocalOffset = Vector3.zero; 
+
+        // === CAMBIO CLAVE 1: Inicializar el desplazamiento de fase aleatorio ===
+        // Esto se hace una sola vez al inicializar la carta, dándole un punto de partida único
+        randomIdlePhaseOffset = Random.Range(0f, 1000f); // Un valor aleatorio entre 0 y 1000
+        // ===================================================================
     }
 
     private void Start()
@@ -105,102 +144,111 @@ public class CardBehaviour2 : MonoBehaviour,
             return; 
         }
 
-        // Lerp de rotación (esta lógica no cambia)
         rectTransform.rotation = Quaternion.Lerp(
             rectTransform.rotation,
             targetRotation * shakeOffset, 
             hoverTiltSpeed * Time.deltaTime
         );
 
-        // --- Lógica para determinar la velocidad de escalado ---
         float currentScaleLerpSpeed;
 
-        if (isDragging || isReturning) // Si está arrastrando O volviendo (al soltar), usa dragScaleSpeed
+        if (isDragging || isReturning) 
         {
             currentScaleLerpSpeed = dragScaleSpeed;
         }
-        else // En cualquier otro estado (hover, idle), usa la duración de hover
+        else 
         {
-            // Convertimos la duración a una "velocidad" para el Lerp.
-            // Si hoverDuration es muy pequeño (rápido), 1/hoverDuration será grande (rápido).
-            // Si hoverDuration es grande (lento), 1/hoverDuration será pequeño (lento).
             currentScaleLerpSpeed = 1f / hoverDuration; 
         }
 
-        // Lerp de escala (usa la velocidad determinada)
         transform.localScale = Vector3.Lerp(
             transform.localScale,
             targetScale,
             currentScaleLerpSpeed * Time.deltaTime 
         );
-        // ---------------------------------------------------
 
         if (isDragging)
         {
             Vector2 localPoint;
             RectTransformUtility.ScreenPointToLocalPointInRectangle(
-                canvas.transform as RectTransform,
+                parentCanvas.transform as RectTransform,
                 Input.mousePosition,
-                canvas.worldCamera,
+                parentCanvas.worldCamera,
                 out localPoint
             );
             
             rectTransform.anchoredPosition = Vector2.Lerp(rectTransform.anchoredPosition, localPoint + initialDragOffset, dragLerpSpeed * Time.deltaTime);
 
             float maxRotation = 15f;
-            float rotationZ = Mathf.Clamp(-(Input.mousePosition.x - RectTransformUtility.WorldToScreenPoint(canvas.worldCamera, rectTransform.position).x) * 0.1f, -maxRotation, maxRotation);
+            float rotationZ = Mathf.Clamp(-(Input.mousePosition.x - RectTransformUtility.WorldToScreenPoint(parentCanvas.worldCamera, rectTransform.position).x) * 0.1f, -maxRotation, maxRotation);
             targetRotation = Quaternion.Euler(0, 0, rotationZ);
             
-            targetScale = originalScale * 2f; 
+            targetScale = originalScale * 2f; // Mantener la escala de arrastre al doble
             currentLocalOffset = Vector3.up * hoverVerticalOffset; 
         }
         else if (!isReturning) 
         {
             if (isHovering)
             {
-                Vector3 cardScreenPos = RectTransformUtility.WorldToScreenPoint(canvas.worldCamera, rectTransform.position);
+                Vector3 cardScreenPos = RectTransformUtility.WorldToScreenPoint(parentCanvas.worldCamera, rectTransform.position);
                 Vector3 offset = cardScreenPos - Input.mousePosition;
 
-                float normX = Mathf.Clamp(offset.x / (rectTransform.rect.width * canvas.scaleFactor * 0.5f), -1f, 1f);
-                float normY = Mathf.Clamp(offset.y / (rectTransform.rect.height * canvas.scaleFactor * 0.5f), -1f, 1f);
+                float normX = Mathf.Clamp(offset.x / (rectTransform.rect.width * parentCanvas.scaleFactor * 0.5f), -1f, 1f);
+                float normY = Mathf.Clamp(offset.y / (rectTransform.rect.height * parentCanvas.scaleFactor * 0.5f), -1f, 1f);
 
-                float savedIndex = 0f; 
-                float sine = Mathf.Sin(Time.time + savedIndex);
-                float cosine = Mathf.Cos(Time.time + savedIndex);
+                // === CAMBIO 2a: Aplicar el offset aleatorio también en hover, si quieres que se desincronice ===
+                // Si quieres que el tilt del hover SIEMPRE sea sincronizado, quita el randomIdlePhaseOffset de estas dos líneas:
+                float sine = Mathf.Sin(Time.time * hoverAutoTiltAmount + randomIdlePhaseOffset);
+                float cosine = Mathf.Cos(Time.time * hoverAutoTiltAmount + randomIdlePhaseOffset);
 
                 float tiltX = normY * hoverManualTiltAmount + sine * hoverAutoTiltAmount;
                 float tiltY = -normX * hoverManualTiltAmount + cosine * hoverAutoTiltAmount;
 
                 targetRotation = Quaternion.Euler(tiltX, tiltY, 0);
-                targetScale = originalScale * hoverScale; 
+                
+                if (IsAnyCardDragging)
+                {
+                    targetScale = originalScale; 
+                }
+                else
+                {
+                    targetScale = originalScale * hoverScale; 
+                }
+
                 currentLocalOffset = Vector3.up * hoverVerticalOffset; 
             }
             else if (isIdleAnimationActive) 
             {
                 idleTime += Time.deltaTime; 
 
-                float circleSpeed = 1.0f; 
-                float radius = 0.8f;     
+                float circleSpeed = 0.7f; 
+                // === CAMBIO 2b: Aumentar el 'radius' para una órbita más grande (más inclinación general) ===
+                float radius = 1.2f; // Prueba con 1.0f, 1.5f, 2.0f. Cuanto mayor, más acentuado el movimiento.
 
-                float normX = Mathf.Cos(idleTime * circleSpeed) * radius;
-                float normY = Mathf.Sin(idleTime * circleSpeed) * radius;
+                // === CAMBIO 2c: Aplicar el desplazamiento aleatorio a la fase del idle para desincronizar el inicio ===
+                float currentIdlePhase = (idleTime * circleSpeed) + randomIdlePhaseOffset;
+                float normX = Mathf.Cos(currentIdlePhase) * radius;
+                float normY = Mathf.Sin(currentIdlePhase) * radius;
 
-                float savedIndex = 0f; 
-                float sine = Mathf.Sin(Time.time * hoverAutoTiltAmount + savedIndex); 
-                float cosine = Mathf.Cos(Time.time * hoverAutoTiltAmount + savedIndex);
+                // Aplicar el offset aleatorio para el componente automático del tilt del idle
+                float sine = Mathf.Sin(Time.time * hoverAutoTiltAmount + randomIdlePhaseOffset); 
+                float cosine = Mathf.Cos(Time.time * hoverAutoTiltAmount + randomIdlePhaseOffset);
 
-                float tiltX = normY * hoverManualTiltAmount + sine * hoverAutoTiltAmount;
-                float tiltY = -normX * hoverManualTiltAmount + cosine * hoverAutoTiltAmount;
+                // === CAMBIO 2d: Multiplicador para acentuar el tilt en idle aún más ===
+                float idleTiltOverallMultiplier = 1.5f; // Prueba con 1.2f, 1.5f, 2.0f. Cuanto mayor, más fuerte el tilt.
+
+                float tiltX = (normY * hoverManualTiltAmount + sine * hoverAutoTiltAmount) * idleTiltOverallMultiplier;
+                float tiltY = (-normX * hoverManualTiltAmount + cosine * hoverAutoTiltAmount) * idleTiltOverallMultiplier;
 
                 targetRotation = Quaternion.Euler(tiltX, tiltY, 0); 
-                targetScale = originalScale; 
+                targetScale = originalScale; // Escala idle
                 
                 currentLocalOffset = Vector3.zero; 
             }
             else 
             {
                 targetRotation = Quaternion.identity;
-                targetScale = originalScale;
+                targetScale = originalScale; 
                 currentLocalOffset = Vector3.zero; 
             }
 
@@ -217,6 +265,8 @@ public class CardBehaviour2 : MonoBehaviour,
     {
         if (!selectable.interactable) return;
 
+        IsAnyCardDragging = true;
+
         if (returnAnimationCoroutine != null) StopCoroutine(returnAnimationCoroutine);
         isReturning = false; 
 
@@ -225,6 +275,11 @@ public class CardBehaviour2 : MonoBehaviour,
         isDragging = true; 
 
         canvasGroup.blocksRaycasts = false; 
+
+        if (cardCanvas != null)
+        {
+            cardCanvas.sortingOrder = draggingUISortingOrder; 
+        }
 
         trueBaseLayoutPosition = rectTransform.localPosition; 
 
@@ -235,9 +290,9 @@ public class CardBehaviour2 : MonoBehaviour,
         
         Vector2 localCursorPointInCanvas;
         RectTransformUtility.ScreenPointToLocalPointInRectangle(
-            canvas.transform as RectTransform,
+            parentCanvas.transform as RectTransform,
             eventData.position, 
-            canvas.worldCamera,
+            parentCanvas.worldCamera,
             out localCursorPointInCanvas
         );
         initialDragOffset = rectTransform.anchoredPosition - localCursorPointInCanvas;
@@ -254,6 +309,8 @@ public class CardBehaviour2 : MonoBehaviour,
     {
         if (!isDragging) return;
 
+        IsAnyCardDragging = false;
+
         isDragging = false; 
         canvasGroup.blocksRaycasts = true; 
         
@@ -269,15 +326,22 @@ public class CardBehaviour2 : MonoBehaviour,
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        if (isDragging || isReturning) return;
+        if (isDragging || isReturning) return; 
+
         if (exitCoroutine != null) StopCoroutine(exitCoroutine);
         if (enterCoroutine != null) StopCoroutine(enterCoroutine);
         enterCoroutine = StartCoroutine(HoverEnterDelay());
+        
+        if (cardCanvas != null)
+        {
+            cardCanvas.sortingOrder = hoverUISortingOrder; 
+        }
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
-        if (isDragging || isReturning) return;
+        if (isDragging || isReturning) return; 
+
         if (exitCoroutine != null) StopCoroutine(exitCoroutine);
         exitCoroutine = StartCoroutine(HoverExitDelay());
     }
@@ -304,6 +368,11 @@ public class CardBehaviour2 : MonoBehaviour,
             isReturning = false; 
             isIdleAnimationActive = true; 
             returnAnimationCoroutine = null; 
+            
+            if (cardCanvas != null && !isDragging)
+            {
+                cardCanvas.sortingOrder = originalSortingOrder; 
+            }
             yield break;
         }
 
@@ -337,6 +406,11 @@ public class CardBehaviour2 : MonoBehaviour,
         isReturning = false; 
         isIdleAnimationActive = true; 
         returnAnimationCoroutine = null; 
+
+        if (cardCanvas != null && !isDragging)
+        {
+            cardCanvas.sortingOrder = originalSortingOrder; 
+        }
     }
 
     private System.Collections.IEnumerator HoverShake(float duration = 0.12f, float strength = 8f)
@@ -355,10 +429,16 @@ public class CardBehaviour2 : MonoBehaviour,
 
     private System.Collections.IEnumerator HoverExitDelay()
     {
-        yield return new WaitForSeconds(hoverExitDelay);
+        yield return new WaitForSeconds(hoverExitDelay); 
+        
         isIdleAnimationActive = true; 
         isHovering = false;
         exitCoroutine = null;
+
+        if (cardCanvas != null && !isDragging && !isReturning)
+        {
+            cardCanvas.sortingOrder = originalSortingOrder; 
+        }
     }
 
     private System.Collections.IEnumerator HoverEnterDelay()

@@ -47,3 +47,6 @@ TagManager:
   - name: UI
     uniqueID: 2254840379
     locked: 0
+  - name: DraggingCard
+    uniqueID: 1803759179
+    locked: 0
