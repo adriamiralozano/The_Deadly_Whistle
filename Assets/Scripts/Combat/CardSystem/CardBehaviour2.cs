@@ -1,3 +1,4 @@
+// CardBehaviour2.cs
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -26,8 +27,8 @@ public class CardBehaviour2 : MonoBehaviour,
 
     private float idleTime = 0f;
     private Quaternion targetRotation;
-    private Vector3 targetScale;
-    private Vector3 originalScale; 
+    private Vector3 targetScale; // Esta variable controla la escala a la que se lerpea
+    private Vector3 originalScale; // Almacena la escala original del GameObject
     
     // RENOMBRADA: Esta es la posición base que el Layout Group le da a la carta.
     // Debería ser la "verdadera" posición del slot en el layout.
@@ -55,10 +56,13 @@ public class CardBehaviour2 : MonoBehaviour,
     [SerializeField] private float shakeCooldown = 0.2f;
     [SerializeField] private float hoverVerticalOffset = 50f;
 
+    [SerializeField] private float hoverScale = 1.2f; 
+
     [Header("Drag Settings")]
     [SerializeField] private float dragLerpSpeed = 10f; 
-    [SerializeField] private float hoverScale = 1.2f;
     [SerializeField] private float returnSpeed = 8f; 
+    [SerializeField] private float dragScaleSpeed = 20f; // <--- Esta es la velocidad para el arrastre
+
 
     private bool basePositionInitialized = false; 
 
@@ -71,6 +75,7 @@ public class CardBehaviour2 : MonoBehaviour,
         layoutElement = GetComponent<LayoutElement>();
 
         originalScale = transform.localScale; 
+        targetScale = originalScale; 
         currentLocalOffset = Vector3.zero; 
     }
 
@@ -100,16 +105,35 @@ public class CardBehaviour2 : MonoBehaviour,
             return; 
         }
 
+        // Lerp de rotación (esta lógica no cambia)
         rectTransform.rotation = Quaternion.Lerp(
             rectTransform.rotation,
             targetRotation * shakeOffset, 
             hoverTiltSpeed * Time.deltaTime
         );
+
+        // --- Lógica para determinar la velocidad de escalado ---
+        float currentScaleLerpSpeed;
+
+        if (isDragging || isReturning) // Si está arrastrando O volviendo (al soltar), usa dragScaleSpeed
+        {
+            currentScaleLerpSpeed = dragScaleSpeed;
+        }
+        else // En cualquier otro estado (hover, idle), usa la duración de hover
+        {
+            // Convertimos la duración a una "velocidad" para el Lerp.
+            // Si hoverDuration es muy pequeño (rápido), 1/hoverDuration será grande (rápido).
+            // Si hoverDuration es grande (lento), 1/hoverDuration será pequeño (lento).
+            currentScaleLerpSpeed = 1f / hoverDuration; 
+        }
+
+        // Lerp de escala (usa la velocidad determinada)
         transform.localScale = Vector3.Lerp(
             transform.localScale,
             targetScale,
-            hoverDuration * Time.deltaTime
+            currentScaleLerpSpeed * Time.deltaTime 
         );
+        // ---------------------------------------------------
 
         if (isDragging)
         {
@@ -126,7 +150,8 @@ public class CardBehaviour2 : MonoBehaviour,
             float maxRotation = 15f;
             float rotationZ = Mathf.Clamp(-(Input.mousePosition.x - RectTransformUtility.WorldToScreenPoint(canvas.worldCamera, rectTransform.position).x) * 0.1f, -maxRotation, maxRotation);
             targetRotation = Quaternion.Euler(0, 0, rotationZ);
-            targetScale = originalScale * hoverScale;
+            
+            targetScale = originalScale * 2f; 
             currentLocalOffset = Vector3.up * hoverVerticalOffset; 
         }
         else if (!isReturning) 
@@ -147,7 +172,7 @@ public class CardBehaviour2 : MonoBehaviour,
                 float tiltY = -normX * hoverManualTiltAmount + cosine * hoverAutoTiltAmount;
 
                 targetRotation = Quaternion.Euler(tiltX, tiltY, 0);
-                targetScale = originalScale * hoverScale;
+                targetScale = originalScale * hoverScale; 
                 currentLocalOffset = Vector3.up * hoverVerticalOffset; 
             }
             else if (isIdleAnimationActive) 
@@ -155,7 +180,7 @@ public class CardBehaviour2 : MonoBehaviour,
                 idleTime += Time.deltaTime; 
 
                 float circleSpeed = 1.0f; 
-                float radius = 0.8f;      
+                float radius = 0.8f;     
 
                 float normX = Mathf.Cos(idleTime * circleSpeed) * radius;
                 float normY = Mathf.Sin(idleTime * circleSpeed) * radius;
@@ -168,7 +193,7 @@ public class CardBehaviour2 : MonoBehaviour,
                 float tiltY = -normX * hoverManualTiltAmount + cosine * hoverAutoTiltAmount;
 
                 targetRotation = Quaternion.Euler(tiltX, tiltY, 0); 
-                targetScale = originalScale;                          
+                targetScale = originalScale; 
                 
                 currentLocalOffset = Vector3.zero; 
             }
@@ -205,7 +230,7 @@ public class CardBehaviour2 : MonoBehaviour,
 
         if (layoutElement != null)
         {
-            layoutElement.enabled = false;
+            layoutElement.enabled = false; 
         }
         
         Vector2 localCursorPointInCanvas;
@@ -216,6 +241,8 @@ public class CardBehaviour2 : MonoBehaviour,
             out localCursorPointInCanvas
         );
         initialDragOffset = rectTransform.anchoredPosition - localCursorPointInCanvas;
+        
+        targetScale = originalScale * 2f; 
     }
 
     public void OnDrag(PointerEventData eventData)
@@ -229,6 +256,8 @@ public class CardBehaviour2 : MonoBehaviour,
 
         isDragging = false; 
         canvasGroup.blocksRaycasts = true; 
+        
+        targetScale = originalScale; 
 
         if (returnAnimationCoroutine != null) StopCoroutine(returnAnimationCoroutine);
         
@@ -256,7 +285,7 @@ public class CardBehaviour2 : MonoBehaviour,
     private IEnumerator ReturnToOriginalPosition()
     {
         Vector3 startPosition = rectTransform.localPosition; 
-        Vector3 endPosition = trueBaseLayoutPosition;  
+        Vector3 endPosition = trueBaseLayoutPosition; 
 
         float t = 0f; 
 
