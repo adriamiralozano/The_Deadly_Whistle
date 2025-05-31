@@ -25,38 +25,43 @@ public class CardBehaviour2 : MonoBehaviour,
     private Selectable selectable;
     private LayoutElement layoutElement;
 
-    private bool isIdleAnimationActive = true; 
+    private bool isIdleAnimationActive = true;
     private bool isHovering = false;
     private bool isDragging = false;
-    private bool isReturning = false; 
+    private bool isReturning = false;
 
     private float idleTime = 0f;
     private Quaternion targetRotation;
-    private Vector3 targetScale; 
-    private Vector3 originalScale; 
-    
-    private Vector3 trueBaseLayoutPosition; 
-    private Vector3 currentLocalOffset; 
+    private Vector3 targetScale;
+    private Vector3 originalScale;
+
+    private Vector3 trueBaseLayoutPosition;
+    private Vector3 currentLocalOffset;
 
     private Coroutine exitCoroutine;
     private Coroutine enterCoroutine;
     private Coroutine shakeCoroutine;
-    private Coroutine returnAnimationCoroutine; 
+    private Coroutine returnAnimationCoroutine;
+    private Coroutine moveCoroutine;
 
-    private float lastShakeTime = -10f; 
-    private Quaternion shakeOffset = Quaternion.identity; 
+    private float lastShakeTime = -10f;
+    private Quaternion shakeOffset = Quaternion.identity;
 
-    private Vector2 initialDragOffset; 
+    private Vector2 initialDragOffset;
 
     private int originalSortingOrder; // Guarda el sorting order base de la carta
 
     // === NUEVO: Variable para el desplazamiento aleatorio de la fase del idle tilt ===
-    private float randomIdlePhaseOffset; 
+    private float randomIdlePhaseOffset;
     // =================================================================================
 
+    [Header("Idle Animation Settings")]
+    [SerializeField] private AnimationCurve smoothCurve = AnimationCurve.EaseInOut(0,0,1,1);
+    
     [Header("Sorting Settings (UI)")]
     [SerializeField] private int hoverUISortingOrder = 500; // Sorting Order para el estado de hover
     [SerializeField] private int draggingUISortingOrder = 1000; // Sorting Order para el estado de arrastre (más alto)
+    
 
     [Header("Hover Settings")]
     [SerializeField] private float hoverDuration = 0.2f;
@@ -69,15 +74,16 @@ public class CardBehaviour2 : MonoBehaviour,
     [SerializeField] private float shakeCooldown = 0.2f;
     [SerializeField] private float hoverVerticalOffset = 50f;
 
-    [SerializeField] private float hoverScale = 1.2f; 
+    [SerializeField] private float hoverScale = 1.2f;
 
     [Header("Drag Settings")]
-    [SerializeField] private float dragLerpSpeed = 10f; 
-    [SerializeField] private float returnSpeed = 8f; 
-    [SerializeField] private float dragScaleSpeed = 20f; 
+    [SerializeField] private float dragLerpSpeed = 10f;
+    [SerializeField] private float returnSpeed = 8f;
+    [SerializeField] private float dragScaleSpeed = 20f;
+    
 
 
-    private bool basePositionInitialized = false; 
+    private bool basePositionInitialized = false;
 
     private void Awake()
     {
@@ -86,7 +92,7 @@ public class CardBehaviour2 : MonoBehaviour,
         canvasGroup = GetComponent<CanvasGroup>();
         selectable = GetComponent<Selectable>();
         layoutElement = GetComponent<LayoutElement>();
-        
+
         cardCanvas = GetComponent<Canvas>();
         if (cardCanvas == null)
         {
@@ -99,18 +105,18 @@ public class CardBehaviour2 : MonoBehaviour,
 
         // --- Configuración del Canvas de la carta para el orden de renderizado ---
         // Esto asegura que esta carta siempre gestione su propio orden.
-        cardCanvas.overrideSorting = true; 
+        cardCanvas.overrideSorting = true;
         cardCanvas.sortingLayerID = parentCanvas.sortingLayerID; // Hereda la capa de sorting del Canvas padre
         cardCanvas.renderMode = parentCanvas.renderMode; // Hereda el modo de renderizado
         cardCanvas.worldCamera = parentCanvas.worldCamera; // Hereda la cámara del Canvas padre
 
         // Guarda el sorting order inicial de esta carta (será su orden "normal" o "idle")
-        originalSortingOrder = cardCanvas.sortingOrder; 
+        originalSortingOrder = cardCanvas.sortingOrder;
         // --------------------------------------------------------------------------
 
-        originalScale = transform.localScale; 
-        targetScale = originalScale; 
-        currentLocalOffset = Vector3.zero; 
+        originalScale = transform.localScale;
+        targetScale = originalScale;
+        currentLocalOffset = Vector3.zero;
 
         // === CAMBIO CLAVE 1: Inicializar el desplazamiento de fase aleatorio ===
         // Esto se hace una sola vez al inicializar la carta, dándole un punto de partida único
@@ -125,46 +131,46 @@ public class CardBehaviour2 : MonoBehaviour,
 
     private IEnumerator InitializeBasePosition()
     {
-        yield return null; 
-        yield return null; 
+        yield return null;
+        yield return null;
 
         if (rectTransform.parent != null)
         {
             LayoutRebuilder.ForceRebuildLayoutImmediate(rectTransform.parent.GetComponent<RectTransform>());
         }
 
-        trueBaseLayoutPosition = rectTransform.localPosition; 
-        basePositionInitialized = true; 
+        trueBaseLayoutPosition = rectTransform.localPosition;
+        basePositionInitialized = true;
     }
 
     private void Update()
     {
-        if (!basePositionInitialized) 
+        if (!basePositionInitialized)
         {
-            return; 
+            return;
         }
 
         rectTransform.rotation = Quaternion.Lerp(
             rectTransform.rotation,
-            targetRotation * shakeOffset, 
+            targetRotation * shakeOffset,
             hoverTiltSpeed * Time.deltaTime
         );
 
         float currentScaleLerpSpeed;
 
-        if (isDragging || isReturning) 
+        if (isDragging || isReturning)
         {
             currentScaleLerpSpeed = dragScaleSpeed;
         }
-        else 
+        else
         {
-            currentScaleLerpSpeed = 1f / hoverDuration; 
+            currentScaleLerpSpeed = 1f / hoverDuration;
         }
 
         transform.localScale = Vector3.Lerp(
             transform.localScale,
             targetScale,
-            currentScaleLerpSpeed * Time.deltaTime 
+            currentScaleLerpSpeed * Time.deltaTime
         );
 
         if (isDragging)
@@ -176,17 +182,17 @@ public class CardBehaviour2 : MonoBehaviour,
                 parentCanvas.worldCamera,
                 out localPoint
             );
-            
+
             rectTransform.anchoredPosition = Vector2.Lerp(rectTransform.anchoredPosition, localPoint + initialDragOffset, dragLerpSpeed * Time.deltaTime);
 
             float maxRotation = 15f;
             float rotationZ = Mathf.Clamp(-(Input.mousePosition.x - RectTransformUtility.WorldToScreenPoint(parentCanvas.worldCamera, rectTransform.position).x) * 0.1f, -maxRotation, maxRotation);
             targetRotation = Quaternion.Euler(0, 0, rotationZ);
-            
+
             targetScale = originalScale * 2f; // Mantener la escala de arrastre al doble
-            currentLocalOffset = Vector3.up * hoverVerticalOffset; 
+            currentLocalOffset = Vector3.up * hoverVerticalOffset;
         }
-        else if (!isReturning) 
+        else if (!isReturning)
         {
             if (isHovering)
             {
@@ -205,23 +211,23 @@ public class CardBehaviour2 : MonoBehaviour,
                 float tiltY = -normX * hoverManualTiltAmount + cosine * hoverAutoTiltAmount;
 
                 targetRotation = Quaternion.Euler(tiltX, tiltY, 0);
-                
+
                 if (IsAnyCardDragging)
                 {
-                    targetScale = originalScale; 
+                    targetScale = originalScale;
                 }
                 else
                 {
-                    targetScale = originalScale * hoverScale; 
+                    targetScale = originalScale * hoverScale;
                 }
 
-                currentLocalOffset = Vector3.up * hoverVerticalOffset; 
+                currentLocalOffset = Vector3.up * hoverVerticalOffset;
             }
-            else if (isIdleAnimationActive) 
+            else if (isIdleAnimationActive)
             {
-                idleTime += Time.deltaTime; 
+                idleTime += Time.deltaTime;
 
-                float circleSpeed = 0.7f; 
+                float circleSpeed = 0.7f;
                 // === CAMBIO 2b: Aumentar el 'radius' para una órbita más grande (más inclinación general) ===
                 float radius = 1.2f; // Prueba con 1.0f, 1.5f, 2.0f. Cuanto mayor, más acentuado el movimiento.
 
@@ -231,7 +237,7 @@ public class CardBehaviour2 : MonoBehaviour,
                 float normY = Mathf.Sin(currentIdlePhase) * radius;
 
                 // Aplicar el offset aleatorio para el componente automático del tilt del idle
-                float sine = Mathf.Sin(Time.time * hoverAutoTiltAmount + randomIdlePhaseOffset); 
+                float sine = Mathf.Sin(Time.time * hoverAutoTiltAmount + randomIdlePhaseOffset);
                 float cosine = Mathf.Cos(Time.time * hoverAutoTiltAmount + randomIdlePhaseOffset);
 
                 // === CAMBIO 2d: Multiplicador para acentuar el tilt en idle aún más ===
@@ -240,23 +246,23 @@ public class CardBehaviour2 : MonoBehaviour,
                 float tiltX = (normY * hoverManualTiltAmount + sine * hoverAutoTiltAmount) * idleTiltOverallMultiplier;
                 float tiltY = (-normX * hoverManualTiltAmount + cosine * hoverAutoTiltAmount) * idleTiltOverallMultiplier;
 
-                targetRotation = Quaternion.Euler(tiltX, tiltY, 0); 
+                targetRotation = Quaternion.Euler(tiltX, tiltY, 0);
                 targetScale = originalScale; // Escala idle
-                
-                currentLocalOffset = Vector3.zero; 
+
+                currentLocalOffset = Vector3.zero;
             }
-            else 
+            else
             {
                 targetRotation = Quaternion.identity;
-                targetScale = originalScale; 
-                currentLocalOffset = Vector3.zero; 
+                targetScale = originalScale;
+                currentLocalOffset = Vector3.zero;
             }
 
             Vector3 targetPositionWithOffset = trueBaseLayoutPosition + currentLocalOffset;
             rectTransform.localPosition = Vector3.Lerp(
                 rectTransform.localPosition,
                 targetPositionWithOffset,
-                dragLerpSpeed * Time.deltaTime 
+                dragLerpSpeed * Time.deltaTime
             );
         }
     }
@@ -268,36 +274,36 @@ public class CardBehaviour2 : MonoBehaviour,
         IsAnyCardDragging = true;
 
         if (returnAnimationCoroutine != null) StopCoroutine(returnAnimationCoroutine);
-        isReturning = false; 
+        isReturning = false;
 
-        isIdleAnimationActive = false; 
-        isHovering = false; 
-        isDragging = true; 
+        isIdleAnimationActive = false;
+        isHovering = false;
+        isDragging = true;
 
-        canvasGroup.blocksRaycasts = false; 
+        canvasGroup.blocksRaycasts = false;
 
         if (cardCanvas != null)
         {
-            cardCanvas.sortingOrder = draggingUISortingOrder; 
+            cardCanvas.sortingOrder = draggingUISortingOrder;
         }
 
-        trueBaseLayoutPosition = rectTransform.localPosition; 
+        trueBaseLayoutPosition = rectTransform.localPosition;
 
         if (layoutElement != null)
         {
-            layoutElement.enabled = false; 
+            layoutElement.enabled = false;
         }
-        
+
         Vector2 localCursorPointInCanvas;
         RectTransformUtility.ScreenPointToLocalPointInRectangle(
             parentCanvas.transform as RectTransform,
-            eventData.position, 
+            eventData.position,
             parentCanvas.worldCamera,
             out localCursorPointInCanvas
         );
         initialDragOffset = rectTransform.anchoredPosition - localCursorPointInCanvas;
-        
-        targetScale = originalScale * 2f; 
+
+        targetScale = originalScale * 2f;
     }
 
     public void OnDrag(PointerEventData eventData)
@@ -311,36 +317,36 @@ public class CardBehaviour2 : MonoBehaviour,
 
         IsAnyCardDragging = false;
 
-        isDragging = false; 
-        canvasGroup.blocksRaycasts = true; 
-        
-        targetScale = originalScale; 
+        isDragging = false;
+        canvasGroup.blocksRaycasts = true;
+
+        targetScale = originalScale;
 
         if (returnAnimationCoroutine != null) StopCoroutine(returnAnimationCoroutine);
-        
+
         isReturning = true;
         returnAnimationCoroutine = StartCoroutine(ReturnToOriginalPosition());
 
-        isHovering = false; 
+        isHovering = false;
     }
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        if (isDragging || isReturning) return; 
+        if (isDragging || isReturning) return;
 
         if (exitCoroutine != null) StopCoroutine(exitCoroutine);
         if (enterCoroutine != null) StopCoroutine(enterCoroutine);
         enterCoroutine = StartCoroutine(HoverEnterDelay());
-        
+
         if (cardCanvas != null)
         {
-            cardCanvas.sortingOrder = hoverUISortingOrder; 
+            cardCanvas.sortingOrder = hoverUISortingOrder;
         }
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
-        if (isDragging || isReturning) return; 
+        if (isDragging || isReturning) return;
 
         if (exitCoroutine != null) StopCoroutine(exitCoroutine);
         exitCoroutine = StartCoroutine(HoverExitDelay());
@@ -348,15 +354,15 @@ public class CardBehaviour2 : MonoBehaviour,
 
     private IEnumerator ReturnToOriginalPosition()
     {
-        Vector3 startPosition = rectTransform.localPosition; 
-        Vector3 endPosition = trueBaseLayoutPosition; 
+        Vector3 startPosition = rectTransform.localPosition;
+        Vector3 endPosition = trueBaseLayoutPosition;
 
-        float t = 0f; 
+        float t = 0f;
 
         float distance = Vector3.Distance(startPosition, endPosition);
-        if (distance < 0.1f) 
+        if (distance < 0.1f)
         {
-            rectTransform.localPosition = endPosition; 
+            rectTransform.localPosition = endPosition;
             if (layoutElement != null)
             {
                 layoutElement.enabled = true;
@@ -365,32 +371,32 @@ public class CardBehaviour2 : MonoBehaviour,
             {
                 LayoutRebuilder.ForceRebuildLayoutImmediate(rectTransform.parent.GetComponent<RectTransform>());
             }
-            isReturning = false; 
-            isIdleAnimationActive = true; 
-            returnAnimationCoroutine = null; 
-            
+            isReturning = false;
+            isIdleAnimationActive = true;
+            returnAnimationCoroutine = null;
+
             if (cardCanvas != null && !isDragging)
             {
-                cardCanvas.sortingOrder = originalSortingOrder; 
+                cardCanvas.sortingOrder = originalSortingOrder;
             }
             yield break;
         }
 
         while (t < 1f)
         {
-            if (isDragging) 
+            if (isDragging)
             {
                 isReturning = false;
-                yield break; 
+                yield break;
             }
 
-            t += Time.deltaTime * returnSpeed; 
-            
+            t += Time.deltaTime * returnSpeed;
+
             rectTransform.localPosition = Vector3.Lerp(startPosition, endPosition, t);
-            yield return null; 
+            yield return null;
         }
 
-        rectTransform.localPosition = endPosition; 
+        rectTransform.localPosition = endPosition;
 
         if (layoutElement != null)
         {
@@ -400,16 +406,16 @@ public class CardBehaviour2 : MonoBehaviour,
         if (rectTransform.parent != null)
         {
             LayoutRebuilder.ForceRebuildLayoutImmediate(rectTransform.parent.GetComponent<RectTransform>());
-            trueBaseLayoutPosition = rectTransform.localPosition; 
+            trueBaseLayoutPosition = rectTransform.localPosition;
         }
 
-        isReturning = false; 
-        isIdleAnimationActive = true; 
-        returnAnimationCoroutine = null; 
+        isReturning = false;
+        isIdleAnimationActive = true;
+        returnAnimationCoroutine = null;
 
         if (cardCanvas != null && !isDragging)
         {
-            cardCanvas.sortingOrder = originalSortingOrder; 
+            cardCanvas.sortingOrder = originalSortingOrder;
         }
     }
 
@@ -423,21 +429,21 @@ public class CardBehaviour2 : MonoBehaviour,
             elapsed += Time.deltaTime;
             yield return null;
         }
-        shakeOffset = Quaternion.identity; 
+        shakeOffset = Quaternion.identity;
         shakeCoroutine = null;
     }
 
     private System.Collections.IEnumerator HoverExitDelay()
     {
-        yield return new WaitForSeconds(hoverExitDelay); 
-        
-        isIdleAnimationActive = true; 
+        yield return new WaitForSeconds(hoverExitDelay);
+
+        isIdleAnimationActive = true;
         isHovering = false;
         exitCoroutine = null;
 
         if (cardCanvas != null && !isDragging && !isReturning)
         {
-            cardCanvas.sortingOrder = originalSortingOrder; 
+            cardCanvas.sortingOrder = originalSortingOrder;
         }
     }
 
@@ -456,4 +462,30 @@ public class CardBehaviour2 : MonoBehaviour,
         }
         enterCoroutine = null;
     }
+
+    public void AnimateToLayoutPosition(float duration = 0.2f)
+    {
+        if (moveCoroutine != null)
+            StopCoroutine(moveCoroutine);
+        moveCoroutine = StartCoroutine(AnimateToCurrentAnchoredPosition(duration));
+    }
+    
+    private IEnumerator AnimateToCurrentAnchoredPosition(float duration)
+    {
+        Vector2 start = rectTransform.anchoredPosition;
+        yield return null; // Espera un frame para que el LayoutGroup actualice la posición
+        Vector2 end = rectTransform.anchoredPosition;
+        float t = 0f;
+        while (t < 1f)
+        {
+            t += Time.deltaTime / duration;
+            // Easing suave (ease in-out)
+            float smoothT = t * t * (3f - 2f * t);
+            rectTransform.anchoredPosition = Vector2.Lerp(start, end, smoothT);
+            yield return null;
+        }
+        rectTransform.anchoredPosition = end;
+        moveCoroutine = null;
+    }
+
 }
