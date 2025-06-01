@@ -6,6 +6,7 @@ using TMPro; // Necesario si usas TextMeshProUGUI
 public class PlayerStats : MonoBehaviour
 {
     public static PlayerStats Instance { get; private set; }
+    public bool HasFiredRevolverThisTurn { get; private set; }
 
     // --- Indicador de Arma Equipada ---
     private bool _hasWeaponEquipped = false;
@@ -50,7 +51,7 @@ public class PlayerStats : MonoBehaviour
     void OnDisable()
     {
         // Desuscribirse del evento para evitar errores cuando el objeto se desactiva o destruye
-        if (TurnManager.Instance != null) 
+        if (TurnManager.Instance != null)
         {
             TurnManager.OnTurnStart -= OnTurnStartHandler;
         }
@@ -61,7 +62,7 @@ public class PlayerStats : MonoBehaviour
         if (TurnManager.Instance != null)
         {
             TurnManager.OnTurnStart += OnTurnStartHandler;
-/*             Debug.Log("[PlayerStats] Suscrito a TurnManager.OnTurnStart en Start()."); */
+            /*             Debug.Log("[PlayerStats] Suscrito a TurnManager.OnTurnStart en Start()."); */
         }
         else
         {
@@ -82,9 +83,9 @@ public class PlayerStats : MonoBehaviour
     /// <param name="turnNumber">El número del turno que comienza.</param>
     private void OnTurnStartHandler(int turnNumber)
     {
-        // Al final de cada turno, reiniciamos el contador de efectos.
+        // ...
+        ResetRevolverFired(); // <-- Añade esto
         ClearAllEffects();
-/*         Debug.Log($"[PlayerStats] Turno {turnNumber} iniciado. Contador de efectos reiniciado."); */
     }
 
     /// <summary>
@@ -169,10 +170,10 @@ public class PlayerStats : MonoBehaviour
             Debug.Log($"[PlayerStats] Limpiando {_activeEffectCount} efectos activos.");
             _activeEffectCount = 0; // Reinicia el contador a cero
         }
-/*         else
-        {
-            Debug.Log("[PlayerStats] Se intentó limpiar efectos, pero no había ninguno activo.");
-        } */
+        /*         else
+                {
+                    Debug.Log("[PlayerStats] Se intentó limpiar efectos, pero no había ninguno activo.");
+                } */
         UpdateEffectDisplay(); // Asegura que la UI refleje el contador en cero y oculte el indicador.
     }
 
@@ -200,11 +201,20 @@ public class PlayerStats : MonoBehaviour
         if (effectCountText != null)
         {
             effectCountText.text = _activeEffectCount.ToString();
-/*             Debug.Log($"[PlayerStats] Texto del contador de efectos actualizado a: {_activeEffectCount}"); */
+            /*             Debug.Log($"[PlayerStats] Texto del contador de efectos actualizado a: {_activeEffectCount}"); */
         }
         else
         {
             Debug.LogWarning("[PlayerStats] El texto del contador de efectos (TextMeshProUGUI) NO ESTÁ ASIGNADO en el Inspector del PlayerStats.");
         }
+    }
+    public void MarkRevolverFired()
+    {
+        HasFiredRevolverThisTurn = true;
+    }
+
+    public void ResetRevolverFired()
+    {
+        HasFiredRevolverThisTurn = false;
     }
 }

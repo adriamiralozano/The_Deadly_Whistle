@@ -13,6 +13,6 @@ MonoBehaviour:
   m_Name: Caliber45BulletCard
   m_EditorClassIdentifier: 
   cardID: Caliber45Bullet
-  artwork: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
+  artwork: {fileID: 21300000, guid: 406b517ce99cdec4887f6485cac19169, type: 3}
   type: 3
   bulletCardID: Caliber45Bullet

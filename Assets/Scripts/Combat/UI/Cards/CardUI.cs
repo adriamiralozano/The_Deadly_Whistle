@@ -7,11 +7,11 @@ public class CardUI : MonoBehaviour
     private CardData cardData; // Referencia a los datos de la carta
     private Image cardImage; // Referencia al componente Image del GameObject principal
 
-    [Header("Type Colors")]
+   /*  [Header("Type Colors")]
     public Color weaponColor = Color.red;     // Color para cartas de Arma
     public Color effectColor = Color.yellow; // Color para cartas de Efecto (hechizo/habilidad)
     public Color passiveColor = Color.blue;   // Color para cartas Pasivas
-    public Color defaultColor = Color.white;  // Color por defecto si el tipo no está definido
+    public Color defaultColor = Color.white;  // Color por defecto si el tipo no está definido */
 
     void Awake()
     {
@@ -42,7 +42,7 @@ public class CardUI : MonoBehaviour
             cardImage.sprite = null;
         }
 
-        UpdateCardColor(); // Llama a la función para actualizar el color (tiñendo el artwork/Image)
+        //UpdateCardColor(); // Llama a la función para actualizar el color (tiñendo el artwork/Image)
     }
 
     public CardData GetCardData()
@@ -53,7 +53,7 @@ public class CardUI : MonoBehaviour
     /// <summary>
     /// Actualiza el color del componente Image de la carta UI basado en el CardType de su CardData.
     /// </summary>
-    private void UpdateCardColor()
+/*     private void UpdateCardColor()
     {
         if (cardImage == null || cardData == null)
         {
@@ -76,5 +76,5 @@ public class CardUI : MonoBehaviour
                 cardImage.color = defaultColor;
                 break;
         }
-    }
+    } */
 }

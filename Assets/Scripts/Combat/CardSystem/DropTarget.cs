@@ -115,7 +115,7 @@ public class DropTarget : MonoBehaviour, IDropHandler, IPointerEnterHandler, IPo
                             if (droppedCardData.type == CardType.Weapon)
                             {
                                 // AHORA: Intentamos castear a RevolverCardData para aplicar su lógica específica
-                                if (droppedCardData is RevolverCardData revolverCard) // <--- CAMBIO IMPORTANTE: Agregamos esta línea
+                                if (droppedCardData is RevolverCardData revolverCard)
                                 {
                                     if (PlayerStats.Instance.HasWeaponEquipped)
                                     {
@@ -124,42 +124,14 @@ public class DropTarget : MonoBehaviour, IDropHandler, IPointerEnterHandler, IPo
                                     }
                                     else
                                     {
-                                        // 1. Marcar el jugador como que tiene un arma equipada
-                                        PlayerStats.Instance.EquipWeapon(revolverCard); // <--- CORRECCIÓN CLAVE: PASAR 'revolverCard'
-                                        //Debug.Log($"[DropTarget] Revolver '{revolverCard.cardID}' equipado.");
-
-                                        // 2. Contar las cartas de bala en la mano del jugador (para el mensaje de debug)
-                                        int bulletCount = CardManager.Instance.CountCardsInHand("Caliber45Bullet");
-                                        int shotsToFire = Mathf.Min(bulletCount, 3); // Límite de 3 disparos
-
-                                        // --- AQUÍ VA EL MENSAJE DE LOG PARA EL DESARROLLADOR ---
-                                        Debug.Log($"[REVOLVER STATUS DEBUG] Revolver en uso. Puedes hacer {shotsToFire} ataque(s) con las balas Calibre .45 disponibles en tu mano ({bulletCount} balas encontradas).");
-                                        // --------------------------------------------------------
-
-                                        // 3. Aplicar el daño por cada disparo (simulado o real)
-                                        for (int i = 0; i < shotsToFire; i++)
-                                        {
-                                            Debug.Log($"[DropTarget] Disparo {i + 1} del Revolver: {revolverCard.baseDamagePerHit} de daño al enemigo.");
-                                            // **AQUÍ: Llama a tu sistema de daño real al enemigo.**
-                                            // Ejemplo: EnemyHealthManager.Instance.TakeDamage(revolverCard.baseDamagePerHit);
-                                        }
-
-                                        // 4. Descartar las cartas de bala utilizadas de la mano (solo si se realizaron disparos)
-                                        // Esta línea está comentada para NO descartar las balas automáticamente.
-                                        if (shotsToFire > 0)
-                                        {
-                                            // CardManager.Instance.DiscardSpecificCardsFromHand("Caliber45Bullet", shotsToFire); // COMENTADO: No descartar balas automáticamente
-                                        }
-                                        
-                                        // 5. Mover la carta del Revolver al descarte (se considera "jugada" y consumida)
-                                        bool played = CardManager.Instance.PlayCard(revolverCard); 
+                                        PlayerStats.Instance.EquipWeapon(revolverCard);
+                                        bool played = CardManager.Instance.PlayCard(revolverCard);
                                         if (played)
-                                        {
-                                            Debug.Log($"[DropTarget] Revolver '{revolverCard.cardID}' jugado y movido a descarte.");
-                                        }
+                                            Debug.Log($"[DropTarget] Revolver '{revolverCard.cardID}' equipado y movido a descarte.");
                                         else
                                             Debug.LogWarning($"[DropTarget] Falló al jugar el Revolver '{revolverCard.cardID}'.");
                                     }
+                                    // NO dispares aquí, solo equipa.
                                 }
                                 else // <--- CAMBIO IMPORTANTE: Agregamos este 'else' para otras armas genéricas
                                 {

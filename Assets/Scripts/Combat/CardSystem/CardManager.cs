@@ -457,12 +457,18 @@ public class CardManager : MonoBehaviour
             Debug.Log($"[CardManager] Arma equipada no es un Revolver: {PlayerStats.Instance.CurrentEquippedWeapon.cardID}");
         }
     }
-    
+
     public bool AttemptRevolverShot()
     {
         if (PlayerStats.Instance == null)
         {
             Debug.LogError("[CardManager] PlayerStats.Instance no encontrado. No se puede verificar el arma equipada para disparar.");
+            return false;
+        }
+
+        if (PlayerStats.Instance.HasFiredRevolverThisTurn)
+        {
+            Debug.LogWarning("[CardManager] Ya has disparado el revólver este turno.");
             return false;
         }
 
@@ -474,25 +480,16 @@ public class CardManager : MonoBehaviour
 
         int bulletCountInHand = CountCardsInHand("Caliber45Bullet");
         int maxShotsAllowed = 3;
-
         int shotsToFire = Mathf.Min(bulletCountInHand, maxShotsAllowed);
 
         if (shotsToFire > 0)
         {
             Debug.Log($"[CardManager] ¡Revolver DISPARADO! Consumiendo {shotsToFire} bala(s) Caliber .45.");
-
-            // 1. Descartar las balas de la mano (representa el consumo)
             DiscardSpecificCardsFromHand("Caliber45Bullet", shotsToFire);
 
-            // 2. --- LÓGICA CLAVE: ENCONTRAR UN ENEMIGO EN LA ESCENA Y APLICAR DAÑO ---
-            // IMPORTANTE: Esta búsqueda FindObjectOfType<Enemy>() encontrará el primer enemigo
-            // activo en la escena. Si tienes múltiples enemigos, solo afectará a uno.
-            // Para seleccionar un enemigo específico, necesitarías un sistema de targeting.
-            Enemy targetEnemy = FindObjectOfType<Enemy>(); 
-
+            Enemy targetEnemy = FindObjectOfType<Enemy>();
             if (targetEnemy != null)
             {
-                // Llamamos al método TakeDamage del enemigo.
                 targetEnemy.TakeDamage(shotsToFire);
                 Debug.Log($"[CardManager] {shotsToFire} disparos impactaron a '{targetEnemy.Data.enemyName}'.");
             }
@@ -500,18 +497,17 @@ public class CardManager : MonoBehaviour
             {
                 Debug.LogWarning("[CardManager] No se encontró ningún enemigo activo en la escena para disparar.");
             }
-            // -----------------------------------------------------------------------
 
-            // 3. Log de balas restantes (ya lo tenías)
             int remainingBullets = CountCardsInHand("Caliber45Bullet");
             Debug.Log($"[CardManager] Balas Calibre .45 restantes en mano: {remainingBullets}.");
 
-            return true; // El disparo fue exitoso
+            PlayerStats.Instance.MarkRevolverFired(); // Marca que ya disparó este turno
+            return true;
         }
         else
         {
             Debug.LogWarning("[CardManager] No tienes balas Caliber .45 en la mano para disparar el Revolver.");
-            return false; // No hay balas para disparar
+            return false;
         }
     }
 }
