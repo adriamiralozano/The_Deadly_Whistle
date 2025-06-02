@@ -1553,6 +1553,68 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
+--- !u!1 &1324349255
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1324349256}
+  - component: {fileID: 1324349257}
+  m_Layer: 5
+  m_Name: HealthContainerPlayer
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1324349256
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1324349255}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2067421897}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: -750, y: 276}
+  m_SizeDelta: {x: 300, y: 100}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1324349257
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1324349255}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 30649d3a9faa99c48a7b1166b86bf2a0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Padding:
+    m_Left: 0
+    m_Right: 0
+    m_Top: 0
+    m_Bottom: 0
+  m_ChildAlignment: 4
+  m_Spacing: 2
+  m_ChildForceExpandWidth: 0
+  m_ChildForceExpandHeight: 0
+  m_ChildControlWidth: 0
+  m_ChildControlHeight: 0
+  m_ChildScaleWidth: 0
+  m_ChildScaleHeight: 0
+  m_ReverseArrangement: 0
 --- !u!1 &1348337436
 GameObject:
   m_ObjectHideFlags: 0
@@ -1564,7 +1626,7 @@ GameObject:
   - component: {fileID: 1348337437}
   - component: {fileID: 1348337438}
   m_Layer: 5
-  m_Name: HealthContainer
+  m_Name: HealthContainerEnemy
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1947,6 +2009,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   turnPhaseText: {fileID: 481430360}
   handCountText: {fileID: 1755350369}
+  enemyTurnBanner: {fileID: 0}
 --- !u!114 &1546688003
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1959,6 +2022,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 038bbab67968e9d4cb85e19aa69241b2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  maxHealth: 5
+  heartUIPrefab: {fileID: 8729035579907033317, guid: 460695b57e1702243bba0d6add3172ab, type: 3}
+  heartUIParent: {fileID: 1324349256}
   weaponEquippedIndicator: {fileID: 232700975}
   effectActiveIndicator: {fileID: 632441604}
   effectCountText: {fileID: 958009640}
@@ -2389,6 +2455,7 @@ RectTransform:
   m_Children:
   - {fileID: 1741159361}
   - {fileID: 1348337437}
+  - {fileID: 1324349256}
   - {fileID: 1894651969}
   - {fileID: 1615384812}
   m_Father: {fileID: 1191309851}

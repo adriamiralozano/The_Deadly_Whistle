@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2621d53244a3ad7408e17491286f3559, type: 3}
   m_Name: BeerCard
   m_EditorClassIdentifier: 
-  cardID: 
-  artwork: {fileID: 0}
-  type: 0
+  cardID: BeerCard
+  artwork: {fileID: 21300000, guid: 6ddeab90cab20fc4aa7dd33dfe43686d, type: 3}
+  type: 2
