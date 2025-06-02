@@ -328,10 +328,10 @@ public class PlayerStats : MonoBehaviour
         }
     }
 
-    public void HealWithBeer()
+/*     public void HealWithBeer()
     {
         Debug.Log("[PlayerStats] Se ha usado una Cerveza. Intentando curar 1 vida.");
         Heal(1);
     }
-
+ */
 }

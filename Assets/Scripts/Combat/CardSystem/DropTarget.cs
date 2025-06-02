@@ -140,9 +140,8 @@ public class DropTarget : MonoBehaviour, IDropHandler, IPointerEnterHandler, IPo
                                     }
                                     // NO dispares aquí, solo equipa.
                                 }
-                                else // <--- CAMBIO IMPORTANTE: Agregamos este 'else' para otras armas genéricas
+                                else // Para armas genéricas
                                 {
-                                    // Esta es la lógica que tenías antes para las armas genéricas, ahora en un 'else'
                                     if (PlayerStats.Instance.HasWeaponEquipped)
                                     {
                                         Debug.LogWarning($"[DropTarget] No se puede equipar '{droppedCardData.cardID}'. El jugador ya tiene un arma equipada. La carta volverá a la mano.");
@@ -150,7 +149,7 @@ public class DropTarget : MonoBehaviour, IDropHandler, IPointerEnterHandler, IPo
                                     }
                                     else
                                     {
-                                        PlayerStats.Instance.EquipWeapon(droppedCardData); // <--- CORRECCIÓN CLAVE: PASAR 'droppedCardData'
+                                        PlayerStats.Instance.EquipWeapon(droppedCardData);
                                         bool played = CardManager.Instance.PlayCard(droppedCardData);
                                         if (played)
                                         {
@@ -166,28 +165,16 @@ public class DropTarget : MonoBehaviour, IDropHandler, IPointerEnterHandler, IPo
                             // Lógica para cartas de tipo EFFECT
                             else if (droppedCardData.type == CardType.Effect)
                             {
-                                Debug.Log($"[DEBUG - DropTarget] Se detectó carta de EFECTO '{droppedCardData.cardID}' soltada en el Player. Intentando activar efecto.");
-
-                                PlayerStats.Instance.ActivateEffect(); // Activa el efecto visual (cuadradito naranja)
-
-                                if (droppedCardData.cardID == "BeerCard")
-                                {
-                                        PlayerStats.Instance.HealWithBeer();
-                                }
-                                else
-                                {
-                                    PlayerStats.Instance.ActivateEffect(); // Activa el efecto visual (cuadradito naranja)
-                                }
+                                Debug.Log($"[DropTarget] Se detectó carta de EFECTO '{droppedCardData.cardID}' soltada en el Player. Ejecutando efecto.");
+                                droppedCardData.ExecuteEffect();
 
                                 bool played = CardManager.Instance.PlayCard(droppedCardData);
                                 if (played)
-                                {
                                     Debug.Log($"[DropTarget] Carta de Efecto '{droppedCardData.cardID}' jugada exitosamente y movida a descarte.");
-                                }
                                 else
-                                {
                                     Debug.LogWarning($"[DropTarget] Falló al jugar la carta de efecto '{droppedCardData.cardID}'.");
-                                }
+
+                                PlayerStats.Instance.ActivateEffect(); // Activa el efecto visual (cuadradito naranja)
                             }
                             // Si en el futuro tienes otros tipos de cartas jugables (no pasivas)
                             else

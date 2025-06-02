@@ -13,6 +13,7 @@ public class CervezaCardData : CardData
     {
         if (PlayerStats.Instance != null)
         {
+            Debug.Log("[CervezaCardData] Ejecutando efecto: curar 1 vida al jugador.");
             PlayerStats.Instance.Heal(1);
         }
         else
