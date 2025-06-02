@@ -6,12 +6,13 @@ using System;
 using System.Linq;
 using UnityEngine.UI;
 using DG.Tweening; // Asegúrate de tener DOTween instalado para animaciones
+using System.Collections;
 
 public class CardManager : MonoBehaviour
 {
     [Header("Configuration")]
     [SerializeField] private DeckData playerStartingDeckData;
-    
+
 
     [Header("UI References")]
     [SerializeField] private TextMeshProUGUI deckCountText;
@@ -153,7 +154,7 @@ public class CardManager : MonoBehaviour
         CardUI uiScript = cardUI.GetComponent<CardUI>();
 
         if (cardSpawnPoint != null)
-            rect.anchoredPosition = cardSpawnPoint.anchoredPosition; 
+            rect.anchoredPosition = cardSpawnPoint.anchoredPosition;
 
         if (uiScript != null)
         {
@@ -215,7 +216,7 @@ public class CardManager : MonoBehaviour
         {
             GameObject uiInstance = handUIInstances[cardToPlay.instanceID];
             handUIInstances.Remove(cardToPlay.instanceID);
-            Destroy(uiInstance);
+            StartCoroutine(DestroyAfterFrame(uiInstance));
             Debug.Log($"[CardManager] Instancia UI de '{cardToPlay.cardID}' destruida (carta jugada y movida a descarte lógico).");
         }
         else
@@ -526,6 +527,12 @@ public class CardManager : MonoBehaviour
             Debug.LogWarning("[CardManager] No tienes balas Caliber .45 en la mano para disparar el Revolver.");
             return false;
         }
+    }
+    
+    private IEnumerator DestroyAfterFrame(GameObject go)
+    {
+        yield return null; // Espera un frame
+        Destroy(go);
     }
 
 

@@ -1997,6 +1997,7 @@ MonoBehaviour:
   cardMoveDuration: 0.15
   cardUIPrefab: {fileID: 5547775891163656974, guid: 53ea122a91b097042894756894c0fc10, type: 3}
   handContainer: {fileID: 1645281860}
+  cardSpawnPoint: {fileID: 2012636183}
 --- !u!114 &1546688002
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -315,6 +315,7 @@ public class CardBehaviour2 : MonoBehaviour,
 
     public void OnEndDrag(PointerEventData eventData)
     {
+        Debug.Log($"[CardBehaviour2] OnEndDrag llamado para {gameObject.name}");
         if (!isDragging) return;
 
         IsAnyCardDragging = false;
