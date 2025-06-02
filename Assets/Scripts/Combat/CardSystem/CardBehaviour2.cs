@@ -191,7 +191,7 @@ public class CardBehaviour2 : MonoBehaviour,
             float rotationZ = Mathf.Clamp(-(Input.mousePosition.x - RectTransformUtility.WorldToScreenPoint(parentCanvas.worldCamera, rectTransform.position).x) * 0.1f, -maxRotation, maxRotation);
             targetRotation = Quaternion.Euler(0, 0, rotationZ);
 
-            targetScale = originalScale * 2f; // Mantener la escala de arrastre al doble
+            targetScale = originalScale * 1.5f; // Mantener la escala de arrastre al doble
             currentLocalOffset = Vector3.up * hoverVerticalOffset;
         }
         else if (!isReturning)
@@ -305,7 +305,7 @@ public class CardBehaviour2 : MonoBehaviour,
         );
         initialDragOffset = rectTransform.anchoredPosition - localCursorPointInCanvas;
 
-        targetScale = originalScale * 2f;
+        targetScale = originalScale * 1.5f;
     }
 
     public void OnDrag(PointerEventData eventData)

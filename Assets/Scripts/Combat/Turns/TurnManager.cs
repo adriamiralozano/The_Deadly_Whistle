@@ -21,6 +21,7 @@ public class TurnManager : MonoBehaviour
     public enum TurnPhase
     {
         None,           // Estado inicial o entre turnos
+        Preparation,    // Fase de preparación
         DrawPhase,      // Fase de robo: robar una carta.
         ActionPhase,    // Fase de acción: jugar cartas.
         EndTurn,         // Fase final del turno: limpieza y preparación para el siguiente.
@@ -86,50 +87,41 @@ public class TurnManager : MonoBehaviour
     /// Inicia el juego y el primer turno del jugador.
     public void StartGame()
     {
-        currentTurnNumber = 0; // Resetea el contador de turnos al inicio del juego.
-        Debug.Log("Juego iniciado. Preparando el primer turno del jugador.");
-        StartPlayerTurn(); // Llama al inicio del primer turno del jugador.
+        currentTurnNumber = 0;
+        Debug.Log("Juego iniciado. Preparando la fase de preparación inicial.");
+        SetPhase(TurnPhase.Preparation); // Solo aquí se usa Preparation
     }
 
     /// Inicia el turno del jugador y avanza a la primera fase (Robo).
     public void StartPlayerTurn()
     {
-        currentTurnNumber++; // Incrementa el contador para el nuevo turno.
+        currentTurnNumber++;
         Debug.Log($"--- Inicio del Turno {currentTurnNumber} del Jugador ---");
 
-        // --- ¡IMPORTANTE! Notifica a los suscriptores (como CardManager) que el turno ha comenzado. ---
         OnTurnStart?.Invoke(currentTurnNumber);
 
-        // --- LÓGICA DE LIMPIEZA DE EFECTOS AL INICIO DEL TURNO ---
-        // Esto asegura que, al comienzo de cada turno, se intenten limpiar los efectos visuales anteriores.
         if (PlayerStats.Instance != null)
-        {
-            PlayerStats.Instance.ClearAllEffects(); // Llama al método de PlayerStats para ocultar el cuadradito
-        }
+            PlayerStats.Instance.ClearAllEffects();
         else
-        {
-            Debug.LogError("[TurnManager] PlayerStats.Instance es null al inicio del turno en StartPlayerTurn(). Asegúrate de que PlayerStats está en la escena y tiene un Singleton configurado.");
-        }
-        // --------------------------------------------------
+            Debug.LogError("[TurnManager] PlayerStats.Instance es null al inicio del turno en StartPlayerTurn().");
 
-        // Inicia la primera fase del turno.
-        SetPhase(TurnPhase.DrawPhase);
+        SetPhase(TurnPhase.DrawPhase); // Ya NO pasa por Preparation
     }
 
-    /// Establece la fase actual y ejecuta su manejador. Centraliza la lógica de cambio de fase.
-    /// <param name="newPhase">La nueva fase a establecer.</param>
+    /// Cambia la fase actual del turno y maneja la lógica asociada a cada fase.
     private void SetPhase(TurnPhase newPhase)
     {
-        if (currentTurnPhase == newPhase) return; // Evita re-entrar en la misma fase si no es necesario.
+        if (currentTurnPhase == newPhase) return;
 
         currentTurnPhase = newPhase;
-        OnPhaseChange?.Invoke(currentTurnPhase); // Notifica a los suscriptores sobre el cambio de fase.
-        UpdateTurnPhaseDisplay(); // Actualiza el texto de la fase en la UI.
-        /*         Debug.Log($"[TurnManager] Cambiando a: {currentTurnPhase.ToString()} (Turno {currentTurnNumber})."); */
+        OnPhaseChange?.Invoke(currentTurnPhase);
+        UpdateTurnPhaseDisplay();
 
-        // Llama al manejador de la nueva fase.
         switch (currentTurnPhase)
         {
+            case TurnPhase.Preparation:
+                StartCoroutine(HandlePreparationPhaseRoutine());
+                break;
             case TurnPhase.DrawPhase:
                 HandleDrawPhase();
                 break;
@@ -140,11 +132,10 @@ public class TurnManager : MonoBehaviour
                 StartCoroutine(HandleEndTurnPhaseRoutine());
                 break;
             case TurnPhase.EnemyTurn:
-                Debug.Log("[TurnManager] ¡Entrando en la fase EnemyTurn!"); // <-- Añade este debug
+                Debug.Log("[TurnManager] ¡Entrando en la fase EnemyTurn!");
                 StartCoroutine(HandleEnemyTurnPhaseRoutine());
                 break;
             case TurnPhase.None:
-                // No debería ocurrir en un flujo normal, pero para seguridad.
                 break;
         }
     }
@@ -373,5 +364,13 @@ public class TurnManager : MonoBehaviour
             Debug.Log("[TurnManager] Falló el intento de disparo del Revolver (ver logs para más detalles).");
         }
     }
+
     
+    private IEnumerator HandlePreparationPhaseRoutine()
+    {
+        Debug.Log("Fase de preparación inicial...");
+        yield return new WaitForSeconds(1f); // Espera 1 segundo
+        StartPlayerTurn(); // Ahora sí, inicia el primer turno normalmente
+    }
+
 }
