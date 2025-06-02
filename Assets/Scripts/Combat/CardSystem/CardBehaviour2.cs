@@ -56,12 +56,12 @@ public class CardBehaviour2 : MonoBehaviour,
     // =================================================================================
 
     [Header("Idle Animation Settings")]
-    [SerializeField] private AnimationCurve smoothCurve = AnimationCurve.EaseInOut(0,0,1,1);
-    
+    [SerializeField] private AnimationCurve smoothCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
+
     [Header("Sorting Settings (UI)")]
     [SerializeField] private int hoverUISortingOrder = 500; // Sorting Order para el estado de hover
     [SerializeField] private int draggingUISortingOrder = 1000; // Sorting Order para el estado de arrastre (más alto)
-    
+
 
     [Header("Hover Settings")]
     [SerializeField] private float hoverDuration = 0.2f;
@@ -80,7 +80,7 @@ public class CardBehaviour2 : MonoBehaviour,
     [SerializeField] private float dragLerpSpeed = 10f;
     [SerializeField] private float returnSpeed = 8f;
     [SerializeField] private float dragScaleSpeed = 20f;
-    
+
 
 
     private bool basePositionInitialized = false;
@@ -469,7 +469,7 @@ public class CardBehaviour2 : MonoBehaviour,
             StopCoroutine(moveCoroutine);
         moveCoroutine = StartCoroutine(AnimateToCurrentAnchoredPosition(duration));
     }
-    
+
     private IEnumerator AnimateToCurrentAnchoredPosition(float duration)
     {
         Vector2 start = rectTransform.anchoredPosition;
@@ -486,6 +486,13 @@ public class CardBehaviour2 : MonoBehaviour,
         }
         rectTransform.anchoredPosition = end;
         moveCoroutine = null;
+    }
+    
+    public void UpdateBaseLayoutPosition()
+    {
+        if (rectTransform != null)
+            trueBaseLayoutPosition = rectTransform.localPosition;
+        basePositionInitialized = true;
     }
 
 }

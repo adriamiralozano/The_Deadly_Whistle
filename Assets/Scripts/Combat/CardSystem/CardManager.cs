@@ -5,6 +5,7 @@ using TMPro;
 using System;
 using System.Linq;
 using UnityEngine.UI;
+using DG.Tweening; // Asegúrate de tener DOTween instalado para animaciones
 
 public class CardManager : MonoBehaviour
 {
@@ -263,37 +264,46 @@ public class CardManager : MonoBehaviour
 
     private void UpdateHandVisuals()
     {
-        foreach (var uiInstance in handUIInstances.Values)
+        // 1. Elimina solo las cartas que ya no están en la mano
+        var keysToRemove = handUIInstances.Keys.Except(playerHand.Select(c => c.instanceID)).ToList();
+        foreach (var key in keysToRemove)
         {
-            Destroy(uiInstance);
+            Destroy(handUIInstances[key]);
+            handUIInstances.Remove(key);
         }
-        handUIInstances.Clear();
 
+        // 2. Instancia solo las cartas nuevas
         foreach (var cardData in playerHand)
         {
-            GameObject cardUI = Instantiate(cardUIPrefab, handContainer);
-            CardUI uiScript = cardUI.GetComponent<CardUI>();
-            if (uiScript != null)
+            if (!handUIInstances.ContainsKey(cardData.instanceID))
             {
-                uiScript.SetCardData(cardData);
+                GameObject cardUI = Instantiate(cardUIPrefab, handContainer);
+                CardUI uiScript = cardUI.GetComponent<CardUI>();
+                if (uiScript != null)
+                    uiScript.SetCardData(cardData);
                 handUIInstances.Add(cardData.instanceID, cardUI);
-            }
-            else
-            {
-                Debug.LogError($"[CardManager] El prefab {cardUIPrefab.name} no tiene el script CardUI.");
             }
         }
 
+        // 3. Ordena los GameObjects según el orden de playerHand
+        for (int i = 0; i < playerHand.Count; i++)
+        {
+            var cardData = playerHand[i];
+            var cardGO = handUIInstances[cardData.instanceID];
+            cardGO.transform.SetSiblingIndex(i);
+        }
+
+        // 4. Fuerza el layout para que se actualicen las posiciones
         if (handContainer != null)
         {
             LayoutRebuilder.ForceRebuildLayoutImmediate(handContainer.GetComponent<RectTransform>());
-            // ANIMAR TODAS LAS CARTAS
-/*             foreach (Transform card in handContainer)
+
+            foreach (var cardGO in handUIInstances.Values)
             {
-                var behaviour = card.GetComponent<CardBehaviour2>();
+                var behaviour = cardGO.GetComponent<CardBehaviour2>();
                 if (behaviour != null)
-                    behaviour.AnimateToLayoutPosition(0.5f); // Duración de la animación
-            } */
+                    behaviour.UpdateBaseLayoutPosition();
+            }
         }
         else
         {
@@ -510,4 +520,6 @@ public class CardManager : MonoBehaviour
             return false;
         }
     }
+
+
 }
