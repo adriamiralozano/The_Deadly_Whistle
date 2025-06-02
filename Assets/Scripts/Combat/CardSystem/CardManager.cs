@@ -24,6 +24,7 @@ public class CardManager : MonoBehaviour
     [Header("Card UI References")]
     [SerializeField] private GameObject cardUIPrefab;
     [SerializeField] private Transform handContainer;
+    [SerializeField] private RectTransform cardSpawnPoint;
 
     private List<CardData> currentDeck = new List<CardData>();
     private List<CardData> playerHand = new List<CardData>();
@@ -148,7 +149,12 @@ public class CardManager : MonoBehaviour
         playerHand.Add(drawnCardData);
 
         GameObject cardUI = Instantiate(cardUIPrefab, handContainer);
+        RectTransform rect = cardUI.GetComponent<RectTransform>();
         CardUI uiScript = cardUI.GetComponent<CardUI>();
+
+        if (cardSpawnPoint != null)
+            rect.anchoredPosition = cardSpawnPoint.anchoredPosition; 
+
         if (uiScript != null)
         {
             uiScript.SetCardData(drawnCardData);
