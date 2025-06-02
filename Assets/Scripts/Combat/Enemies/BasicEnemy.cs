@@ -6,28 +6,28 @@ using System.Collections.Generic; // Necesario para List
 public class Enemy : MonoBehaviour
 {
     // Asigna tu ScriptableObject de EnemyData aquí en el Inspector del Prefab del enemigo.
-    [SerializeField] private EnemyData _enemyData; 
+    [SerializeField] private EnemyData _enemyData;
 
     // Propiedad pública para acceder a los datos del enemigo.
-    public EnemyData Data => _enemyData; 
+    public EnemyData Data => _enemyData;
 
     // La vida actual del enemigo, que corresponde al número de corazones.
-    public int CurrentHealth { get; private set; } 
+    public int CurrentHealth { get; private set; }
     public bool IsAlive => CurrentHealth > 0;
 
     // --- Configuración para la UI de Corazones ---
     [Header("UI Corazones")]
     [Tooltip("Prefab del cuadrado/corazón visual. Debe tener un SpriteRenderer o Image.")]
-    [SerializeField] private GameObject heartUIPrefab; 
+    [SerializeField] private GameObject heartUIPrefab;
     [Tooltip("Transform padre donde se instanciarán los corazones. Debe estar encima del enemigo.")]
-    [SerializeField] private Transform heartUIParent; 
+    [SerializeField] private Transform heartUIParent;
     private List<GameObject> activeHearts = new List<GameObject>(); // Lista para gestionar los GameObjects de los corazones.
     // ------------------------------------------
 
     // --- Eventos (para que otros scripts puedan reaccionar a la vida del enemigo) ---
     public static event Action<Enemy, int> OnEnemyTookDamage;
     public static event Action<Enemy> OnEnemyDied;
-    public static event Action<Enemy, int> OnEnemyHealthChanged; 
+    public static event Action<Enemy, int> OnEnemyHealthChanged;
     // --------------------------------------------------------------------------------
 
     protected virtual void Awake()
@@ -54,8 +54,8 @@ public class Enemy : MonoBehaviour
     public virtual void TakeDamage(int amount)
     {
         // En este sistema, cada punto de daño se traduce directamente en la pérdida de un corazón.
-        int damageTaken = amount; 
-        
+        int damageTaken = amount;
+
         // Asegura que no se quite más vida de la que queda.
         if (CurrentHealth - damageTaken < 0)
         {
@@ -86,7 +86,7 @@ public class Enemy : MonoBehaviour
     {
         CurrentHealth = 0; // Asegura que la salud no sea negativa.
         // Log para indicar que el enemigo debería haber muerto.
-        Debug.LogWarning($"{_enemyData.enemyName} HA SIDO DERROTADO (pero el GameObject NO se destruye por ahora para propósitos de prueba)."); 
+        Debug.LogWarning($"{_enemyData.enemyName} HA SIDO DERROTADO (pero el GameObject NO se destruye por ahora para propósitos de prueba).");
         OnEnemyDied?.Invoke(this); // Dispara el evento de muerte.
 
         // Para hacer que el enemigo "desaparezca" visualmente sin destruir el GameObject:
@@ -150,7 +150,7 @@ public class Enemy : MonoBehaviour
                 // Un corazón está "lleno" (rojo) si su índice es menor que la vida actual.
                 // Un corazón está "vacío" (gris) si su índice es igual o mayor que la vida actual.
                 bool isFull = i < CurrentHealth;
-                
+
                 // Intenta obtener el SpriteRenderer (para cuadrados 2D en el mundo).
                 SpriteRenderer sr = activeHearts[i].GetComponent<SpriteRenderer>();
                 if (sr != null)
@@ -166,6 +166,19 @@ public class Enemy : MonoBehaviour
                     img.color = isFull ? Color.red : Color.gray; // Cambia el color a rojo o gris.
                 }
             }
+        }
+    }
+    
+    public virtual void TryShootPlayer()
+    {
+        if (PlayerStats.Instance != null && PlayerStats.Instance.CanBeDamaged())
+        {
+            PlayerStats.Instance.TakeDamage(1);
+            Debug.Log($"[{Data.enemyName}] Disparó al jugador (pierde 1 vida).");
+        }
+        else
+        {
+            Debug.Log($"[{Data.enemyName}] Intentó disparar, pero el jugador no puede ser dañado.");
         }
     }
 }

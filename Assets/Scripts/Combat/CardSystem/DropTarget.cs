@@ -95,6 +95,13 @@ public class DropTarget : MonoBehaviour, IDropHandler, IPointerEnterHandler, IPo
 
                     if (myTargetType == TargetType.Player) // Si la carta se dropea en la zona del jugador (zona de "juego")
                     {
+
+                        if (droppedCardData.cardID == "BeerCard" && PlayerStats.Instance.CurrentHealth >= PlayerStats.Instance.maxHealth)
+                        {
+                            Debug.Log("[DropTarget] No puedes usar Cerveza si la vida está al máximo. El drop se cancela.");
+                            // Aquí puedes poner feedback visual si quieres
+                            return; // Cancela el drop, la carta vuelve a la mano
+                        }
                         // --- LÓGICA CLAVE: IMPEDIR JUGAR CARTAS PASIVAS EN ZONA DEL JUGADOR ---
                         if (droppedCardData.type == CardType.Passive)
                         {
@@ -162,6 +169,15 @@ public class DropTarget : MonoBehaviour, IDropHandler, IPointerEnterHandler, IPo
                                 Debug.Log($"[DEBUG - DropTarget] Se detectó carta de EFECTO '{droppedCardData.cardID}' soltada en el Player. Intentando activar efecto.");
 
                                 PlayerStats.Instance.ActivateEffect(); // Activa el efecto visual (cuadradito naranja)
+
+                                if (droppedCardData.cardID == "BeerCard")
+                                {
+                                        PlayerStats.Instance.HealWithBeer();
+                                }
+                                else
+                                {
+                                    PlayerStats.Instance.ActivateEffect(); // Activa el efecto visual (cuadradito naranja)
+                                }
 
                                 bool played = CardManager.Instance.PlayCard(droppedCardData);
                                 if (played)

@@ -98,6 +98,11 @@ public class PlayerStats : MonoBehaviour
         {
             TakeDamage(1);
         }
+        if (Input.GetKeyDown(KeyCode.H))
+        {
+            Debug.Log("[Test] Intentando curar al jugador desde Update con Heal(1)");
+            Heal(1);
+        }
     }
 
     /// <summary>
@@ -301,4 +306,32 @@ public class PlayerStats : MonoBehaviour
 
         if (CurrentHealth <= 0) Die();
     }
+
+    public bool CanBeDamaged()
+    {
+        // Aquí puedes añadir lógica de inmunidad, escudos, etc. en el futuro.
+        return true; // De momento, siempre puede ser dañado.
+    }
+
+    public void Heal(int amount)
+    {
+        if (CurrentHealth < maxHealth)
+        {
+            int healAmount = Mathf.Min(amount, maxHealth - CurrentHealth);
+            CurrentHealth += healAmount;
+            Debug.Log($"[PlayerStats] El jugador se curó {healAmount} punto(s) de vida. HP actual: {CurrentHealth}");
+            UpdateHeartUI();
+        }
+        else
+        {
+            Debug.Log("[PlayerStats] El jugador ya tiene la vida al máximo. No se puede curar más.");
+        }
+    }
+
+    public void HealWithBeer()
+    {
+        Debug.Log("[PlayerStats] Se ha usado una Cerveza. Intentando curar 1 vida.");
+        Heal(1);
+    }
+
 }

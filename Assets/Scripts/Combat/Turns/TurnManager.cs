@@ -4,12 +4,14 @@ using System; // Para Action y Func
 using TMPro; // Para TextMeshProUGUI
 using System.Collections; // Para Coroutines
 
+
 public class TurnManager : MonoBehaviour
 {
     // --- Referencias UI ---
     [Header("UI References")]
     [SerializeField] private TextMeshProUGUI turnPhaseText; // Para el texto de fase de turno
     [SerializeField] private TextMeshProUGUI handCountText; // Para el conteo de la mano
+    [SerializeField] private GameObject enemyTurnBanner; // Para mostrar un banner durante el turno del enemigo
 
     // --- Singleton ---
     public static TurnManager Instance { get; private set; }
@@ -21,7 +23,8 @@ public class TurnManager : MonoBehaviour
         None,           // Estado inicial o entre turnos
         DrawPhase,      // Fase de robo: robar una carta.
         ActionPhase,    // Fase de acción: jugar cartas.
-        EndTurn         // Fase final del turno: limpieza y preparación para el siguiente.
+        EndTurn,         // Fase final del turno: limpieza y preparación para el siguiente.
+        EnemyTurn       // Fase de turno del enemigo 
     }
 
     // --- Variables de Estado del Turno ---
@@ -134,7 +137,11 @@ public class TurnManager : MonoBehaviour
                 HandleActionPhase();
                 break;
             case TurnPhase.EndTurn:
-                StartCoroutine(HandleEndTurnPhaseRoutine()); // Usamos una corrutina para el fin de turno.
+                StartCoroutine(HandleEndTurnPhaseRoutine());
+                break;
+            case TurnPhase.EnemyTurn:
+                Debug.Log("[TurnManager] ¡Entrando en la fase EnemyTurn!"); // <-- Añade este debug
+                StartCoroutine(HandleEnemyTurnPhaseRoutine());
                 break;
             case TurnPhase.None:
                 // No debería ocurrir en un flujo normal, pero para seguridad.
@@ -155,12 +162,10 @@ public class TurnManager : MonoBehaviour
                 break;
 
             case TurnPhase.DrawPhase:
-                SetPhase(TurnPhase.ActionPhase); // Después de DrawPhase, siempre se va a ActionPhase
+                SetPhase(TurnPhase.ActionPhase);
                 break;
 
             case TurnPhase.ActionPhase:
-                // Si la mano excede el límite después de la ActionPhase, se va a DiscardPhase.
-                // De lo contrario, pasa directamente a EndTurn.
                 if (CheckIfHandExceedsLimit())
                 {
                     Debug.LogWarning($"Aún tienes {GetHandCount()} cartas en mano. Debes descartar hasta tener {MAX_HAND_SIZE} para pasar de turno.");
@@ -170,6 +175,8 @@ public class TurnManager : MonoBehaviour
                     SetPhase(TurnPhase.EndTurn);
                 }
                 break;
+
+
         }
     }
     // --- Métodos de Manejo de Fases Específicas ---
@@ -200,7 +207,7 @@ public class TurnManager : MonoBehaviour
 
         yield return null; // Un frame de espera para asegurar que todo se procese.
 
-        StartPlayerTurn(); // Inicia el siguiente turno solo DESPUÉS de la fase de fin de turno.
+        SetPhase(TurnPhase.EnemyTurn);
     }
 
     // --- Interacción con el Jugador (desde UI o input) ---
@@ -285,6 +292,32 @@ public class TurnManager : MonoBehaviour
         }
     }
 
+    private IEnumerator HandleEnemyTurnPhaseRoutine()
+    {
+        if (turnPhaseText != null)
+            turnPhaseText.text = "Turno del enemigo";
+
+        if (enemyTurnBanner != null)
+            enemyTurnBanner.SetActive(true);
+
+        Debug.Log("Turno del enemigo: esperando 5 segundos...");
+        Debug.Log("Turno del enemigo: el enemigo intenta disparar...");
+        yield return new WaitForSeconds(1f);
+
+        Enemy enemy = FindObjectOfType<Enemy>();
+        if (enemy != null)
+            enemy.TryShootPlayer();
+        else
+            Debug.LogWarning("No se encontró un BasicEnemy en la escena.");
+
+        yield return new WaitForSeconds(4f);
+        if (enemyTurnBanner != null)
+            enemyTurnBanner.SetActive(false);
+
+        // Al acabar, inicia el siguiente turno del jugador
+        StartPlayerTurn();
+    }
+
     private IEnumerator DrawCardsAndLogRevolverRoutine()
     {
         // Lógica de robo de cartas (movida desde el antiguo HandleDrawPhase)
@@ -299,13 +332,13 @@ public class TurnManager : MonoBehaviour
             }
             // Espera hasta que la mano tenga el tamaño completo de MAX_HAND_SIZE.
             // Esto asegura que todas las cartas iniciales se hayan procesado en CardManager.
-            yield return new WaitUntil(() => GetHandCount() == MAX_HAND_SIZE); 
+            yield return new WaitUntil(() => GetHandCount() == MAX_HAND_SIZE);
         }
         else // Es un turno posterior, robar una carta normal
         {
             OnRequestDrawCard?.Invoke(); // Pide al CardManager que robe una carta.
             // Espera un frame para que CardManager procese la solicitud y añada la carta.
-            yield return null; 
+            yield return null;
             // O, una espera más robusta:
             // yield return new WaitUntil(() => GetHandCount() > (MAX_HAND_SIZE - 1) || currentTurnNumber == 0); // Asume que la mano tiene 4 o menos cartas antes de robar 1.
         }
@@ -324,7 +357,7 @@ public class TurnManager : MonoBehaviour
         AdvancePhase(); // Avanza la fase SOLO después de que el robo y el log del Revolver se han actualizado.
     }
     /// Método llamado por el botón "Fire Revolver" para intentar disparar el Revolver.
-        public void OnFireRevolverButtonPressed()
+    public void OnFireRevolverButtonPressed()
     {
         // 1. Verificar la fase actual del turno
         if (CurrentPhase != TurnPhase.ActionPhase)
@@ -345,18 +378,11 @@ public class TurnManager : MonoBehaviour
         if (shotSuccessful)
         {
             Debug.Log("[TurnManager] ¡Disparo de Revolver exitoso!");
-            // Si disparar el revolver consume una acción o un punto de energía,
-            // lo gestionarías aquí. Por ahora, solo se descartan las balas.
-            // Si el disparo también avanza la fase o termina el turno, lo harías aquí.
-            // Por ejemplo: AdvancePhase();
         }
         else
         {
             Debug.Log("[TurnManager] Falló el intento de disparo del Revolver (ver logs para más detalles).");
         }
     }
-    void Update() { }
-    
-
     
 }
