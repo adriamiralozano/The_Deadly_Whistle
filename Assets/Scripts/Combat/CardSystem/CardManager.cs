@@ -16,6 +16,9 @@ public class CardManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI deckCountText;
     [SerializeField] private TextMeshProUGUI discardPileCountText;
 
+    [Header("Animación de cartas")]
+    [SerializeField] private float cardMoveDuration = 0.35f;
+
     // --- REFERENCIAS DE UI DE CARTA ---
     [Header("Card UI References")]
     [SerializeField] private GameObject cardUIPrefab;
@@ -293,16 +296,33 @@ public class CardManager : MonoBehaviour
             cardGO.transform.SetSiblingIndex(i);
         }
 
+        Dictionary<string, Vector3> oldPositions = new Dictionary<string, Vector3>();
+        foreach (var kvp in handUIInstances)
+        {
+            oldPositions[kvp.Key] = kvp.Value.GetComponent<RectTransform>().localPosition;
+        }
+
         // 4. Fuerza el layout para que se actualicen las posiciones
         if (handContainer != null)
         {
             LayoutRebuilder.ForceRebuildLayoutImmediate(handContainer.GetComponent<RectTransform>());
 
-            foreach (var cardGO in handUIInstances.Values)
+            // Ahora anima cada carta desde su posición anterior a la nueva
+            foreach (var cardData in playerHand)
             {
+                var cardGO = handUIInstances[cardData.instanceID];
+                var rect = cardGO.GetComponent<RectTransform>();
                 var behaviour = cardGO.GetComponent<CardBehaviour2>();
-                if (behaviour != null)
-                    behaviour.UpdateBaseLayoutPosition();
+                if (rect != null && behaviour != null)
+                {
+                    Vector3 newPos = rect.localPosition;
+                    Vector3 oldPos = oldPositions.ContainsKey(cardData.instanceID) ? oldPositions[cardData.instanceID] : newPos;
+                    rect.localPosition = oldPos;
+                    rect.DOKill();
+                    rect.DOLocalMove(newPos, cardMoveDuration).SetEase(Ease.InOutQuad)
+                        .OnComplete(() => behaviour.UpdateBaseLayoutPosition());
+                    Debug.Log($"[CardManager] Animando carta {cardGO.name} de {oldPos} a {newPos}");
+                }
             }
         }
         else

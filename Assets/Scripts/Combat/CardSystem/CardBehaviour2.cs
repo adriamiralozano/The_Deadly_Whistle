@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using System.Collections;
+using DG.Tweening;
 
 [RequireComponent(typeof(Selectable))]
 [RequireComponent(typeof(CanvasGroup))]
@@ -149,6 +150,8 @@ public class CardBehaviour2 : MonoBehaviour,
         {
             return;
         }
+
+        //Debug.Log($"[CardBehaviour2] {gameObject.name} Update: trueBaseLayoutPosition={trueBaseLayoutPosition}, localPosition={rectTransform.localPosition}");
 
         rectTransform.rotation = Quaternion.Lerp(
             rectTransform.rotation,
@@ -354,6 +357,7 @@ public class CardBehaviour2 : MonoBehaviour,
 
     private IEnumerator ReturnToOriginalPosition()
     {
+        Debug.Log($"[CardBehaviour2] {gameObject.name} ReturnToOriginalPosition: from {rectTransform.localPosition} to {trueBaseLayoutPosition}");
         Vector3 startPosition = rectTransform.localPosition;
         Vector3 endPosition = trueBaseLayoutPosition;
 
@@ -487,12 +491,26 @@ public class CardBehaviour2 : MonoBehaviour,
         rectTransform.anchoredPosition = end;
         moveCoroutine = null;
     }
-    
+
     public void UpdateBaseLayoutPosition()
     {
         if (rectTransform != null)
+            Debug.Log($"[CardBehaviour2] UpdateBaseLayoutPosition: {gameObject.name} base={rectTransform.localPosition}");
             trueBaseLayoutPosition = rectTransform.localPosition;
         basePositionInitialized = true;
+    }
+    
+    public void AnimateToCurrentLayoutPosition(float duration = 0.3f)
+    {
+        if (moveCoroutine != null)
+            StopCoroutine(moveCoroutine);
+
+        // Detenemos cualquier animación DOTween previa
+        rectTransform.DOKill();
+
+        // Animamos hacia la posición actual del layout
+        rectTransform.DOLocalMove(rectTransform.localPosition, duration).SetEase(Ease.InOutQuad);
+
     }
 
 }

@@ -1993,6 +1993,7 @@ MonoBehaviour:
   playerStartingDeckData: {fileID: 11400000, guid: 32f531d5216b7a544bfff4ac7105b3db, type: 2}
   deckCountText: {fileID: 1474993993}
   discardPileCountText: {fileID: 1108599252}
+  cardMoveDuration: 0.15
   cardUIPrefab: {fileID: 5547775891163656974, guid: 53ea122a91b097042894756894c0fc10, type: 3}
   handContainer: {fileID: 1645281860}
 --- !u!114 &1546688002
