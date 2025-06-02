@@ -7,7 +7,6 @@ using DG.Tweening;
 
 [RequireComponent(typeof(Selectable))]
 [RequireComponent(typeof(CanvasGroup))]
-[RequireComponent(typeof(LayoutElement))]
 public class CardBehaviour2 : MonoBehaviour,
     IBeginDragHandler,
     IDragHandler,
@@ -359,7 +358,7 @@ public class CardBehaviour2 : MonoBehaviour,
     {
         Debug.Log($"[CardBehaviour2] {gameObject.name} ReturnToOriginalPosition: from {rectTransform.localPosition} to {trueBaseLayoutPosition}");
         Vector3 startPosition = rectTransform.localPosition;
-        Vector3 endPosition = trueBaseLayoutPosition;
+        Vector3 endPosition = new Vector3(trueBaseLayoutPosition.x, 0, trueBaseLayoutPosition.z); // Fuerza Y=0
 
         float t = 0f;
 

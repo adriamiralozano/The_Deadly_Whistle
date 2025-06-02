@@ -11,6 +11,7 @@ public class CardManager : MonoBehaviour
 {
     [Header("Configuration")]
     [SerializeField] private DeckData playerStartingDeckData;
+    
 
     [Header("UI References")]
     [SerializeField] private TextMeshProUGUI deckCountText;
@@ -267,7 +268,7 @@ public class CardManager : MonoBehaviour
 
     private void UpdateHandVisuals()
     {
-        // 1. Elimina solo las cartas que ya no están en la mano
+        // Elimina cartas que ya no están en la mano
         var keysToRemove = handUIInstances.Keys.Except(playerHand.Select(c => c.instanceID)).ToList();
         foreach (var key in keysToRemove)
         {
@@ -275,12 +276,15 @@ public class CardManager : MonoBehaviour
             handUIInstances.Remove(key);
         }
 
-        // 2. Instancia solo las cartas nuevas
+        // Instancia solo las cartas nuevas
         foreach (var cardData in playerHand)
         {
             if (!handUIInstances.ContainsKey(cardData.instanceID))
             {
                 GameObject cardUI = Instantiate(cardUIPrefab, handContainer);
+                LayoutElement layoutElement = cardUI.GetComponent<LayoutElement>();
+                if (layoutElement != null)
+                    layoutElement.enabled = false;
                 CardUI uiScript = cardUI.GetComponent<CardUI>();
                 if (uiScript != null)
                     uiScript.SetCardData(cardData);
@@ -288,46 +292,23 @@ public class CardManager : MonoBehaviour
             }
         }
 
-        // 3. Ordena los GameObjects según el orden de playerHand
+        // Distribuye las cartas en línea centrada (puedes ajustar spacing)
+        float spacing = 180f;
+        float startX = -((playerHand.Count - 1) * spacing) / 2f;
+
         for (int i = 0; i < playerHand.Count; i++)
         {
             var cardData = playerHand[i];
             var cardGO = handUIInstances[cardData.instanceID];
-            cardGO.transform.SetSiblingIndex(i);
-        }
+            var rect = cardGO.GetComponent<RectTransform>();
+            var behaviour = cardGO.GetComponent<CardBehaviour2>();
 
-        Dictionary<string, Vector3> oldPositions = new Dictionary<string, Vector3>();
-        foreach (var kvp in handUIInstances)
-        {
-            oldPositions[kvp.Key] = kvp.Value.GetComponent<RectTransform>().localPosition;
-        }
+            Vector3 targetPos = new Vector3(startX + i * spacing, 0, 0);
 
-        // 4. Fuerza el layout para que se actualicen las posiciones
-        if (handContainer != null)
-        {
-            LayoutRebuilder.ForceRebuildLayoutImmediate(handContainer.GetComponent<RectTransform>());
-
-            // Ahora anima cada carta desde su posición anterior a la nueva
-            foreach (var cardData in playerHand)
-            {
-                var cardGO = handUIInstances[cardData.instanceID];
-                var rect = cardGO.GetComponent<RectTransform>();
-                var behaviour = cardGO.GetComponent<CardBehaviour2>();
-                if (rect != null && behaviour != null)
-                {
-                    Vector3 newPos = rect.localPosition;
-                    Vector3 oldPos = oldPositions.ContainsKey(cardData.instanceID) ? oldPositions[cardData.instanceID] : newPos;
-                    rect.localPosition = oldPos;
-                    rect.DOKill();
-                    rect.DOLocalMove(newPos, cardMoveDuration).SetEase(Ease.InOutQuad)
-                        .OnComplete(() => behaviour.UpdateBaseLayoutPosition());
-                    Debug.Log($"[CardManager] Animando carta {cardGO.name} de {oldPos} a {newPos}");
-                }
-            }
-        }
-        else
-        {
-            Debug.LogError("[CardManager] El HandContainer no está asignado. Asegúrate de arrastrarlo en el Inspector.");
+            // Animación suave con DOTween
+            rect.DOKill();
+            rect.DOLocalMove(targetPos, cardMoveDuration).SetEase(Ease.InOutQuad)
+                .OnComplete(() => behaviour.UpdateBaseLayoutPosition());
         }
     }
 
