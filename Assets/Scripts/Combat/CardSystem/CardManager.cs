@@ -288,12 +288,12 @@ public class CardManager : MonoBehaviour
         {
             LayoutRebuilder.ForceRebuildLayoutImmediate(handContainer.GetComponent<RectTransform>());
             // ANIMAR TODAS LAS CARTAS
-            foreach (Transform card in handContainer)
+/*             foreach (Transform card in handContainer)
             {
                 var behaviour = card.GetComponent<CardBehaviour2>();
                 if (behaviour != null)
                     behaviour.AnimateToLayoutPosition(0.5f); // Duración de la animación
-            }
+            } */
         }
         else
         {
