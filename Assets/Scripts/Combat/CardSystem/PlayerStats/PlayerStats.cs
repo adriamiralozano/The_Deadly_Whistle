@@ -2,6 +2,7 @@
 using UnityEngine;
 using UnityEngine.UI; // Necesario para Image y Text
 using TMPro; // Necesario si usas TextMeshProUGUI
+using System.Collections.Generic; // Necesario para List<T>
 
 public class PlayerStats : MonoBehaviour
 {
@@ -13,6 +14,17 @@ public class PlayerStats : MonoBehaviour
 
     // NUEVO: Propiedad para almacenar la CardData del arma actualmente equipada
     public CardData CurrentEquippedWeapon { get; private set; } // <--- AÑADE ESTA LÍNEA AQUÍ
+
+
+    [Header("Player Health")]
+    public int maxHealth = 5;
+    public int CurrentHealth { get; private set; }
+    public bool IsAlive => CurrentHealth > 0;
+
+    [Header("UI Corazones")]
+    [SerializeField] private GameObject heartUIPrefab;
+    [SerializeField] private Transform heartUIParent;
+    private List<GameObject> activeHearts = new List<GameObject>();
 
     [Header("UI References")]
     [SerializeField] private GameObject weaponEquippedIndicator; // Asigna tu cuadrado rojo aquí (para el arma)
@@ -46,6 +58,10 @@ public class PlayerStats : MonoBehaviour
         {
             Instance = this;
         }
+        Instance = this;
+        CurrentHealth = maxHealth;
+        InitializeHeartUI();
+        UpdateHeartUI();
     }
 
     void OnDisable()
@@ -74,6 +90,19 @@ public class PlayerStats : MonoBehaviour
         CurrentEquippedWeapon = null; // <--- AÑADE ESTA LÍNEA para limpiar la referencia del arma
         _activeEffectCount = 0; // Asegura que el contador de efectos está en 0
         UpdateEffectDisplay(); // Actualiza la UI de efectos (ocultando el indicador y poniendo el contador a 0)
+    }
+
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            TakeDamage(1);
+        }
+        if (Input.GetKeyDown(KeyCode.H))
+        {
+            Debug.Log("[Test] Intentando curar al jugador desde Update con Heal(1)");
+            Heal(1);
+        }
     }
 
     /// <summary>
@@ -217,4 +246,92 @@ public class PlayerStats : MonoBehaviour
     {
         HasFiredRevolverThisTurn = false;
     }
+
+
+    private void Die()
+    {
+        CurrentHealth = 0;
+        Debug.LogWarning("[PlayerStats] ¡El jugador ha muerto!");
+        // Aquí puedes poner lógica de Game Over, reinicio, etc.
+    }
+
+    private void InitializeHeartUI()
+    {
+        if (heartUIPrefab == null || heartUIParent == null)
+        {
+            Debug.LogWarning("[PlayerStats] Heart UI Prefab o Heart UI Parent no asignado.");
+            return;
+        }
+
+        foreach (var heart in activeHearts)
+            Destroy(heart);
+        activeHearts.Clear();
+
+        for (int i = 0; i < maxHealth; i++)
+        {
+            GameObject newHeart = Instantiate(heartUIPrefab, heartUIParent);
+            newHeart.name = $"PlayerHeart_{i}";
+            activeHearts.Add(newHeart);
+        }
+    }
+
+    private void UpdateHeartUI()
+    {
+        for (int i = 0; i < activeHearts.Count; i++)
+        {
+            if (activeHearts[i] != null)
+            {
+                bool isFull = i < CurrentHealth;
+
+                // Para UI (Image)
+                Image img = activeHearts[i].GetComponent<Image>();
+                if (img != null)
+                    img.color = isFull ? Color.red : Color.gray;
+
+                // Para mundo (SpriteRenderer)
+                SpriteRenderer sr = activeHearts[i].GetComponent<SpriteRenderer>();
+                if (sr != null)
+                    sr.color = isFull ? Color.red : Color.gray;
+            }
+        }
+    }
+
+    public void TakeDamage(int amount)
+    {
+        int damageTaken = Mathf.Min(amount, CurrentHealth);
+        CurrentHealth -= damageTaken;
+        Debug.Log($"[PlayerStats] El jugador recibió {damageTaken} de daño. HP restante: {CurrentHealth}");
+
+        UpdateHeartUI();
+
+        if (CurrentHealth <= 0) Die();
+    }
+
+    public bool CanBeDamaged()
+    {
+        // Aquí puedes añadir lógica de inmunidad, escudos, etc. en el futuro.
+        return true; // De momento, siempre puede ser dañado.
+    }
+
+    public void Heal(int amount)
+    {
+        if (CurrentHealth < maxHealth)
+        {
+            int healAmount = Mathf.Min(amount, maxHealth - CurrentHealth);
+            CurrentHealth += healAmount;
+            Debug.Log($"[PlayerStats] El jugador se curó {healAmount} punto(s) de vida. HP actual: {CurrentHealth}");
+            UpdateHeartUI();
+        }
+        else
+        {
+            Debug.Log("[PlayerStats] El jugador ya tiene la vida al máximo. No se puede curar más.");
+        }
+    }
+
+/*     public void HealWithBeer()
+    {
+        Debug.Log("[PlayerStats] Se ha usado una Cerveza. Intentando curar 1 vida.");
+        Heal(1);
+    }
+ */
 }
