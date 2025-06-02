@@ -320,31 +320,17 @@ public class TurnManager : MonoBehaviour
 
     private IEnumerator DrawCardsAndLogRevolverRoutine()
     {
-        // Lógica de robo de cartas (movida desde el antiguo HandleDrawPhase)
-        if (currentTurnNumber == 1) // Si es el primer turno del juego
-        {
-            Debug.Log($"[TurnManager] Es el primer turno. Robando {MAX_HAND_SIZE} cartas iniciales.");
-            for (int i = 0; i < MAX_HAND_SIZE; i++)
-            {
-                OnRequestDrawCard?.Invoke(); // Pide al CardManager que robe una carta.
-                // Opcional: añadir un pequeño retraso visual entre cada carta robada
-                // yield return new WaitForSeconds(0.05f); 
-            }
-            // Espera hasta que la mano tenga el tamaño completo de MAX_HAND_SIZE.
-            // Esto asegura que todas las cartas iniciales se hayan procesado en CardManager.
-            yield return new WaitUntil(() => GetHandCount() == MAX_HAND_SIZE);
-        }
-        else // Es un turno posterior, robar una carta normal
-        {
-            OnRequestDrawCard?.Invoke(); // Pide al CardManager que robe una carta.
-            // Espera un frame para que CardManager procese la solicitud y añada la carta.
-            yield return null;
-            // O, una espera más robusta:
-            // yield return new WaitUntil(() => GetHandCount() > (MAX_HAND_SIZE - 1) || currentTurnNumber == 0); // Asume que la mano tiene 4 o menos cartas antes de robar 1.
-        }
+        int cardsToDraw = (currentTurnNumber == 1) ? MAX_HAND_SIZE : 1;
 
-        // --- Este es el punto donde la corrutina espera a que el robo termine ---
-        // y luego solicita la actualización del log del Revolver.
+        Debug.Log($"[TurnManager] Robando {cardsToDraw} carta(s).");
+        for (int i = 0; i < cardsToDraw; i++)
+        {
+            OnRequestDrawCard?.Invoke();
+            yield return new WaitForSeconds(0.5f);
+        }
+        // Espera a que la mano tenga el tamaño correcto (por seguridad)
+        yield return new WaitUntil(() => GetHandCount() >= cardsToDraw);
+
         if (CardManager.Instance != null)
         {
             CardManager.Instance.RequestRevolverStatusUpdate();
@@ -354,7 +340,10 @@ public class TurnManager : MonoBehaviour
             Debug.LogError("[TurnManager] CardManager.Instance es null. No se puede actualizar el estado del Revolver después de robar.");
         }
 
-        AdvancePhase(); // Avanza la fase SOLO después de que el robo y el log del Revolver se han actualizado.
+        // Elimina la espera fija de 5 segundos
+        // yield return new WaitForSeconds(5f);
+
+        AdvancePhase();
     }
     /// Método llamado por el botón "Fire Revolver" para intentar disparar el Revolver.
     public void OnFireRevolverButtonPressed()
