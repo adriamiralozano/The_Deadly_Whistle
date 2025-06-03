@@ -324,8 +324,9 @@ public class CardManager : MonoBehaviour
 
             rect.DOKill();
             // Solo animar si el objeto sigue existiendo
-            if (rect.gameObject != null && rect.gameObject.activeInHierarchy)
+            if (rect != null && !rect.Equals(null) && rect.gameObject != null && rect.gameObject.activeInHierarchy)
             {
+                rect.DOKill();
                 rect.DOLocalMove(targetPos, cardMoveDuration).SetEase(Ease.InOutQuad)
                     .OnComplete(() => {
                         if (behaviour != null && behaviour.gameObject != null)
@@ -547,7 +548,15 @@ public class CardManager : MonoBehaviour
     private IEnumerator DestroyAfterFrame(GameObject go)
     {
         yield return null; // Espera un frame
-        Destroy(go);
+        if (go != null)
+        {
+            var rect = go.GetComponent<RectTransform>();
+            if (rect != null)
+            {
+                rect.DOKill(true); // Mata todos los tweens asociados a este rectTransform
+            }
+            Destroy(go);
+        }
     }
     private IEnumerator DisparoConQTECoroutine(CombosManager combosManager, int shotsToFire)
     {
