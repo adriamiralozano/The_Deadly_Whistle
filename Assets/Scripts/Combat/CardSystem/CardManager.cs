@@ -502,18 +502,18 @@ public class CardManager : MonoBehaviour
 
         if (shotsToFire > 0)
         {
-            Debug.Log($"[CardManager] ¡Revolver DISPARADO! Consumiendo {shotsToFire} bala(s) Caliber .45.");
+            Debug.Log($"[CardManager] ¡Revolver DISPARADO! Iniciando {shotsToFire} QuickTime Events.");
             DiscardSpecificCardsFromHand("Caliber45Bullet", shotsToFire);
 
-            Enemy targetEnemy = FindObjectOfType<Enemy>();
-            if (targetEnemy != null)
+            // Inicia la secuencia de QTEs en vez de hacer daño directo
+            CombosManager combosManager = FindObjectOfType<CombosManager>();
+            if (combosManager != null)
             {
-                targetEnemy.TakeDamage(shotsToFire);
-                Debug.Log($"[CardManager] {shotsToFire} disparos impactaron a '{targetEnemy.Data.enemyName}'.");
+                StartCoroutine(DisparoConQTECoroutine(combosManager, shotsToFire));
             }
             else
             {
-                Debug.LogWarning("[CardManager] No se encontró ningún enemigo activo en la escena para disparar.");
+                Debug.LogError("[CardManager] No se encontró CombosManager en la escena.");
             }
 
             int remainingBullets = CountCardsInHand("Caliber45Bullet");
@@ -534,6 +534,35 @@ public class CardManager : MonoBehaviour
         yield return null; // Espera un frame
         Destroy(go);
     }
+    private IEnumerator DisparoConQTECoroutine(CombosManager combosManager, int shotsToFire)
+    {
+        int aciertos = 0;
+        for (int i = 0; i < shotsToFire; i++)
+        {
+            combosManager.EmpezarQuickTimeEvents();
+            yield return new WaitUntil(() => combosManager.Terminado);
 
+            if (combosManager.ExitoCombo)
+                aciertos++;
+
+            yield return new WaitUntil(() => !combosManager.Desvaneciendo);
+            yield return new WaitForSeconds(0.05f);
+        }
+
+        Enemy targetEnemy = FindObjectOfType<Enemy>();
+        if (targetEnemy != null && aciertos > 0)
+        {
+            targetEnemy.TakeDamage(aciertos);
+            Debug.Log($"[CardManager] {aciertos} disparos impactaron a '{targetEnemy.Data.enemyName}' tras QTEs.");
+        }
+        else if (aciertos == 0)
+        {
+            Debug.Log("[CardManager] No se logró ningún disparo exitoso tras los QTEs.");
+        }
+
+        yield return new WaitForSeconds(1f);
+        if (TurnManager.Instance != null)
+            TurnManager.Instance.AdvancePhase();
+    }
 
 }

@@ -271,6 +271,9 @@ public class CardBehaviour2 : MonoBehaviour,
 
     public void OnBeginDrag(PointerEventData eventData)
     {
+        if (TurnManager.Instance == null || TurnManager.Instance.CurrentPhase != TurnManager.TurnPhase.ActionPhase)
+            return;
+
         if (!selectable.interactable) return;
 
         IsAnyCardDragging = true;

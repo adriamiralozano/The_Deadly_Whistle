@@ -20,10 +20,14 @@ public class CombosManager : MonoBehaviour
     private List<QTEPoint> puntos = new List<QTEPoint>();
     private int currentIndex = 0;
     private bool terminado = true;
+    public bool Terminado => terminado;
     private bool falloDetectado = false;
     private Coroutine timeoutCoroutine;
     private Coroutine mostrarQTECoroutine;
-    private bool exitoCombo = false; 
+    private bool exitoCombo = false;
+    public bool ExitoCombo => exitoCombo;
+    private bool desvaneciendo = false;
+    public bool Desvaneciendo => desvaneciendo;
 
     private List<Vector2> posicionesQTE = new List<Vector2>();
 
@@ -216,6 +220,7 @@ public class CombosManager : MonoBehaviour
 
     private IEnumerator DesvanecerYPurgarPuntos(float duracion)
     {
+        desvaneciendo = true;
         Debug.Log("Combo terminado. ¿Éxito?: " + exitoCombo);
         float tiempo = 0f;
         // Guarda el color inicial de cada punto
@@ -235,9 +240,13 @@ public class CombosManager : MonoBehaviour
             float t = tiempo / duracion;
             for (int i = 0; i < images.Count; i++)
             {
-                var color = coloresIniciales[i];
-                color.a = Mathf.Lerp(coloresIniciales[i].a, 0f, t);
-                images[i].color = color;
+                // Verifica que la imagen y su GameObject sigan existiendo y activos
+                if (images[i] != null && images[i].gameObject != null && images[i].gameObject.activeInHierarchy)
+                {
+                    var color = coloresIniciales[i];
+                    color.a = Mathf.Lerp(coloresIniciales[i].a, 0f, t);
+                    images[i].color = color;
+                }
             }
             tiempo += Time.deltaTime;
             yield return null;
@@ -248,7 +257,7 @@ public class CombosManager : MonoBehaviour
             if (p != null) p.gameObject.SetActive(false);
         puntos.Clear();
         terminado = true;
-        EmpezarQuickTimeEvents();
+        desvaneciendo = false;
     }
     
 }

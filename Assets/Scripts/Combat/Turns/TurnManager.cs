@@ -24,6 +24,7 @@ public class TurnManager : MonoBehaviour
         Preparation,    // Fase de preparación
         DrawPhase,      // Fase de robo: robar una carta.
         ActionPhase,    // Fase de acción: jugar cartas.
+        ShotPhase,        // Fase de disparo: disparar el revolver.
         EndTurn,         // Fase final del turno: limpieza y preparación para el siguiente.
         EnemyTurn       // Fase de turno del enemigo 
     }
@@ -128,6 +129,9 @@ public class TurnManager : MonoBehaviour
             case TurnPhase.ActionPhase:
                 HandleActionPhase();
                 break;
+            case TurnPhase.ShotPhase: // <--- Añade este bloque
+                HandleShotPhase();
+                break;
             case TurnPhase.EndTurn:
                 StartCoroutine(HandleEndTurnPhaseRoutine());
                 break;
@@ -165,6 +169,10 @@ public class TurnManager : MonoBehaviour
                 {
                     SetPhase(TurnPhase.EndTurn);
                 }
+                break;
+
+            case TurnPhase.ShotPhase:
+                SetPhase(TurnPhase.EndTurn);
                 break;
 
 
@@ -358,6 +366,7 @@ public class TurnManager : MonoBehaviour
         if (shotSuccessful)
         {
             Debug.Log("[TurnManager] ¡Disparo de Revolver exitoso!");
+            SetPhase(TurnPhase.ShotPhase);
         }
         else
         {
@@ -365,12 +374,18 @@ public class TurnManager : MonoBehaviour
         }
     }
 
-    
+
     private IEnumerator HandlePreparationPhaseRoutine()
     {
         Debug.Log("Fase de preparación inicial...");
         yield return new WaitForSeconds(1f); // Espera 1 segundo
         StartPlayerTurn(); // Ahora sí, inicia el primer turno normalmente
+    }
+    
+    private void HandleShotPhase()
+    {
+        Debug.Log("Iniciando Fase de Disparo (ShotPhase). Aquí va la lógica de disparo especial.");
+        // Aquí puedes poner la lógica específica de la ShotPhase
     }
 
 }
