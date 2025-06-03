@@ -23,6 +23,7 @@ public class CombosManager : MonoBehaviour
     private bool falloDetectado = false;
     private Coroutine timeoutCoroutine;
     private Coroutine mostrarQTECoroutine;
+    private bool exitoCombo = false; 
 
     private List<Vector2> posicionesQTE = new List<Vector2>();
 
@@ -67,7 +68,7 @@ public class CombosManager : MonoBehaviour
         }
         if (!terminado)
         {
-            // Si no se ha terminado, cuenta como fallo
+            exitoCombo = false;
             falloDetectado = true;
             foreach (var p in puntos)
                 p.SetFail();
@@ -169,6 +170,7 @@ public class CombosManager : MonoBehaviour
             currentIndex++;
             if (currentIndex >= puntos.Count)
             {
+                exitoCombo = true;
                 terminado = true;
                 if (timeoutCoroutine != null)
                     StopCoroutine(timeoutCoroutine);
@@ -177,6 +179,7 @@ public class CombosManager : MonoBehaviour
         }
         else
         {
+            exitoCombo = false;
             falloDetectado = true;
             foreach (var p in puntos)
                 p.SetFail();
@@ -186,11 +189,12 @@ public class CombosManager : MonoBehaviour
             if (timeoutCoroutine != null)
                 StopCoroutine(timeoutCoroutine);
             if (tiempoSlider != null)
-                tiempoSlider.gameObject.SetActive(false);    
+                tiempoSlider.gameObject.SetActive(false);
             StartCoroutine(MostrarRestantesFallidos());
             StartCoroutine(DesvanecerYPurgarPuntos(0.5f));
             terminado = true;
         }
+
     }
 
     // Instancia los puntos que faltan tras el fallo, en rojo y alpha reducido
@@ -212,6 +216,7 @@ public class CombosManager : MonoBehaviour
 
     private IEnumerator DesvanecerYPurgarPuntos(float duracion)
     {
+        Debug.Log("Combo terminado. ¿Éxito?: " + exitoCombo);
         float tiempo = 0f;
         // Guarda el color inicial de cada punto
         List<Image> images = new List<Image>();
