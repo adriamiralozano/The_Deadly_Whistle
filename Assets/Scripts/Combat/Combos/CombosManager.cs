@@ -95,11 +95,14 @@ public class CombosManager : MonoBehaviour
         float puntoRadio = ((RectTransform)puntoPrefab.transform).rect.width * 0.5f;
         float radioMinimo = puntoRadio * 2f;
 
+        // Calcula los márgenes internos
+        float margen = puntoRadio;
+
         for (int i = 0; i < cantidadPuntos; i++)
         {
             Vector2 pos;
             int intentos = 0;
-            const int maxIntentos = 50;
+            const int maxIntentos = 100;
             do
             {
                 float angulo = ultimoAngulo + Random.Range(anguloMin, anguloMax) * (Random.value > 0.5f ? 1 : -1);
@@ -111,8 +114,18 @@ public class CombosManager : MonoBehaviour
                 ) * distancia;
 
                 pos = ultimoPunto + offset;
-                pos.x = Mathf.Clamp(pos.x, contenedor.rect.xMin, contenedor.rect.xMax);
-                pos.y = Mathf.Clamp(pos.y, contenedor.rect.yMin, contenedor.rect.yMax);
+
+                // Aplica el margen para que no se salgan del contenedor
+                pos.x = Mathf.Clamp(
+                    pos.x,
+                    contenedor.rect.xMin + margen,
+                    contenedor.rect.xMax - margen
+                );
+                pos.y = Mathf.Clamp(
+                    pos.y,
+                    contenedor.rect.yMin + margen,
+                    contenedor.rect.yMax - margen
+                );
 
                 intentos++;
             } while (!EsPosicionValida(pos, posicionesQTE, radioMinimo) && intentos < maxIntentos);
@@ -178,6 +191,8 @@ public class CombosManager : MonoBehaviour
                 terminado = true;
                 if (timeoutCoroutine != null)
                     StopCoroutine(timeoutCoroutine);
+                if (tiempoSlider != null)
+                    tiempoSlider.gameObject.SetActive(false);
                 StartCoroutine(DesvanecerYPurgarPuntos(0.5f));
             }
         }

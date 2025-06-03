@@ -502,14 +502,13 @@ public class CardManager : MonoBehaviour
 
         if (shotsToFire > 0)
         {
-            Debug.Log($"[CardManager] ¡Revolver DISPARADO! Iniciando {shotsToFire} QuickTime Events.");
-            DiscardSpecificCardsFromHand("Caliber45Bullet", shotsToFire);
 
             // Inicia la secuencia de QTEs en vez de hacer daño directo
             CombosManager combosManager = FindObjectOfType<CombosManager>();
             if (combosManager != null)
             {
                 StartCoroutine(DisparoConQTECoroutine(combosManager, shotsToFire));
+                DiscardSpecificCardsFromHand("Caliber45Bullet", shotsToFire);
             }
             else
             {
