@@ -30,8 +30,10 @@ public class QTEPoint : MonoBehaviour
         image.color = pressedColor;
     }
 
-    public void SetFail()
+    public void SetFail(float alpha = 1f)
     {
-        image.color = failColor;
+        var color = failColor;
+        color.a = alpha;
+        image.color = color;
     }
 }
