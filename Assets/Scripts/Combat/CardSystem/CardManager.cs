@@ -306,16 +306,32 @@ public class CardManager : MonoBehaviour
         for (int i = 0; i < playerHand.Count; i++)
         {
             var cardData = playerHand[i];
+            if (!handUIInstances.ContainsKey(cardData.instanceID))
+                continue;
+
             var cardGO = handUIInstances[cardData.instanceID];
+            if (cardGO == null || !cardGO.activeInHierarchy)
+                continue;
+
             var rect = cardGO.GetComponent<RectTransform>();
             var behaviour = cardGO.GetComponent<CardBehaviour2>();
 
+            // Protección extra: verifica que rect y behaviour no sean null y que el objeto no esté destruido
+            if (rect == null || behaviour == null || rect.Equals(null) || cardGO == null)
+                continue;
+
             Vector3 targetPos = new Vector3(startX + i * spacing, 0, 0);
 
-            // Animación suave con DOTween
             rect.DOKill();
-            rect.DOLocalMove(targetPos, cardMoveDuration).SetEase(Ease.InOutQuad)
-                .OnComplete(() => behaviour.UpdateBaseLayoutPosition());
+            // Solo animar si el objeto sigue existiendo
+            if (rect.gameObject != null && rect.gameObject.activeInHierarchy)
+            {
+                rect.DOLocalMove(targetPos, cardMoveDuration).SetEase(Ease.InOutQuad)
+                    .OnComplete(() => {
+                        if (behaviour != null && behaviour.gameObject != null)
+                            behaviour.UpdateBaseLayoutPosition();
+                    });
+            }
         }
     }
 
@@ -527,7 +543,7 @@ public class CardManager : MonoBehaviour
             return false;
         }
     }
-    
+
     private IEnumerator DestroyAfterFrame(GameObject go)
     {
         yield return null; // Espera un frame
@@ -562,6 +578,15 @@ public class CardManager : MonoBehaviour
         yield return new WaitForSeconds(1f);
         if (TurnManager.Instance != null)
             TurnManager.Instance.AdvancePhase();
+    }
+    
+    public IEnumerator DrawCards(int cantidad, float delay = 0.5f)
+    {
+        for (int i = 0; i < cantidad; i++)
+        {
+            DrawCard();
+            yield return new WaitForSeconds(delay);
+        }
     }
 
 }
