@@ -348,6 +348,7 @@ public class CardBehaviour2 : MonoBehaviour,
         {
             cardCanvas.sortingOrder = hoverUISortingOrder;
         }
+        AudioManager.Instance?.PlayCardHover();
     }
 
     public void OnPointerExit(PointerEventData eventData)

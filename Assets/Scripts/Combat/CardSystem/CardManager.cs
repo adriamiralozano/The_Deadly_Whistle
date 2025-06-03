@@ -166,6 +166,8 @@ public class CardManager : MonoBehaviour
             Debug.LogError($"[CardManager] El prefab {cardUIPrefab.name} no tiene el script CardUI. Asegúrate de que CardUI.cs está adjunto al prefab de la carta.");
         }
 
+        AudioManager.Instance?.PlayCardDraw();
+
         UpdateDeckCountDisplay();
         OnHandCountUpdated?.Invoke(playerHand.Count);
         /* Debug.Log($"[CardManager] Carta robada: {drawnCardData.cardID} (Instance ID: {drawnCardData.instanceID}). Mazo restante: {currentDeck.Count}. Cartas en mano: {playerHand.Count}."); */
