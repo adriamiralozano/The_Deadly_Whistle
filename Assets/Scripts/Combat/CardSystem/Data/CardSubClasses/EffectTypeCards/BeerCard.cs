@@ -11,6 +11,11 @@ public class CervezaCardData : CardData
 
     public override void ExecuteEffect()
     {
+        DrinkBeer();
+    }
+
+    private void DrinkBeer()
+    {
         if (PlayerStats.Instance != null)
         {
             Debug.Log("[CervezaCardData] Ejecutando efecto: curar 1 vida al jugador.");

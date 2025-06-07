@@ -3,10 +3,10 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using System.Collections;
+using DG.Tweening;
 
 [RequireComponent(typeof(Selectable))]
 [RequireComponent(typeof(CanvasGroup))]
-[RequireComponent(typeof(LayoutElement))]
 public class CardBehaviour2 : MonoBehaviour,
     IBeginDragHandler,
     IDragHandler,
@@ -56,12 +56,12 @@ public class CardBehaviour2 : MonoBehaviour,
     // =================================================================================
 
     [Header("Idle Animation Settings")]
-    [SerializeField] private AnimationCurve smoothCurve = AnimationCurve.EaseInOut(0,0,1,1);
-    
+    [SerializeField] private AnimationCurve smoothCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
+
     [Header("Sorting Settings (UI)")]
     [SerializeField] private int hoverUISortingOrder = 500; // Sorting Order para el estado de hover
     [SerializeField] private int draggingUISortingOrder = 1000; // Sorting Order para el estado de arrastre (más alto)
-    
+
 
     [Header("Hover Settings")]
     [SerializeField] private float hoverDuration = 0.2f;
@@ -80,7 +80,7 @@ public class CardBehaviour2 : MonoBehaviour,
     [SerializeField] private float dragLerpSpeed = 10f;
     [SerializeField] private float returnSpeed = 8f;
     [SerializeField] private float dragScaleSpeed = 20f;
-    
+
 
 
     private bool basePositionInitialized = false;
@@ -150,6 +150,8 @@ public class CardBehaviour2 : MonoBehaviour,
             return;
         }
 
+        //Debug.Log($"[CardBehaviour2] {gameObject.name} Update: trueBaseLayoutPosition={trueBaseLayoutPosition}, localPosition={rectTransform.localPosition}");
+
         rectTransform.rotation = Quaternion.Lerp(
             rectTransform.rotation,
             targetRotation * shakeOffset,
@@ -189,7 +191,7 @@ public class CardBehaviour2 : MonoBehaviour,
             float rotationZ = Mathf.Clamp(-(Input.mousePosition.x - RectTransformUtility.WorldToScreenPoint(parentCanvas.worldCamera, rectTransform.position).x) * 0.1f, -maxRotation, maxRotation);
             targetRotation = Quaternion.Euler(0, 0, rotationZ);
 
-            targetScale = originalScale * 2f; // Mantener la escala de arrastre al doble
+            targetScale = originalScale * 1.5f; // Mantener la escala de arrastre al doble
             currentLocalOffset = Vector3.up * hoverVerticalOffset;
         }
         else if (!isReturning)
@@ -269,6 +271,9 @@ public class CardBehaviour2 : MonoBehaviour,
 
     public void OnBeginDrag(PointerEventData eventData)
     {
+        if (TurnManager.Instance == null || TurnManager.Instance.CurrentPhase != TurnManager.TurnPhase.ActionPhase)
+            return;
+
         if (!selectable.interactable) return;
 
         IsAnyCardDragging = true;
@@ -303,7 +308,7 @@ public class CardBehaviour2 : MonoBehaviour,
         );
         initialDragOffset = rectTransform.anchoredPosition - localCursorPointInCanvas;
 
-        targetScale = originalScale * 2f;
+        targetScale = originalScale * 1.5f;
     }
 
     public void OnDrag(PointerEventData eventData)
@@ -313,6 +318,7 @@ public class CardBehaviour2 : MonoBehaviour,
 
     public void OnEndDrag(PointerEventData eventData)
     {
+        Debug.Log($"[CardBehaviour2] OnEndDrag llamado para {gameObject.name}");
         if (!isDragging) return;
 
         IsAnyCardDragging = false;
@@ -342,6 +348,7 @@ public class CardBehaviour2 : MonoBehaviour,
         {
             cardCanvas.sortingOrder = hoverUISortingOrder;
         }
+        AudioManager.Instance?.PlayCardHover();
     }
 
     public void OnPointerExit(PointerEventData eventData)
@@ -354,8 +361,9 @@ public class CardBehaviour2 : MonoBehaviour,
 
     private IEnumerator ReturnToOriginalPosition()
     {
+        Debug.Log($"[CardBehaviour2] {gameObject.name} ReturnToOriginalPosition: from {rectTransform.localPosition} to {trueBaseLayoutPosition}");
         Vector3 startPosition = rectTransform.localPosition;
-        Vector3 endPosition = trueBaseLayoutPosition;
+        Vector3 endPosition = new Vector3(trueBaseLayoutPosition.x, 0, trueBaseLayoutPosition.z); // Fuerza Y=0
 
         float t = 0f;
 
@@ -469,7 +477,7 @@ public class CardBehaviour2 : MonoBehaviour,
             StopCoroutine(moveCoroutine);
         moveCoroutine = StartCoroutine(AnimateToCurrentAnchoredPosition(duration));
     }
-    
+
     private IEnumerator AnimateToCurrentAnchoredPosition(float duration)
     {
         Vector2 start = rectTransform.anchoredPosition;
@@ -486,6 +494,27 @@ public class CardBehaviour2 : MonoBehaviour,
         }
         rectTransform.anchoredPosition = end;
         moveCoroutine = null;
+    }
+
+    public void UpdateBaseLayoutPosition()
+    {
+        if (rectTransform != null)
+            Debug.Log($"[CardBehaviour2] UpdateBaseLayoutPosition: {gameObject.name} base={rectTransform.localPosition}");
+            trueBaseLayoutPosition = rectTransform.localPosition;
+        basePositionInitialized = true;
+    }
+    
+    public void AnimateToCurrentLayoutPosition(float duration = 0.3f)
+    {
+        if (moveCoroutine != null)
+            StopCoroutine(moveCoroutine);
+
+        // Detenemos cualquier animación DOTween previa
+        rectTransform.DOKill();
+
+        // Animamos hacia la posición actual del layout
+        rectTransform.DOLocalMove(rectTransform.localPosition, duration).SetEase(Ease.InOutQuad);
+
     }
 
 }

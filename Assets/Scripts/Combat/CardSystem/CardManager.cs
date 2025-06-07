@@ -5,20 +5,27 @@ using TMPro;
 using System;
 using System.Linq;
 using UnityEngine.UI;
+using DG.Tweening; // Asegúrate de tener DOTween instalado para animaciones
+using System.Collections;
 
 public class CardManager : MonoBehaviour
 {
     [Header("Configuration")]
     [SerializeField] private DeckData playerStartingDeckData;
 
+
     [Header("UI References")]
     [SerializeField] private TextMeshProUGUI deckCountText;
     [SerializeField] private TextMeshProUGUI discardPileCountText;
+
+    [Header("Animación de cartas")]
+    [SerializeField] private float cardMoveDuration = 0.35f;
 
     // --- REFERENCIAS DE UI DE CARTA ---
     [Header("Card UI References")]
     [SerializeField] private GameObject cardUIPrefab;
     [SerializeField] private Transform handContainer;
+    [SerializeField] private RectTransform cardSpawnPoint;
 
     private List<CardData> currentDeck = new List<CardData>();
     private List<CardData> playerHand = new List<CardData>();
@@ -143,7 +150,12 @@ public class CardManager : MonoBehaviour
         playerHand.Add(drawnCardData);
 
         GameObject cardUI = Instantiate(cardUIPrefab, handContainer);
+        RectTransform rect = cardUI.GetComponent<RectTransform>();
         CardUI uiScript = cardUI.GetComponent<CardUI>();
+
+        if (cardSpawnPoint != null)
+            rect.anchoredPosition = cardSpawnPoint.anchoredPosition;
+
         if (uiScript != null)
         {
             uiScript.SetCardData(drawnCardData);
@@ -153,6 +165,8 @@ public class CardManager : MonoBehaviour
         {
             Debug.LogError($"[CardManager] El prefab {cardUIPrefab.name} no tiene el script CardUI. Asegúrate de que CardUI.cs está adjunto al prefab de la carta.");
         }
+
+        AudioManager.Instance?.PlayCardDraw();
 
         UpdateDeckCountDisplay();
         OnHandCountUpdated?.Invoke(playerHand.Count);
@@ -204,7 +218,7 @@ public class CardManager : MonoBehaviour
         {
             GameObject uiInstance = handUIInstances[cardToPlay.instanceID];
             handUIInstances.Remove(cardToPlay.instanceID);
-            Destroy(uiInstance);
+            StartCoroutine(DestroyAfterFrame(uiInstance));
             Debug.Log($"[CardManager] Instancia UI de '{cardToPlay.cardID}' destruida (carta jugada y movida a descarte lógico).");
         }
         else
@@ -263,41 +277,64 @@ public class CardManager : MonoBehaviour
 
     private void UpdateHandVisuals()
     {
-        foreach (var uiInstance in handUIInstances.Values)
+        // Elimina cartas que ya no están en la mano
+        var keysToRemove = handUIInstances.Keys.Except(playerHand.Select(c => c.instanceID)).ToList();
+        foreach (var key in keysToRemove)
         {
-            Destroy(uiInstance);
+            Destroy(handUIInstances[key]);
+            handUIInstances.Remove(key);
         }
-        handUIInstances.Clear();
 
+        // Instancia solo las cartas nuevas
         foreach (var cardData in playerHand)
         {
-            GameObject cardUI = Instantiate(cardUIPrefab, handContainer);
-            CardUI uiScript = cardUI.GetComponent<CardUI>();
-            if (uiScript != null)
+            if (!handUIInstances.ContainsKey(cardData.instanceID))
             {
-                uiScript.SetCardData(cardData);
+                GameObject cardUI = Instantiate(cardUIPrefab, handContainer);
+                LayoutElement layoutElement = cardUI.GetComponent<LayoutElement>();
+                if (layoutElement != null)
+                    layoutElement.enabled = false;
+                CardUI uiScript = cardUI.GetComponent<CardUI>();
+                if (uiScript != null)
+                    uiScript.SetCardData(cardData);
                 handUIInstances.Add(cardData.instanceID, cardUI);
-            }
-            else
-            {
-                Debug.LogError($"[CardManager] El prefab {cardUIPrefab.name} no tiene el script CardUI.");
             }
         }
 
-        if (handContainer != null)
+        // Distribuye las cartas en línea centrada (puedes ajustar spacing)
+        float spacing = 180f;
+        float startX = -((playerHand.Count - 1) * spacing) / 2f;
+
+        for (int i = 0; i < playerHand.Count; i++)
         {
-            LayoutRebuilder.ForceRebuildLayoutImmediate(handContainer.GetComponent<RectTransform>());
-            // ANIMAR TODAS LAS CARTAS
-            foreach (Transform card in handContainer)
+            var cardData = playerHand[i];
+            if (!handUIInstances.ContainsKey(cardData.instanceID))
+                continue;
+
+            var cardGO = handUIInstances[cardData.instanceID];
+            if (cardGO == null || !cardGO.activeInHierarchy)
+                continue;
+
+            var rect = cardGO.GetComponent<RectTransform>();
+            var behaviour = cardGO.GetComponent<CardBehaviour2>();
+
+            // Protección extra: verifica que rect y behaviour no sean null y que el objeto no esté destruido
+            if (rect == null || behaviour == null || rect.Equals(null) || cardGO == null)
+                continue;
+
+            Vector3 targetPos = new Vector3(startX + i * spacing, 0, 0);
+
+            rect.DOKill();
+            // Solo animar si el objeto sigue existiendo
+            if (rect != null && !rect.Equals(null) && rect.gameObject != null && rect.gameObject.activeInHierarchy)
             {
-                var behaviour = card.GetComponent<CardBehaviour2>();
-                if (behaviour != null)
-                    behaviour.AnimateToLayoutPosition(0.5f); // Duración de la animación
+                rect.DOKill();
+                rect.DOLocalMove(targetPos, cardMoveDuration).SetEase(Ease.InOutQuad)
+                    .OnComplete(() => {
+                        if (behaviour != null && behaviour.gameObject != null)
+                            behaviour.UpdateBaseLayoutPosition();
+                    });
             }
-        }
-        else
-        {
-            Debug.LogError("[CardManager] El HandContainer no está asignado. Asegúrate de arrastrarlo en el Inspector.");
         }
     }
 
@@ -484,18 +521,17 @@ public class CardManager : MonoBehaviour
 
         if (shotsToFire > 0)
         {
-            Debug.Log($"[CardManager] ¡Revolver DISPARADO! Consumiendo {shotsToFire} bala(s) Caliber .45.");
-            DiscardSpecificCardsFromHand("Caliber45Bullet", shotsToFire);
 
-            Enemy targetEnemy = FindObjectOfType<Enemy>();
-            if (targetEnemy != null)
+            // Inicia la secuencia de QTEs en vez de hacer daño directo
+            CombosManager combosManager = FindObjectOfType<CombosManager>();
+            if (combosManager != null)
             {
-                targetEnemy.TakeDamage(shotsToFire);
-                Debug.Log($"[CardManager] {shotsToFire} disparos impactaron a '{targetEnemy.Data.enemyName}'.");
+                StartCoroutine(DisparoConQTECoroutine(combosManager, shotsToFire));
+                DiscardSpecificCardsFromHand("Caliber45Bullet", shotsToFire);
             }
             else
             {
-                Debug.LogWarning("[CardManager] No se encontró ningún enemigo activo en la escena para disparar.");
+                Debug.LogError("[CardManager] No se encontró CombosManager en la escena.");
             }
 
             int remainingBullets = CountCardsInHand("Caliber45Bullet");
@@ -510,4 +546,58 @@ public class CardManager : MonoBehaviour
             return false;
         }
     }
+
+    private IEnumerator DestroyAfterFrame(GameObject go)
+    {
+        yield return null; // Espera un frame
+        if (go != null)
+        {
+            var rect = go.GetComponent<RectTransform>();
+            if (rect != null)
+            {
+                rect.DOKill(true); // Mata todos los tweens asociados a este rectTransform
+            }
+            Destroy(go);
+        }
+    }
+    private IEnumerator DisparoConQTECoroutine(CombosManager combosManager, int shotsToFire)
+    {
+        int aciertos = 0;
+        for (int i = 0; i < shotsToFire; i++)
+        {
+            combosManager.EmpezarQuickTimeEvents();
+            yield return new WaitUntil(() => combosManager.Terminado);
+
+            if (combosManager.ExitoCombo)
+                aciertos++;
+
+            yield return new WaitUntil(() => !combosManager.Desvaneciendo);
+            yield return new WaitForSeconds(0.05f);
+        }
+
+        Enemy targetEnemy = FindObjectOfType<Enemy>();
+        if (targetEnemy != null && aciertos > 0)
+        {
+            targetEnemy.TakeDamage(aciertos);
+            Debug.Log($"[CardManager] {aciertos} disparos impactaron a '{targetEnemy.Data.enemyName}' tras QTEs.");
+        }
+        else if (aciertos == 0)
+        {
+            Debug.Log("[CardManager] No se logró ningún disparo exitoso tras los QTEs.");
+        }
+
+        yield return new WaitForSeconds(1f);
+        if (TurnManager.Instance != null)
+            TurnManager.Instance.AdvancePhase();
+    }
+    
+    public IEnumerator DrawCards(int cantidad, float delay = 0.5f)
+    {
+        for (int i = 0; i < cantidad; i++)
+        {
+            DrawCard();
+            yield return new WaitForSeconds(delay);
+        }
+    }
+
 }

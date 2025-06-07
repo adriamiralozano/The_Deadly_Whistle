@@ -7,12 +7,6 @@ public class CardUI : MonoBehaviour
     private CardData cardData; // Referencia a los datos de la carta
     private Image cardImage; // Referencia al componente Image del GameObject principal
 
-   /*  [Header("Type Colors")]
-    public Color weaponColor = Color.red;     // Color para cartas de Arma
-    public Color effectColor = Color.yellow; // Color para cartas de Efecto (hechizo/habilidad)
-    public Color passiveColor = Color.blue;   // Color para cartas Pasivas
-    public Color defaultColor = Color.white;  // Color por defecto si el tipo no está definido */
-
     void Awake()
     {
         // Obtener la referencia al componente Image en el mismo GameObject
