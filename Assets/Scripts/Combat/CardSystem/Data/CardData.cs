@@ -12,12 +12,13 @@ public enum CardType
 [CreateAssetMenu(fileName = "NewCard", menuName = "Card System/Card Data")]
 public class CardData : ScriptableObject
 {
-    public string cardID;
+
     public Sprite artwork; // La imagen 2D de tu carta
     public CardType type;
 
-    [NonSerialized]
-    public string instanceID;
+    [NonSerialized] public string cardID;
+
+    [NonSerialized] public string instanceID;
 
     public CardData Clone()
     {

@@ -1,7 +1,7 @@
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "BagCard", menuName = "Card System/Cards/Bag")]
-public class BagCard : CardData
+public class BagCardData : CardData
 {
     private void OnEnable()
     {

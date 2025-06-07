@@ -1,7 +1,15 @@
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "NewRevolverCard", menuName = "Card System/Revolver Card Data")]
-public class RevolverCardData : WeaponCardData // Hereda de WeaponCardData
+[CreateAssetMenu(fileName = "NewRevolverCard", menuName = "Card System/Cards/Revolver")]
+public class RevolverCardData : CardData
 {
+    [Header("Revolver Stats")]
+    public int baseDamagePerHit = 1; 
     
+    private void OnEnable()
+    {
+        cardID = "RevolverCard";
+        type = CardType.Weapon;
+    }
+
 }

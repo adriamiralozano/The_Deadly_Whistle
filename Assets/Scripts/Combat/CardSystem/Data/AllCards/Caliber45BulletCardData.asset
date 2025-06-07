@@ -12,7 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d1ca5a8fd1ea92f4492bff8570d6de02, type: 3}
   m_Name: Caliber45BulletCardData
   m_EditorClassIdentifier: 
-  cardID: 
   artwork: {fileID: 0}
   type: 0
-  bulletCardID: Caliber45Bullet
+  instanceID: 
