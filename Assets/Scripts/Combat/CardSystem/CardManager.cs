@@ -330,7 +330,8 @@ public class CardManager : MonoBehaviour
             {
                 rect.DOKill();
                 rect.DOLocalMove(targetPos, cardMoveDuration).SetEase(Ease.InOutQuad)
-                    .OnComplete(() => {
+                    .OnComplete(() =>
+                    {
                         if (behaviour != null && behaviour.gameObject != null)
                             behaviour.UpdateBaseLayoutPosition();
                     });
@@ -590,13 +591,32 @@ public class CardManager : MonoBehaviour
         if (TurnManager.Instance != null)
             TurnManager.Instance.AdvancePhase();
     }
-    
+
     public IEnumerator DrawCards(int cantidad, float delay = 0.5f)
     {
         for (int i = 0; i < cantidad; i++)
         {
             DrawCard();
             yield return new WaitForSeconds(delay);
+        }
+    }
+    
+        public bool AttemptUseBibleCard()
+    {
+        // Busca la primera carta en la mano con el cardID "BibleCard".
+        CardData bibleCard = playerHand.FirstOrDefault(card => card != null && card.cardID == "BibleCard");
+
+        if (bibleCard != null)
+        {
+            Debug.Log("[CardManager] Se encontró la carta de la Biblia en la mano. Usándola para revivir.");
+            // Si la encuentra, la descarta. `DiscardCardInternal` ya maneja la eliminación de la mano, la adición al descarte y la actualización de la UI.
+            DiscardCardInternal(bibleCard); 
+            return true; // La Biblia fue usada con éxito.
+        }
+        else
+        {
+            Debug.Log("[CardManager] No se encontró la carta de la Biblia en la mano.");
+            return false; // La Biblia no fue encontrada o no se pudo usar.
         }
     }
 

@@ -247,10 +247,23 @@ public class PlayerStats : MonoBehaviour
         HasFiredRevolverThisTurn = false;
     }
 
-
-    private void Die()
+private void Die()
     {
-        CurrentHealth = 0;
+        // --- NUEVA LÓGICA DE LA BIBLIA ---
+        // Se intenta usar la Biblia si está en la mano del jugador y el CardManager la procesa.
+        if (CardManager.Instance != null && CardManager.Instance.AttemptUseBibleCard())
+        {
+            Debug.Log("[PlayerStats] ¡La Biblia te ha salvado! Recuperando vida.");
+            Heal(3); // Recupera 3 puntos de vida.
+            // Opcional: Asegurar que la vida sea al menos 1 si la curación es insuficiente
+            // CurrentHealth = Mathf.Max(1, CurrentHealth); 
+            UpdateHeartUI(); // Asegura que la UI se actualice inmediatamente.
+            return; // ¡Importante! Si la Biblia salva, el jugador NO muere, así que salimos del método.
+        }
+        // --- FIN NUEVA LÓGICA DE LA BIBLIA ---
+
+        // Si la Biblia no estaba en la mano o no se pudo usar, entonces el jugador muere.
+        CurrentHealth = 0; // Asegura que la vida se establezca a 0 si no revivió.
         Debug.LogWarning("[PlayerStats] ¡El jugador ha muerto!");
         // Aquí puedes poner lógica de Game Over, reinicio, etc.
     }
