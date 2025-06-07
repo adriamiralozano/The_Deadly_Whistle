@@ -312,6 +312,13 @@ private void Die()
 
     public void TakeDamage(int amount)
     {
+        if (CardManager.Instance != null && CardManager.Instance.AttemptUseCoverCard())
+        {
+            Debug.Log("[PlayerStats] ¡Daño bloqueado por la carta Cover!");
+            // Si la carta Cover se usó, el daño NO se aplica, y salimos del método.
+            return; 
+        }
+        
         int damageTaken = Mathf.Min(amount, CurrentHealth);
         CurrentHealth -= damageTaken;
         Debug.Log($"[PlayerStats] El jugador recibió {damageTaken} de daño. HP restante: {CurrentHealth}");

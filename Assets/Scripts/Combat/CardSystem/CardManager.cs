@@ -600,7 +600,7 @@ public class CardManager : MonoBehaviour
             yield return new WaitForSeconds(delay);
         }
     }
-    
+
     public bool AttemptUseBibleCard()
     {
         CardData bibleCard = playerHand.FirstOrDefault(card => card != null && card.cardID == "BibleCard");
@@ -620,7 +620,7 @@ public class CardManager : MonoBehaviour
             {
                 Debug.LogError("[CardManager] PlayerStats.Instance es null. No se puede curar al jugador.");
             }
-    
+
             Enemy enemy = FindObjectOfType<Enemy>(); // <--- This line is the one to make sure is correct
             if (enemy != null)
             {
@@ -631,13 +631,31 @@ public class CardManager : MonoBehaviour
             {
                 Debug.LogWarning("[CardManager] No se encontró ningún Enemy en la escena para curar con la Biblia.");
             }
-            
+
             return true;
         }
         else
         {
             Debug.Log("[CardManager] No se encontró la carta de la Biblia en la mano.");
             return false;
+        }
+    }
+    
+    public bool AttemptUseCoverCard()
+    {
+        // Busca la primera carta en la mano con el cardID "CoverCard".
+        CardData coverCard = playerHand.FirstOrDefault(card => card != null && card.cardID == "CoverCard");
+
+        if (coverCard != null)
+        {
+            Debug.Log("[CardManager] Se encontró la carta de Cover en la mano. Usándola para bloquear el daño.");
+            DiscardCardInternal(coverCard); // Descarta la carta de Cover.
+            return true; // La CoverCard fue usada con éxito para bloquear el daño.
+        }
+        else
+        {
+            Debug.Log("[CardManager] No se encontró la carta de Cover en la mano. El daño será aplicado.");
+            return false; // La CoverCard no fue encontrada.
         }
     }
 
