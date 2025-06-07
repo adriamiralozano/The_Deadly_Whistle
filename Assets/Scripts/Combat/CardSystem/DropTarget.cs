@@ -113,11 +113,18 @@ public class DropTarget : MonoBehaviour, IDropHandler, IPointerEnterHandler, IPo
                             return; // Salimos de la función OnDrop para que no se procese como una jugada.
                         }
                         // -----------------------------------------------------------------------
+                        // Si la carta es de tipo WEAPON, verificamos si ya hay un arma equipada
+
 
                         // Si la carta NO es pasiva, o si la fase de turno no es la de acción,
                         // el juego procede con la lógica normal de juego de cartas.
                         if (TurnManager.Instance.CurrentPhase == TurnManager.TurnPhase.ActionPhase)
                         {
+                            if (droppedCardData.type == CardType.Effect && PlayerStats.Instance.HasPlayedEffectCardThisTurn())
+                            {
+                                Debug.LogWarning($"[DropTarget] Ya has jugado una carta de efecto este turno. No puedes dropear '{droppedCardData.cardID}'.");
+                                return; // Cancela el drop, la carta regresa a la mano.
+                            }
                             // Lógica para cartas de tipo WEAPON
                             if (droppedCardData.type == CardType.Weapon)
                             {
@@ -165,16 +172,19 @@ public class DropTarget : MonoBehaviour, IDropHandler, IPointerEnterHandler, IPo
                             // Lógica para cartas de tipo EFFECT
                             else if (droppedCardData.type == CardType.Effect)
                             {
+
+                                if (PlayerStats.Instance.HasPlayedEffectCardThisTurn())
+                                {
+                                    Debug.LogWarning($"[DropTarget] Ya has jugado una carta de efecto este turno. No puedes dropear '{droppedCardData.cardID}'.");
+                                    return; // Cancela el drop, la carta regresa a la mano.
+                                }
+                                // Aquí es donde el efecto se ejecuta y HasPlayedEffectCardThisTurn se pone a true.
                                 Debug.Log($"[DropTarget] Se detectó carta de EFECTO '{droppedCardData.cardID}' soltada en el Player. Ejecutando efecto.");
-                                droppedCardData.ExecuteEffect();
+                                droppedCardData.ExecuteEffect(); 
 
                                 bool played = CardManager.Instance.PlayCard(droppedCardData);
-                                if (played)
-                                    Debug.Log($"[DropTarget] Carta de Efecto '{droppedCardData.cardID}' jugada exitosamente y movida a descarte.");
-                                else
-                                    Debug.LogWarning($"[DropTarget] Falló al jugar la carta de efecto '{droppedCardData.cardID}'.");
-
-                                PlayerStats.Instance.ActivateEffect(); // Activa el efecto visual (cuadradito naranja)
+                                if (played) Debug.Log($"[DropTarget] Carta de Efecto '{droppedCardData.cardID}' jugada exitosamente y movida a descarte.");
+                                else Debug.LogWarning($"[DropTarget] Falló al jugar la carta de efecto '{droppedCardData.cardID}'.");
                             }
                             // Si en el futuro tienes otros tipos de cartas jugables (no pasivas)
                             else

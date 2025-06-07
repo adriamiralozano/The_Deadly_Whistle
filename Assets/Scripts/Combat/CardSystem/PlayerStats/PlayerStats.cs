@@ -12,8 +12,11 @@ public class PlayerStats : MonoBehaviour
     // --- Indicador de Arma Equipada ---
     private bool _hasWeaponEquipped = false;
 
+    // --- Indicador de Carta de Efecto Jugada ---
+    private bool _hasPlayedEffectCardThisTurn = false;
+
     // NUEVO: Propiedad para almacenar la CardData del arma actualmente equipada
-    public CardData CurrentEquippedWeapon { get; private set; } // <--- AÑADE ESTA LÍNEA AQUÍ
+    public CardData CurrentEquippedWeapon { get; private set; } 
 
 
     [Header("Player Health")]
@@ -91,7 +94,7 @@ public class PlayerStats : MonoBehaviour
 
         // Inicializa el estado al comienzo del juego
         HasWeaponEquipped = false; // Asegura que no hay arma equipada al inicio
-        CurrentEquippedWeapon = null; // <--- AÑADE ESTA LÍNEA para limpiar la referencia del arma
+        CurrentEquippedWeapon = null; //limpiar la referencia del arma
         _activeEffectCount = 0; // Asegura que el contador de efectos está en 0
         UpdateEffectDisplay(); // Actualiza la UI de efectos (ocultando el indicador y poniendo el contador a 0)
     }
@@ -109,23 +112,22 @@ public class PlayerStats : MonoBehaviour
         }
     }
 
-    /// <summary>
+
     /// Manejador para el evento OnTurnStart de TurnManager.
     /// Reinicia los efectos activos al inicio de cada turno.
-    /// </summary>
-    /// <param name="turnNumber">El número del turno que comienza.</param>
     private void OnTurnStartHandler(int turnNumber)
     {
         // ...
-        ResetRevolverFired(); // <-- Añade esto
+        ResetRevolverFired();
         ClearAllEffects();
+        _hasPlayedEffectCardThisTurn = false;
+        Debug.Log($"[PlayerStats] OnTurnStartHandler: HasPlayedEffectCardThisTurn se ha reseteado a FALSE. Estado actual: {_hasPlayedEffectCardThisTurn}");
+        Debug.Log($"[PlayerStats] Inicio de turno {turnNumber}. Efectos reiniciados. Se puede jugar una carta de efecto.");
     }
 
-    /// <summary>
     /// Establece que el jugador tiene un arma equipada y almacena la CardData del arma.
     /// Este método es llamado por DropTarget cuando se juega una carta de tipo Weapon.
-    /// </summary>
-    public void EquipWeapon(CardData weaponCard) // <--- MODIFICADO: Ahora recibe CardData
+    public void EquipWeapon(CardData weaponCard) //Ahora recibe CardData
     {
         if (weaponCard == null)
         {
@@ -136,25 +138,22 @@ public class PlayerStats : MonoBehaviour
         if (!HasWeaponEquipped)
         {
             HasWeaponEquipped = true; // Activa el indicador de arma
-            CurrentEquippedWeapon = weaponCard; // <--- AÑADIDO: Guarda la CardData del arma
+            CurrentEquippedWeapon = weaponCard; //Guarda la CardData del arma
             Debug.Log($"[PlayerStats] Arma '{weaponCard.cardID}' equipada.");
         }
         else
         {
             Debug.LogWarning($"[PlayerStats] Intentando equipar arma '{weaponCard.cardID}', pero el jugador ya tiene equipada: {CurrentEquippedWeapon.cardID}");
-            // Opcional: Aquí podrías añadir lógica para reemplazar el arma si se desea
         }
     }
 
-    /// <summary>
     /// Desequipa el arma y limpia la referencia a su CardData.
-    /// </summary>
     public void UnequipWeapon()
     {
         if (HasWeaponEquipped)
         {
             HasWeaponEquipped = false; // Desactiva el indicador de arma
-            CurrentEquippedWeapon = null; // <--- AÑADIDO: Limpia la referencia al arma
+            CurrentEquippedWeapon = null; //Limpia la referencia al arma
             Debug.Log("[PlayerStats] Arma desequipada.");
         }
         else
@@ -163,21 +162,21 @@ public class PlayerStats : MonoBehaviour
         }
     }
 
-    /// <summary>
     /// Incrementa el contador de efectos activos y actualiza la UI.
     /// Este método es llamado desde DropTarget cuando una carta de efecto sea jugada.
-    /// </summary>
     public void ActivateEffect()
     {
+        _hasPlayedEffectCardThisTurn = true; 
+
+        Debug.Log($"[PlayerStats] HasPlayedEffectCardThisTurn se ha puesto a TRUE después de activar un efecto. Estado actual: {_hasPlayedEffectCardThisTurn}");
+
         _activeEffectCount++; // Incrementa el contador
         Debug.Log($"[PlayerStats] Efecto activado. Contador de efectos: {_activeEffectCount}");
         UpdateEffectDisplay(); // Actualiza la UI para mostrar el nuevo conteo y la visibilidad.
     }
 
-    /// <summary>
     /// Disminuye el contador de efectos activos y actualiza la UI.
     /// (Puedes llamar a esto si un efecto tiene una duración limitada o se consume)
-    /// </summary>
     public void DeactivateEffect()
     {
         if (_activeEffectCount > 0)
@@ -192,10 +191,8 @@ public class PlayerStats : MonoBehaviour
         }
     }
 
-    /// <summary>
     /// Reinicia el contador de efectos activos a cero y actualiza la UI.
     /// Este método es llamado por TurnManager al inicio de cada turno, y también se puede llamar manualmente.
-    /// </summary>
     public void ClearAllEffects()
     {
         if (_activeEffectCount > 0) // Solo hacer algo si hay efectos activos que limpiar
@@ -210,9 +207,7 @@ public class PlayerStats : MonoBehaviour
         UpdateEffectDisplay(); // Asegura que la UI refleje el contador en cero y oculte el indicador.
     }
 
-    /// <summary>
     /// Actualiza la visibilidad del indicador de efecto y el texto del contador.
-    /// </summary>
     private void UpdateEffectDisplay()
     {
         // El indicador de efecto (cuadrado naranja) solo se activa si hay al menos 1 efecto.
@@ -253,7 +248,7 @@ public class PlayerStats : MonoBehaviour
 
 private void Die()
     {
-        // --- NUEVA LÓGICA DE LA BIBLIA ---
+        
         // Se intenta usar la Biblia si está en la mano del jugador y el CardManager la procesa.
         if (CardManager.Instance != null && CardManager.Instance.AttemptUseBibleCard())
         {
@@ -261,7 +256,7 @@ private void Die()
             UpdateHeartUI(); // Asegura que la UI se actualice inmediatamente.
             return; // ¡Importante! Si la Biblia salva, el jugador NO muere, así que salimos del método.
         }
-        // --- FIN NUEVA LÓGICA DE LA BIBLIA ---
+        
 
         // Si la Biblia no estaba en la mano o no se pudo usar, entonces el jugador muere.
         CurrentHealth = 0; // Asegura que la vida se establezca a 0 si no revivió.
@@ -330,8 +325,11 @@ private void Die()
 
     public bool CanBeDamaged()
     {
-        // Aquí puedes añadir lógica de inmunidad, escudos, etc. en el futuro.
         return true; // De momento, siempre puede ser dañado.
+    }
+    public bool HasPlayedEffectCardThisTurn()
+    {
+        return _hasPlayedEffectCardThisTurn;
     }
 
     public void Heal(int amount)

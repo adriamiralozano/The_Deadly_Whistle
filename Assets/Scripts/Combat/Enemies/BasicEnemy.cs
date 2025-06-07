@@ -47,10 +47,7 @@ public class Enemy : MonoBehaviour
         InitializeHeartUI();
     }
 
-    /// <summary>
     /// Método para que el enemigo reciba daño. Cada punto de daño quita un corazón.
-    /// </summary>
-    /// <param name="amount">Cantidad de daño a infligir (cada punto de daño quita un corazón).</param>
     public virtual void TakeDamage(int amount)
     {
         // En este sistema, cada punto de daño se traduce directamente en la pérdida de un corazón.
@@ -78,30 +75,17 @@ public class Enemy : MonoBehaviour
         }
     }
 
-    /// <summary>
     /// Lógica cuando el enemigo es derrotado.
     /// Actualmente, solo lo loguea en consola y no destruye el GameObject.
-    /// </summary>
     protected virtual void Die()
     {
         CurrentHealth = 0; // Asegura que la salud no sea negativa.
         // Log para indicar que el enemigo debería haber muerto.
         Debug.LogWarning($"{_enemyData.enemyName} HA SIDO DERROTADO (pero el GameObject NO se destruye por ahora para propósitos de prueba).");
         OnEnemyDied?.Invoke(this); // Dispara el evento de muerte.
-
-        // Para hacer que el enemigo "desaparezca" visualmente sin destruir el GameObject:
-        // gameObject.SetActive(false); // Esto desactiva el GameObject completo.
-        // Si tienes un SpriteRenderer y un Collider, podrías desactivarlos individualmente:
-        // SpriteRenderer sr = GetComponent<SpriteRenderer>();
-        // if (sr != null) sr.enabled = false;
-        // Collider2D col = GetComponent<Collider2D>(); // O Collider para 3D
-        // if (col != null) col.enabled = false;
     }
 
-    /// <summary>
-    /// Método para que el enemigo realice su acción en su turno.
-    /// Las clases derivadas pueden sobrescribirlo para comportamientos específicos.
-    /// </summary>
+
     public virtual void PerformTurnAction()
     {
         Debug.Log($"{_enemyData.enemyName} está realizando su acción de turno base.");
@@ -109,9 +93,7 @@ public class Enemy : MonoBehaviour
         // Por ejemplo, un simple ataque al jugador si está en rango, o moverse.
     }
 
-    /// <summary>
     /// Instancia los GameObjects de los corazones basándose en la vida máxima.
-    /// </summary>
     private void InitializeHeartUI()
     {
         if (heartUIPrefab == null || heartUIParent == null)
@@ -137,9 +119,7 @@ public class Enemy : MonoBehaviour
         }
     }
 
-    /// <summary>
     /// Actualiza el color de los corazones según la vida actual del enemigo.
-    /// </summary>
     private void UpdateHeartUI()
     {
         // Itera sobre los corazones instanciados.
@@ -158,8 +138,7 @@ public class Enemy : MonoBehaviour
                     sr.color = isFull ? Color.red : Color.gray; // Cambia el color a rojo o gris.
                 }
 
-                // Intenta obtener el Image (para elementos UI en un Canvas).
-                // Asegúrate de tener 'using UnityEngine.UI;' si usas esto.
+
                 UnityEngine.UI.Image img = activeHearts[i].GetComponent<UnityEngine.UI.Image>();
                 if (img != null)
                 {
