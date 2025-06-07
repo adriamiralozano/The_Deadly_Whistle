@@ -58,10 +58,10 @@ public class PlayerStats : MonoBehaviour
         {
             Instance = this;
         }
-        Instance = this;
+        Instance = this;/* 
         CurrentHealth = maxHealth;
         InitializeHeartUI();
-        UpdateHeartUI();
+        UpdateHeartUI(); */
     }
 
     void OnDisable()
@@ -84,6 +84,10 @@ public class PlayerStats : MonoBehaviour
         {
             Debug.LogError("[PlayerStats] TurnManager.Instance es null en Start(). La suscripción al evento de inicio de turno no ocurrirá.");
         }
+
+        CurrentHealth = maxHealth;
+        InitializeHeartUI();
+        UpdateHeartUI(); 
 
         // Inicializa el estado al comienzo del juego
         HasWeaponEquipped = false; // Asegura que no hay arma equipada al inicio
@@ -254,9 +258,6 @@ private void Die()
         if (CardManager.Instance != null && CardManager.Instance.AttemptUseBibleCard())
         {
             Debug.Log("[PlayerStats] ¡La Biblia te ha salvado! Recuperando vida.");
-            Heal(3); // Recupera 3 puntos de vida.
-            // Opcional: Asegurar que la vida sea al menos 1 si la curación es insuficiente
-            // CurrentHealth = Mathf.Max(1, CurrentHealth); 
             UpdateHeartUI(); // Asegura que la UI se actualice inmediatamente.
             return; // ¡Importante! Si la Biblia salva, el jugador NO muere, así que salimos del método.
         }

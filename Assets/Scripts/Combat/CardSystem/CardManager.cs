@@ -601,22 +601,43 @@ public class CardManager : MonoBehaviour
         }
     }
     
-        public bool AttemptUseBibleCard()
+    public bool AttemptUseBibleCard()
     {
-        // Busca la primera carta en la mano con el cardID "BibleCard".
         CardData bibleCard = playerHand.FirstOrDefault(card => card != null && card.cardID == "BibleCard");
 
         if (bibleCard != null)
         {
             Debug.Log("[CardManager] Se encontró la carta de la Biblia en la mano. Usándola para revivir.");
-            // Si la encuentra, la descarta. `DiscardCardInternal` ya maneja la eliminación de la mano, la adición al descarte y la actualización de la UI.
-            DiscardCardInternal(bibleCard); 
-            return true; // La Biblia fue usada con éxito.
+            DiscardCardInternal(bibleCard);
+
+            // 1. Curar al Jugador
+            if (PlayerStats.Instance != null)
+            {
+                PlayerStats.Instance.Heal(3);
+                Debug.Log("[CardManager] El jugador recuperó 3 vida gracias a la Biblia.");
+            }
+            else
+            {
+                Debug.LogError("[CardManager] PlayerStats.Instance es null. No se puede curar al jugador.");
+            }
+    
+            Enemy enemy = FindObjectOfType<Enemy>(); // <--- This line is the one to make sure is correct
+            if (enemy != null)
+            {
+                int healAmountForEnemy = 2;
+                enemy.Heal(healAmountForEnemy);
+            }
+            else
+            {
+                Debug.LogWarning("[CardManager] No se encontró ningún Enemy en la escena para curar con la Biblia.");
+            }
+            
+            return true;
         }
         else
         {
             Debug.Log("[CardManager] No se encontró la carta de la Biblia en la mano.");
-            return false; // La Biblia no fue encontrada o no se pudo usar.
+            return false;
         }
     }
 

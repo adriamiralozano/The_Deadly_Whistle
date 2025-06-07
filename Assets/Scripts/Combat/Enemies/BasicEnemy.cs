@@ -168,7 +168,7 @@ public class Enemy : MonoBehaviour
             }
         }
     }
-    
+
     public virtual void TryShootPlayer()
     {
         if (PlayerStats.Instance != null && PlayerStats.Instance.CanBeDamaged())
@@ -179,6 +179,31 @@ public class Enemy : MonoBehaviour
         else
         {
             Debug.Log($"[{Data.enemyName}] Intentó disparar, pero el jugador no puede ser dañado.");
+        }
+    }
+    
+    public void Heal(int amount)
+    {
+        if (_enemyData == null)
+        {
+            Debug.LogError($"[Enemy] The enemy '{name}' has no EnemyData assigned. Cannot heal.", this);
+            return;
+        }
+
+        if (CurrentHealth < _enemyData.maxHealth)
+        {
+            // Calculate the actual healing amount to not exceed max health.
+            int healAmount = Mathf.Min(amount, _enemyData.maxHealth - CurrentHealth);
+            CurrentHealth += healAmount;
+
+            Debug.Log($"[{_enemyData.enemyName}] healed for {healAmount} health point(s). Current HP: {CurrentHealth} heart(s).");
+            
+            UpdateHeartUI(); // Update the heart UI to reflect healing.
+            OnEnemyHealthChanged?.Invoke(this, CurrentHealth); // Fire health change event.
+        }
+        else
+        {
+            Debug.Log($"[{_enemyData.enemyName}] already has max health ({_enemyData.maxHealth}/{_enemyData.maxHealth}). Cannot heal further.");
         }
     }
 }
