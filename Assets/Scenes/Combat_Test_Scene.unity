@@ -2311,6 +2311,11 @@ MonoBehaviour:
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
   m_ReverseArrangement: 0
+--- !u!1 &1461188557 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 6389379470949630967, guid: dbbcccbc6aa11ef4bb0fcd12c0a3838b, type: 3}
+  m_PrefabInstance: {fileID: 1285565213167852861}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1474993991
 GameObject:
   m_ObjectHideFlags: 0
@@ -2646,6 +2651,7 @@ MonoBehaviour:
   turnPhaseText: {fileID: 481430360}
   handCountText: {fileID: 1755350369}
   enemyTurnBanner: {fileID: 0}
+  activeEnemy: {fileID: 1894651971}
 --- !u!114 &1546688003
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3238,6 +3244,33 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 7865893734661111232, guid: dbbcccbc6aa11ef4bb0fcd12c0a3838b, type: 3}
   m_PrefabInstance: {fileID: 1285565213167852861}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1894651970
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1461188557}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 30f169fd1748dc34fa985631ac86bbbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  shootMissChancePercentage: 60
+  healChancePercentage: 50
+  healthThresholdForHealing: 3
+  healAmount: 1
+--- !u!114 &1894651971 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: -7695338301469907428, guid: dbbcccbc6aa11ef4bb0fcd12c0a3838b, type: 3}
+  m_PrefabInstance: {fileID: 1285565213167852861}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1461188557}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d52663142eea726488f4bbf98b3b51c0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1937704130
 GameObject:
   m_ObjectHideFlags: 0
@@ -3544,7 +3577,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 6389379470949630967, guid: dbbcccbc6aa11ef4bb0fcd12c0a3838b, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1894651970}
   m_SourcePrefab: {fileID: 100100000, guid: dbbcccbc6aa11ef4bb0fcd12c0a3838b, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:

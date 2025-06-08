@@ -61,11 +61,23 @@ public class PlayerStats : MonoBehaviour
         {
             Instance = this;
         }
-        Instance = this;/* 
-        CurrentHealth = maxHealth;
-        InitializeHeartUI();
-        UpdateHeartUI(); */
     }
+
+    // ELIMINAMOS OnEnable() para la suscripción
+    /*
+    void OnEnable() 
+    {
+        if (TurnManager.Instance != null)
+        {
+            TurnManager.OnTurnStart += OnTurnStartHandler;
+            Debug.Log("[PlayerStats] Suscrito a TurnManager.OnTurnStart en OnEnable().");
+        }
+        else
+        {
+            Debug.LogError("[PlayerStats] TurnManager.Instance es null en OnEnable(). La suscripción al evento de inicio de turno no ocurrirá.");
+        }
+    }
+    */
 
     void OnDisable()
     {
@@ -73,19 +85,21 @@ public class PlayerStats : MonoBehaviour
         if (TurnManager.Instance != null)
         {
             TurnManager.OnTurnStart -= OnTurnStartHandler;
+            Debug.Log("[PlayerStats] Desuscrito de TurnManager.OnTurnStart en OnDisable().");
         }
     }
 
-    private void Start()
+    private void Start() // <-- ¡MOVEMOS LA SUSCRIPCIÓN AQUI!
     {
+        // Suscripción al evento de TurnManager
         if (TurnManager.Instance != null)
         {
             TurnManager.OnTurnStart += OnTurnStartHandler;
-            /*             Debug.Log("[PlayerStats] Suscrito a TurnManager.OnTurnStart en Start()."); */
+            Debug.Log("[PlayerStats] Suscrito a TurnManager.OnTurnStart en Start().");
         }
         else
         {
-            Debug.LogError("[PlayerStats] TurnManager.Instance es null en Start(). La suscripción al evento de inicio de turno no ocurrirá.");
+            Debug.LogError("[PlayerStats] TurnManager.Instance es null en Start(). La suscripción al evento de inicio de turno no ocurrirá. Asegúrate de que TurnManager se inicialice primero.");
         }
 
         CurrentHealth = maxHealth;
@@ -93,31 +107,16 @@ public class PlayerStats : MonoBehaviour
         UpdateHeartUI(); 
 
         // Inicializa el estado al comienzo del juego
-        HasWeaponEquipped = false; // Asegura que no hay arma equipada al inicio
-        CurrentEquippedWeapon = null; //limpiar la referencia del arma
-        _activeEffectCount = 0; // Asegura que el contador de efectos está en 0
-        UpdateEffectDisplay(); // Actualiza la UI de efectos (ocultando el indicador y poniendo el contador a 0)
+        HasWeaponEquipped = false; 
+        CurrentEquippedWeapon = null; 
+        _activeEffectCount = 0; 
+        UpdateEffectDisplay(); 
     }
-
-    private void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.R))
-        {
-            TakeDamage(1);
-        }
-        if (Input.GetKeyDown(KeyCode.H))
-        {
-            Debug.Log("[Test] Intentando curar al jugador desde Update con Heal(1)");
-            Heal(1);
-        }
-    }
-
 
     /// Manejador para el evento OnTurnStart de TurnManager.
     /// Reinicia los efectos activos al inicio de cada turno.
     private void OnTurnStartHandler(int turnNumber)
     {
-        // ...
         ResetRevolverFired();
         ClearAllEffects();
         _hasPlayedEffectCardThisTurn = false;
@@ -125,9 +124,9 @@ public class PlayerStats : MonoBehaviour
         Debug.Log($"[PlayerStats] Inicio de turno {turnNumber}. Efectos reiniciados. Se puede jugar una carta de efecto.");
     }
 
-    /// Establece que el jugador tiene un arma equipada y almacena la CardData del arma.
-    /// Este método es llamado por DropTarget cuando se juega una carta de tipo Weapon.
-    public void EquipWeapon(CardData weaponCard) //Ahora recibe CardData
+    // (El resto de tu script PlayerStats.cs sigue igual)
+    // ...
+    public void EquipWeapon(CardData weaponCard) 
     {
         if (weaponCard == null)
         {
@@ -137,8 +136,8 @@ public class PlayerStats : MonoBehaviour
 
         if (!HasWeaponEquipped)
         {
-            HasWeaponEquipped = true; // Activa el indicador de arma
-            CurrentEquippedWeapon = weaponCard; //Guarda la CardData del arma
+            HasWeaponEquipped = true; 
+            CurrentEquippedWeapon = weaponCard; 
             Debug.Log($"[PlayerStats] Arma '{weaponCard.cardID}' equipada.");
         }
         else
@@ -147,13 +146,12 @@ public class PlayerStats : MonoBehaviour
         }
     }
 
-    /// Desequipa el arma y limpia la referencia a su CardData.
     public void UnequipWeapon()
     {
         if (HasWeaponEquipped)
         {
-            HasWeaponEquipped = false; // Desactiva el indicador de arma
-            CurrentEquippedWeapon = null; //Limpia la referencia al arma
+            HasWeaponEquipped = false; 
+            CurrentEquippedWeapon = null; 
             Debug.Log("[PlayerStats] Arma desequipada.");
         }
         else
@@ -162,28 +160,24 @@ public class PlayerStats : MonoBehaviour
         }
     }
 
-    /// Incrementa el contador de efectos activos y actualiza la UI.
-    /// Este método es llamado desde DropTarget cuando una carta de efecto sea jugada.
     public void ActivateEffect()
     {
         _hasPlayedEffectCardThisTurn = true; 
 
         Debug.Log($"[PlayerStats] HasPlayedEffectCardThisTurn se ha puesto a TRUE después de activar un efecto. Estado actual: {_hasPlayedEffectCardThisTurn}");
 
-        _activeEffectCount++; // Incrementa el contador
+        _activeEffectCount++; 
         Debug.Log($"[PlayerStats] Efecto activado. Contador de efectos: {_activeEffectCount}");
-        UpdateEffectDisplay(); // Actualiza la UI para mostrar el nuevo conteo y la visibilidad.
+        UpdateEffectDisplay(); 
     }
 
-    /// Disminuye el contador de efectos activos y actualiza la UI.
-    /// (Puedes llamar a esto si un efecto tiene una duración limitada o se consume)
     public void DeactivateEffect()
     {
         if (_activeEffectCount > 0)
         {
-            _activeEffectCount--; // Decrementa el contador
+            _activeEffectCount--; 
             Debug.Log($"[PlayerStats] Efecto desactivado. Contador de efectos: {_activeEffectCount}");
-            UpdateEffectDisplay(); // Actualiza la UI
+            UpdateEffectDisplay(); 
         }
         else
         {
@@ -191,30 +185,22 @@ public class PlayerStats : MonoBehaviour
         }
     }
 
-    /// Reinicia el contador de efectos activos a cero y actualiza la UI.
-    /// Este método es llamado por TurnManager al inicio de cada turno, y también se puede llamar manualmente.
     public void ClearAllEffects()
     {
-        if (_activeEffectCount > 0) // Solo hacer algo si hay efectos activos que limpiar
+        if (_activeEffectCount > 0) 
         {
             Debug.Log($"[PlayerStats] Limpiando {_activeEffectCount} efectos activos.");
-            _activeEffectCount = 0; // Reinicia el contador a cero
+            _activeEffectCount = 0; 
         }
-        /*         else
-                {
-                    Debug.Log("[PlayerStats] Se intentó limpiar efectos, pero no había ninguno activo.");
-                } */
-        UpdateEffectDisplay(); // Asegura que la UI refleje el contador en cero y oculte el indicador.
+        UpdateEffectDisplay(); 
     }
 
-    /// Actualiza la visibilidad del indicador de efecto y el texto del contador.
     private void UpdateEffectDisplay()
     {
-        // El indicador de efecto (cuadrado naranja) solo se activa si hay al menos 1 efecto.
         if (effectActiveIndicator != null)
         {
             bool shouldBeActive = _activeEffectCount > 0;
-            if (effectActiveIndicator.activeSelf != shouldBeActive) // Solo cambiar si la visibilidad es diferente
+            if (effectActiveIndicator.activeSelf != shouldBeActive) 
             {
                 effectActiveIndicator.SetActive(shouldBeActive);
                 Debug.Log($"[PlayerStats] Cuadradito naranja: Se {(shouldBeActive ? "activó" : "desactivó")} visualmente.");
@@ -225,11 +211,9 @@ public class PlayerStats : MonoBehaviour
             Debug.LogWarning("[PlayerStats] El indicador de efecto (GameObject) NO ESTÁ ASIGNADO en el Inspector del PlayerStats.");
         }
 
-        // Actualiza el texto del contador de efectos
         if (effectCountText != null)
         {
             effectCountText.text = _activeEffectCount.ToString();
-            /*             Debug.Log($"[PlayerStats] Texto del contador de efectos actualizado a: {_activeEffectCount}"); */
         }
         else
         {
@@ -248,20 +232,15 @@ public class PlayerStats : MonoBehaviour
 
 private void Die()
     {
-        
-        // Se intenta usar la Biblia si está en la mano del jugador y el CardManager la procesa.
         if (CardManager.Instance != null && CardManager.Instance.AttemptUseBibleCard())
         {
             Debug.Log("[PlayerStats] ¡La Biblia te ha salvado! Recuperando vida.");
-            UpdateHeartUI(); // Asegura que la UI se actualice inmediatamente.
-            return; // ¡Importante! Si la Biblia salva, el jugador NO muere, así que salimos del método.
+            UpdateHeartUI(); 
+            return; 
         }
         
-
-        // Si la Biblia no estaba en la mano o no se pudo usar, entonces el jugador muere.
-        CurrentHealth = 0; // Asegura que la vida se establezca a 0 si no revivió.
+        CurrentHealth = 0; 
         Debug.LogWarning("[PlayerStats] ¡El jugador ha muerto!");
-        // Aquí puedes poner lógica de Game Over, reinicio, etc.
     }
 
     private void InitializeHeartUI()
@@ -292,12 +271,10 @@ private void Die()
             {
                 bool isFull = i < CurrentHealth;
 
-                // Para UI (Image)
                 Image img = activeHearts[i].GetComponent<Image>();
                 if (img != null)
                     img.color = isFull ? Color.red : Color.gray;
 
-                // Para mundo (SpriteRenderer)
                 SpriteRenderer sr = activeHearts[i].GetComponent<SpriteRenderer>();
                 if (sr != null)
                     sr.color = isFull ? Color.red : Color.gray;
@@ -307,10 +284,8 @@ private void Die()
 
     public void TakeDamage(int amount)
     {
-        if (CardManager.Instance != null && CardManager.Instance.AttemptUseCoverCard())
+        if (CardManager.Instance != null && CanBeDamaged() == false)
         {
-            Debug.Log("[PlayerStats] ¡Daño bloqueado por la carta Cover!");
-            // Si la carta Cover se usó, el daño NO se aplica, y salimos del método.
             return; 
         }
         
@@ -325,8 +300,15 @@ private void Die()
 
     public bool CanBeDamaged()
     {
-        return true; // De momento, siempre puede ser dañado.
+        if (CardManager.Instance != null && CardManager.Instance.AttemptUseCoverCard())
+        {
+            Debug.Log("[PlayerStats] ¡Daño bloqueado por la carta Cover!");
+            return false; 
+        }
+
+        return true; 
     }
+
     public bool HasPlayedEffectCardThisTurn()
     {
         return _hasPlayedEffectCardThisTurn;
@@ -346,11 +328,4 @@ private void Die()
             Debug.Log("[PlayerStats] El jugador ya tiene la vida al máximo. No se puede curar más.");
         }
     }
-
-/*     public void HealWithBeer()
-    {
-        Debug.Log("[PlayerStats] Se ha usado una Cerveza. Intentando curar 1 vida.");
-        Heal(1);
-    }
- */
 }

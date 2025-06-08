@@ -16,6 +16,14 @@ public class TurnManager : MonoBehaviour
     // --- Singleton ---
     public static TurnManager Instance { get; private set; }
 
+    // --- NUEVO: Referencias a managers y enemigos ---
+    [Header("Game References")]
+    // ¡IMPORTANTE! Eliminamos [SerializeField] de estas dos, ya que las obtendremos por código.
+    private PlayerStats playerStats; 
+    private CardManager cardManager; 
+
+    [SerializeField] private Enemy activeEnemy; // Referencia al enemigo actual en la escena. ¡Asigna esto en el Inspector!
+    // --- FIN NUEVO ---
 
     // --- Enumeración de Fases de Turno ---
     public enum TurnPhase
@@ -24,8 +32,8 @@ public class TurnManager : MonoBehaviour
         Preparation,    // Fase de preparación
         DrawPhase,      // Fase de robo: robar una carta.
         ActionPhase,    // Fase de acción: jugar cartas.
-        ShotPhase,        // Fase de disparo: disparar el revolver.
-        EndTurn,         // Fase final del turno: limpieza y preparación para el siguiente.
+        ShotPhase,      // Fase de disparo: disparar el revolver.
+        EndTurn,        // Fase final del turno: limpieza y preparación para el siguiente.
         EnemyTurn       // Fase de turno del enemigo 
     }
 
@@ -35,7 +43,6 @@ public class TurnManager : MonoBehaviour
 
     // --- Inicialización del Singleton ---
     private TurnPhase currentTurnPhase = TurnPhase.None;
-    // Asegura que solo haya una instancia de TurnManager en la escena.
     public TurnPhase CurrentPhase { get { return currentTurnPhase; } }
 
     // Para optimizar actualizaciones de UI
@@ -45,12 +52,11 @@ public class TurnManager : MonoBehaviour
     // --- Eventos de Turno ---
     public static event Action<int> OnTurnStart;        // Se dispara al inicio de un nuevo turno
     public static event Action<TurnPhase> OnPhaseChange; // Se dispara cada vez que la fase de turno cambia
-    public static event Action OnPlayerTurnEnded;      // Se dispara cuando el turno del jugador termina (antes de iniciar el siguiente)
+    public static event Action OnPlayerTurnEnded;       // Se dispara cuando el turno del jugador termina (antes de iniciar el siguiente)
 
     // --- Eventos para comunicación con CardManager ---
-    public static event Action OnRequestDrawCard;        // Solicita al CardManager que robe una carta
-    public static event Func<int> OnRequestHandCount;    // Solicita al CardManager el conteo de la mano
-
+    public static event Action OnRequestDrawCard;       // Solicita al CardManager que robe una carta
+    public static event Func<int> OnRequestHandCount;   // Solicita al CardManager el conteo de la mano
 
 
     void Awake()
@@ -63,18 +69,29 @@ public class TurnManager : MonoBehaviour
         {
             Instance = this;
         }
+
+        // --- Obtener referencias de componentes en el mismo GameObject ---
+        playerStats = GetComponent<PlayerStats>();
+        cardManager = GetComponent<CardManager>();
+
+        // Validaciones mejoradas:
+        if (playerStats == null) 
+            Debug.LogError("[TurnManager] PlayerStats no encontrado en este GameObject. Asegúrate de que PlayerStats.cs esté en el mismo GameObject que TurnManager.cs.", this);
+        if (cardManager == null) 
+            Debug.LogError("[TurnManager] CardManager no encontrado en este GameObject. Asegúrate de que CardManager.cs esté en el mismo GameObject que TurnManager.cs.", this);
+        
+        if (activeEnemy == null) 
+            Debug.LogWarning("[TurnManager] No hay un enemigo activo asignado en el Inspector.", this);
     }
 
     // --- Suscripción/Desuscripción a Eventos ---
     void OnEnable()
     {
-        // Suscripción al evento de CardManager para actualizar la UI del conteo de mano
         CardManager.OnHandCountUpdated += UpdateHandCountDisplay;
     }
 
     void OnDisable()
     {
-        // Desuscripción para evitar errores cuando el objeto se desactiva/destruye
         CardManager.OnHandCountUpdated -= UpdateHandCountDisplay;
     }
 
@@ -88,7 +105,8 @@ public class TurnManager : MonoBehaviour
     /// Inicia el juego y el primer turno del jugador.
     public void StartGame()
     {
-        currentTurnNumber = 0;
+        // currentTurnNumber se mantiene en 0 aquí. Será incrementado a 1 en StartPlayerTurn() la primera vez.
+        // --- ¡CAMBIO CRUCIAL AQUÍ! ELIMINAMOS currentTurnNumber++; ---
         Debug.Log("Juego iniciado. Preparando la fase de preparación inicial.");
         SetPhase(TurnPhase.Preparation); // Solo aquí se usa Preparation
     }
@@ -96,17 +114,17 @@ public class TurnManager : MonoBehaviour
     /// Inicia el turno del jugador y avanza a la primera fase (Robo).
     public void StartPlayerTurn()
     {
-        currentTurnNumber++;
+        currentTurnNumber++; // Esto asegura que el primer turno sea el Turno 1
         Debug.Log($"--- Inicio del Turno {currentTurnNumber} del Jugador ---");
 
         OnTurnStart?.Invoke(currentTurnNumber);
 
-        if (PlayerStats.Instance != null)
-            PlayerStats.Instance.ClearAllEffects();
+        if (playerStats != null) 
+            playerStats.ClearAllEffects();
         else
-            Debug.LogError("[TurnManager] PlayerStats.Instance es null al inicio del turno en StartPlayerTurn().");
+            Debug.LogError("[TurnManager] PlayerStats es null al inicio del turno en StartPlayerTurn().");
 
-        SetPhase(TurnPhase.DrawPhase); // Ya NO pasa por Preparation
+        SetPhase(TurnPhase.DrawPhase);
     }
 
     /// Cambia la fase actual del turno y maneja la lógica asociada a cada fase.
@@ -129,7 +147,7 @@ public class TurnManager : MonoBehaviour
             case TurnPhase.ActionPhase:
                 HandleActionPhase();
                 break;
-            case TurnPhase.ShotPhase: // <--- Añade este bloque
+            case TurnPhase.ShotPhase:
                 HandleShotPhase();
                 break;
             case TurnPhase.EndTurn:
@@ -151,8 +169,6 @@ public class TurnManager : MonoBehaviour
         {
             case TurnPhase.None:
             case TurnPhase.EndTurn:
-                // Después de EndTurn o None, StartPlayerTurn ya se encarga de iniciar la siguiente fase (DrawPhase).
-                // No llamamos a SetPhase aquí para evitar doble inicio.
                 Debug.LogWarning("[TurnManager] AdvancePhase llamado desde None/EndTurn. Se espera que StartPlayerTurn ya inicie el siguiente ciclo.");
                 break;
 
@@ -174,15 +190,12 @@ public class TurnManager : MonoBehaviour
             case TurnPhase.ShotPhase:
                 SetPhase(TurnPhase.EndTurn);
                 break;
-
-
         }
     }
     // --- Métodos de Manejo de Fases Específicas ---
     private void HandleDrawPhase()
     {
         Debug.Log("Iniciando Fase de Robo...");
-        // ¡Esta es la ÚNICA línea que debe quedar aquí!
         StartCoroutine(DrawCardsAndLogRevolverRoutine());
     }
 
@@ -197,9 +210,6 @@ public class TurnManager : MonoBehaviour
     {
         Debug.Log("Iniciando Fase de Fin de Turno: Limpieza y preparación...");
         OnPlayerTurnEnded?.Invoke(); // Notifica que el turno del jugador ha terminado.
-
-        // Puedes añadir un pequeño retraso visual aquí si lo deseas:
-        // yield return new WaitForSeconds(1.0f);
 
         Debug.Log("Preparando el siguiente turno...");
         currentTurnPhase = TurnPhase.None; // Resetea la fase para que StartPlayerTurn comience desde None.
@@ -256,7 +266,6 @@ public class TurnManager : MonoBehaviour
         if (turnPhaseText != null)
         {
             string newText = $"Fase: {currentTurnPhase.ToString().Replace("Phase", "")}\nTurno: {currentTurnNumber}";
-            // Optimización: solo actualiza si el texto ha cambiado
             if (newText != lastTurnPhaseText)
             {
                 turnPhaseText.text = newText;
@@ -278,7 +287,6 @@ public class TurnManager : MonoBehaviour
         if (handCountText != null)
         {
             string newText = $"Mano: {handCount}/{MAX_HAND_SIZE}";
-            // Optimización: solo actualiza si el texto ha cambiado
             if (newText != lastHandCountText)
             {
                 handCountText.text = newText;
@@ -299,27 +307,40 @@ public class TurnManager : MonoBehaviour
         if (enemyTurnBanner != null)
             enemyTurnBanner.SetActive(true);
 
-        Debug.Log("Turno del enemigo: esperando 5 segundos...");
-        Debug.Log("Turno del enemigo: el enemigo intenta disparar...");
+        Debug.Log("Turno del enemigo: esperando 1 segundo antes de la acción...");
         yield return new WaitForSeconds(1f);
 
-        Enemy enemy = FindObjectOfType<Enemy>();
-        if (enemy != null)
-            enemy.TryShootPlayer();
+        if (activeEnemy != null && activeEnemy.IsAlive)
+        {
+            Debug.Log($"Turno del enemigo: {activeEnemy.Data.enemyName} realizando su acción...");
+            activeEnemy.PerformTurnAction(); 
+        }
         else
-            Debug.LogWarning("No se encontró un BasicEnemy en la escena.");
+        {
+            Debug.LogWarning("[TurnManager] No hay un enemigo activo válido para realizar el turno.");
+        }
 
-        yield return new WaitForSeconds(4f);
+        Debug.Log("Turno del enemigo: esperando 2 segundos después de la acción..."); 
+        yield return new WaitForSeconds(2f); 
+
         if (enemyTurnBanner != null)
             enemyTurnBanner.SetActive(false);
 
-        // Al acabar, inicia el siguiente turno del jugador
         StartPlayerTurn();
     }
 
     private IEnumerator DrawCardsAndLogRevolverRoutine()
     {
-        int cardsToDraw = (currentTurnNumber == 1) ? MAX_HAND_SIZE : 1;
+        // currentTurnNumber es el turno que *acaba* de empezar, por lo que para el primer robo (Turno 1), queremos robar todas.
+        // Si currentTurnNumber es 0 (estado inicial), deberíamos robar 5 cartas para la mano inicial.
+        // El primer turno de juego es el número 1. Entonces, si currentTurnNumber es 1, se roban todas las cartas.
+        // Si currentTurnNumber es > 1, se roba 1 carta.
+
+        int cardsToDraw = 1; // Por defecto, robar 1 carta
+        if (currentTurnNumber == 1) // Si estamos en el primer turno de juego
+        {
+            cardsToDraw = MAX_HAND_SIZE; // Robar 5 cartas para la mano inicial
+        }
 
         Debug.Log($"[TurnManager] Robando {cardsToDraw} carta(s).");
         for (int i = 0; i < cardsToDraw; i++)
@@ -327,20 +348,17 @@ public class TurnManager : MonoBehaviour
             OnRequestDrawCard?.Invoke();
             yield return new WaitForSeconds(0.5f);
         }
-        // Espera a que la mano tenga el tamaño correcto (por seguridad)
-        yield return new WaitUntil(() => GetHandCount() >= cardsToDraw);
+        yield return new WaitUntil(() => GetHandCount() >= cardsToDraw); // Espera hasta que se hayan robado las cartas
 
-        if (CardManager.Instance != null)
+
+        if (cardManager != null) 
         {
-            CardManager.Instance.RequestRevolverStatusUpdate();
+            cardManager.RequestRevolverStatusUpdate();
         }
         else
         {
-            Debug.LogError("[TurnManager] CardManager.Instance es null. No se puede actualizar el estado del Revolver después de robar.");
+            Debug.LogError("[TurnManager] CardManager es null. No se puede actualizar el estado del Revolver después de robar.");
         }
-
-        // Elimina la espera fija de 5 segundos
-        // yield return new WaitForSeconds(5f);
 
         AdvancePhase();
     }
@@ -355,13 +373,13 @@ public class TurnManager : MonoBehaviour
         }
 
         // 2. Intentar el disparo a través de CardManager
-        if (CardManager.Instance == null)
+        if (cardManager == null) 
         {
-            Debug.LogError("[TurnManager] CardManager.Instance es null. No se puede intentar el disparo del Revolver.");
+            Debug.LogError("[TurnManager] CardManager es null. No se puede intentar el disparo del Revolver.");
             return;
         }
 
-        bool shotSuccessful = CardManager.Instance.AttemptRevolverShot();
+        bool shotSuccessful = cardManager.AttemptRevolverShot();
 
         if (shotSuccessful)
         {
@@ -387,5 +405,4 @@ public class TurnManager : MonoBehaviour
         Debug.Log("Iniciando Fase de Disparo (ShotPhase). Aquí va la lógica de disparo especial.");
         // Aquí puedes poner la lógica específica de la ShotPhase
     }
-
 }

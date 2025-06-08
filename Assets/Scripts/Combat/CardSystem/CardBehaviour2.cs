@@ -499,7 +499,6 @@ public class CardBehaviour2 : MonoBehaviour,
     public void UpdateBaseLayoutPosition()
     {
         if (rectTransform != null)
-            Debug.Log($"[CardBehaviour2] UpdateBaseLayoutPosition: {gameObject.name} base={rectTransform.localPosition}");
             trueBaseLayoutPosition = rectTransform.localPosition;
         basePositionInitialized = true;
     }

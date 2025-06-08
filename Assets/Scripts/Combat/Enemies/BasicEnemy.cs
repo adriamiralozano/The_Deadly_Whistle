@@ -1,4 +1,3 @@
-// Scripts/Enemy/Enemy.cs
 using UnityEngine;
 using System;
 using System.Collections.Generic; // Necesario para List
@@ -24,6 +23,10 @@ public class Enemy : MonoBehaviour
     private List<GameObject> activeHearts = new List<GameObject>(); // Lista para gestionar los GameObjects de los corazones.
     // ------------------------------------------
 
+    // --- Referencia al componente de IA ---
+    private IEnemyAI _enemyAI; // Este será el 'cerebro' del enemigo
+    // --- FIN NUEVO ---
+
     // --- Eventos (para que otros scripts puedan reaccionar a la vida del enemigo) ---
     public static event Action<Enemy, int> OnEnemyTookDamage;
     public static event Action<Enemy> OnEnemyDied;
@@ -43,6 +46,24 @@ public class Enemy : MonoBehaviour
         CurrentHealth = _enemyData.maxHealth;
         Debug.Log($"Enemigo '{_enemyData.enemyName}' inicializado con {CurrentHealth} corazón/es de vida.");
 
+        // --- Buscar e Inicializar el componente de IA ---
+        _enemyAI = GetComponent<IEnemyAI>(); // Intenta obtener el componente de IA en este GameObject
+        if (_enemyAI == null)
+        {
+            // Si no se encuentra aquí, verifica en sus hijos (por si la IA está en un GameObject anidado)
+            _enemyAI = GetComponentInChildren<IEnemyAI>();
+        }
+
+        if (_enemyAI == null)
+        {
+            Debug.LogWarning($"[Enemy] No se encontró ningún componente que implemente IEnemyAI en '{name}' o sus hijos. El enemigo no tendrá comportamiento de IA.", this);
+        }
+        else
+        {
+            _enemyAI.Initialize(this); // Pasa una referencia a esta instancia de Enemy a la IA
+        }
+        // --- FIN ACTUALIZADO ---
+
         // Inicializa la representación visual de los corazones.
         InitializeHeartUI();
     }
@@ -50,10 +71,8 @@ public class Enemy : MonoBehaviour
     /// Método para que el enemigo reciba daño. Cada punto de daño quita un corazón.
     public virtual void TakeDamage(int amount)
     {
-        // En este sistema, cada punto de daño se traduce directamente en la pérdida de un corazón.
         int damageTaken = amount;
 
-        // Asegura que no se quite más vida de la que queda.
         if (CurrentHealth - damageTaken < 0)
         {
             damageTaken = CurrentHealth;
@@ -62,13 +81,11 @@ public class Enemy : MonoBehaviour
         CurrentHealth -= damageTaken;
 
         Debug.Log($"{_enemyData.enemyName} recibió {damageTaken} de daño. HP restante: {CurrentHealth} corazón/es.");
-        OnEnemyTookDamage?.Invoke(this, damageTaken); // Dispara el evento de daño.
+        OnEnemyTookDamage?.Invoke(this, damageTaken); 
 
-        // Actualiza el color de los corazones en la UI.
         UpdateHeartUI();
-        OnEnemyHealthChanged?.Invoke(this, CurrentHealth); // Dispara el evento de cambio de vida para la UI.
+        OnEnemyHealthChanged?.Invoke(this, CurrentHealth); 
 
-        // Si la vida llega a 0 o menos, el enemigo "muere".
         if (CurrentHealth <= 0)
         {
             Die();
@@ -76,21 +93,32 @@ public class Enemy : MonoBehaviour
     }
 
     /// Lógica cuando el enemigo es derrotado.
-    /// Actualmente, solo lo loguea en consola y no destruye el GameObject.
     protected virtual void Die()
     {
-        CurrentHealth = 0; // Asegura que la salud no sea negativa.
-        // Log para indicar que el enemigo debería haber muerto.
-        Debug.LogWarning($"{_enemyData.enemyName} HA SIDO DERROTADO (pero el GameObject NO se destruye por ahora para propósitos de prueba).");
-        OnEnemyDied?.Invoke(this); // Dispara el evento de muerte.
+        CurrentHealth = 0; 
+        Debug.LogWarning($"{_enemyData.enemyName} HA SIDO DERROTADO.");
+        OnEnemyDied?.Invoke(this); 
+
+        // Deshabilitar el componente de IA cuando el enemigo muere
+        if (_enemyAI is MonoBehaviour aiMonoBehaviour) 
+        {
+            aiMonoBehaviour.enabled = false;
+        }
     }
 
-
-    public virtual void PerformTurnAction()
+    /// Método para que el enemigo realice su acción de turno.
+    /// Delega la lógica de comportamiento al componente de IA.
+    public virtual void PerformTurnAction() // Ya no recibe CardManager ni PlayerStats directamente aquí
     {
-        Debug.Log($"{_enemyData.enemyName} está realizando su acción de turno base.");
-        // Aquí iría la lógica de comportamiento por defecto del enemigo, si la tiene.
-        // Por ejemplo, un simple ataque al jugador si está en rango, o moverse.
+        Debug.Log($"[{_enemyData.enemyName}] está preparando su acción de turno...");
+        if (_enemyAI != null && (_enemyAI is MonoBehaviour aiMonoBehaviour && aiMonoBehaviour.enabled))
+        {
+            _enemyAI.PerformTurnAction(); // Llama al método de la IA
+        }
+        else
+        {
+            Debug.LogWarning($"[{_enemyData.enemyName}] No hay comportamiento de IA válido o está deshabilitado. No se realizará ninguna acción de IA.");
+        }
     }
 
     /// Instancia los GameObjects de los corazones basándose en la vida máxima.
@@ -102,52 +130,44 @@ public class Enemy : MonoBehaviour
             return;
         }
 
-        // Limpia cualquier corazón previo si el método se llama de nuevo (útil para pruebas).
         foreach (var heart in activeHearts)
         {
             Destroy(heart);
         }
         activeHearts.Clear();
 
-        // Instancia un GameObject de corazón por cada punto de vida máxima.
         for (int i = 0; i < _enemyData.maxHealth; i++)
         {
             GameObject newHeart = Instantiate(heartUIPrefab, heartUIParent);
-            newHeart.name = $"Heart_{i}"; // Nombra los corazones para fácil identificación.
+            newHeart.name = $"Heart_{i}";
             activeHearts.Add(newHeart);
-            // Por defecto, todos los corazones inician visibles y "llenos" (rojos).
         }
     }
 
     /// Actualiza el color de los corazones según la vida actual del enemigo.
     private void UpdateHeartUI()
     {
-        // Itera sobre los corazones instanciados.
         for (int i = 0; i < activeHearts.Count; i++)
         {
             if (activeHearts[i] != null)
             {
-                // Un corazón está "lleno" (rojo) si su índice es menor que la vida actual.
-                // Un corazón está "vacío" (gris) si su índice es igual o mayor que la vida actual.
                 bool isFull = i < CurrentHealth;
-
-                // Intenta obtener el SpriteRenderer (para cuadrados 2D en el mundo).
                 SpriteRenderer sr = activeHearts[i].GetComponent<SpriteRenderer>();
                 if (sr != null)
                 {
-                    sr.color = isFull ? Color.red : Color.gray; // Cambia el color a rojo o gris.
+                    sr.color = isFull ? Color.red : Color.gray;
                 }
-
 
                 UnityEngine.UI.Image img = activeHearts[i].GetComponent<UnityEngine.UI.Image>();
                 if (img != null)
                 {
-                    img.color = isFull ? Color.red : Color.gray; // Cambia el color a rojo o gris.
+                    img.color = isFull ? Color.red : Color.gray;
                 }
             }
         }
     }
 
+    /// Intenta disparar al jugador. Este método es llamado por la IA.
     public virtual void TryShootPlayer()
     {
         if (PlayerStats.Instance != null && PlayerStats.Instance.CanBeDamaged())
@@ -157,10 +177,10 @@ public class Enemy : MonoBehaviour
         }
         else
         {
-            Debug.Log($"[{Data.enemyName}] Intentó disparar, pero el jugador no puede ser dañado.");
+            Debug.Log($"[{Data.enemyName}] Intentó disparar, pero el jugador no puede ser dañado o PlayerStats no encontrado.");
         }
     }
-    
+
     public void Heal(int amount)
     {
         if (_enemyData == null)
@@ -171,14 +191,12 @@ public class Enemy : MonoBehaviour
 
         if (CurrentHealth < _enemyData.maxHealth)
         {
-            // Calculate the actual healing amount to not exceed max health.
             int healAmount = Mathf.Min(amount, _enemyData.maxHealth - CurrentHealth);
             CurrentHealth += healAmount;
 
             Debug.Log($"[{_enemyData.enemyName}] healed for {healAmount} health point(s). Current HP: {CurrentHealth} heart(s).");
-            
-            UpdateHeartUI(); // Update the heart UI to reflect healing.
-            OnEnemyHealthChanged?.Invoke(this, CurrentHealth); // Fire health change event.
+            UpdateHeartUI();
+            OnEnemyHealthChanged?.Invoke(this, CurrentHealth);
         }
         else
         {
