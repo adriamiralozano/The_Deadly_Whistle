@@ -7,11 +7,9 @@ public class OutlawEnemyAI : MonoBehaviour, IEnemyAI
     private Enemy _enemyInstance; // Una referencia al componente Enemy en el mismo GameObject
 
     [Header("AI Settings")]
-    [Range(0, 100)] // Asegura que el valor en el Inspector esté entre 0 y 100
     [SerializeField] private int shootMissChancePercentage = 20; // Porcentaje de probabilidad de que el disparo falle
 
     [Header("Healing Settings")]
-    [Range(0, 100)]
     [SerializeField] private int healChancePercentage = 50; // Probabilidad de curarse si la vida está baja
     [SerializeField] private int healthThresholdForHealing = 3; // Umbral de vida para decidir curarse (por ejemplo, si la vida actual es menor o igual a este valor)
     [SerializeField] private int healAmount = 1; // Cantidad de vida que se cura
@@ -50,7 +48,7 @@ public class OutlawEnemyAI : MonoBehaviour, IEnemyAI
     //-------------------ACCIONES DE LA IA -------------------//
     private bool ShouldMissShot()
     {
-        return Random.Range(0, 100) < shootMissChancePercentage;
+        return GetRandomNum() < shootMissChancePercentage;
     }
 
     private void DecidesToShoot()
@@ -76,24 +74,30 @@ public class OutlawEnemyAI : MonoBehaviour, IEnemyAI
             Debug.Log($"El enemigo debe curarse.");
             return true;
         }
-        else{
+        else
+        {
             Debug.Log($"El enemigo no debe curarse.");
             return false;
-            
+
         }
     }
 
     private void DecidesToHeal()
     {
-        if (_enemyInstance != null && Random.Range(0, 100) > healChancePercentage)
+        if (_enemyInstance != null && GetRandomNum() > healChancePercentage)
         {
             Debug.Log($"[OutlawEnemyAI]  {_enemyInstance.Data.enemyName}Tiene Cerveza y decide curarse {healAmount} de vida!");
             _enemyInstance.Heal(healAmount); // Asume que el script Enemy tiene un método Heal(int amount)
         }
         else
         {
-            Debug.Log($"[OutlawEnemyAI]  {_enemyInstance.Data.enemyName}No tiene Cerveza y por lo tanto no se puede curar.");   
+            Debug.Log($"[OutlawEnemyAI]  {_enemyInstance.Data.enemyName}No tiene Cerveza y por lo tanto no se puede curar.");
         }
     }
     //-------------------FIN ACCIONES DE LA IA ---------------//
+    
+    private int GetRandomNum()
+    {
+        return Random.Range(0, 100);
+    }
 }
