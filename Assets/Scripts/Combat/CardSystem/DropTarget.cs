@@ -29,6 +29,15 @@ public class DropTarget : MonoBehaviour, IDropHandler, IPointerEnterHandler, IPo
     // Se llama cuando el puntero (con un objeto dragueable) entra en el área de este DropTarget
     public void OnPointerEnter(PointerEventData eventData)
     {
+        if (TurnManager.Instance.CurrentPhase != TurnManager.TurnPhase.ActionPhase)
+        {
+            if (TurnManager.Instance.CurrentPhase != TurnManager.TurnPhase.DiscardPostShot)
+            {
+                return;
+            }
+
+        }
+
         if (eventData.pointerDrag != null && targetImage != null)
         {
             // Asegúrate de que el objeto que se arrastra es una carta (tiene un CardUI)

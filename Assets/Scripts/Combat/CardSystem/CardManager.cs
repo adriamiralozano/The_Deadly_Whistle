@@ -255,8 +255,15 @@ public class CardManager : MonoBehaviour
 
         if (TurnManager.Instance.CurrentPhase != TurnManager.TurnPhase.ActionPhase)
         {
-            Debug.LogWarning($"[CardManager] Falló el descarte: Solo se puede descartar en la Fase de Acción. Fase actual: {TurnManager.Instance.CurrentPhase}.");
-            return false;
+            if (TurnManager.Instance.CurrentPhase == TurnManager.TurnPhase.DiscardPostShot)
+            {
+                Debug.LogWarning($"Puedes descartar cartas en la Fase de Descarte Post Disparo Fase actual: {TurnManager.Instance.CurrentPhase}.");
+            }
+            else
+            {
+                Debug.LogWarning($"[CardManager] Falló el descarte: Solo se puede descartar en la Fase de Acción. Fase actual: {TurnManager.Instance.CurrentPhase}.");
+                return false;
+            }
         }
 
         // 3. Comprobar que la mano supere el límite de cartas

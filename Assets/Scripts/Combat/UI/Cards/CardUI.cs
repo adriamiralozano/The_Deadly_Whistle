@@ -1,4 +1,3 @@
-// CardUI.cs
 using UnityEngine;
 using UnityEngine.UI; // Necesario para acceder al componente Image
 
@@ -17,10 +16,6 @@ public class CardUI : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Inicializa la UI de la carta con los datos proporcionados y actualiza su color.
-    /// </summary>
-    /// <param name="data">Los datos de la carta a mostrar.</param>
     public void SetCardData(CardData data)
     {
         cardData = data;
@@ -36,7 +31,6 @@ public class CardUI : MonoBehaviour
             cardImage.sprite = null;
         }
 
-        //UpdateCardColor(); // Llama a la función para actualizar el color (tiñendo el artwork/Image)
     }
 
     public CardData GetCardData()
@@ -44,31 +38,4 @@ public class CardUI : MonoBehaviour
         return cardData;
     }
 
-    /// <summary>
-    /// Actualiza el color del componente Image de la carta UI basado en el CardType de su CardData.
-    /// </summary>
-/*     private void UpdateCardColor()
-    {
-        if (cardImage == null || cardData == null)
-        {
-            return; // Salir si no hay imagen o datos de carta
-        }
-
-        switch (cardData.type)
-        {
-            case CardType.Weapon:
-                cardImage.color = weaponColor;
-                break;
-            case CardType.Effect:
-                cardImage.color = effectColor;
-                break;
-            case CardType.Passive:
-                cardImage.color = passiveColor;
-                break;
-            case CardType.None:
-            default:
-                cardImage.color = defaultColor;
-                break;
-        }
-    } */
 }

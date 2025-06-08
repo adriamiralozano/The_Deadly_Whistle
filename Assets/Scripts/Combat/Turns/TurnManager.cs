@@ -33,6 +33,7 @@ public class TurnManager : MonoBehaviour
         DrawPhase,      // Fase de robo: robar una carta.
         ActionPhase,    // Fase de acción: jugar cartas.
         ShotPhase,      // Fase de disparo: disparar el revolver.
+        DiscardPostShot, // Fase de descarte después de disparar.
         EndTurn,        // Fase final del turno: limpieza y preparación para el siguiente.
         EnemyTurn       // Fase de turno del enemigo 
     }
@@ -150,6 +151,9 @@ public class TurnManager : MonoBehaviour
             case TurnPhase.ShotPhase:
                 HandleShotPhase();
                 break;
+            case TurnPhase.DiscardPostShot:
+                Debug.Log("Fase de descarte después del disparo (ShotPhase). Aquí puedes implementar la lógica de descarte.");
+                break;
             case TurnPhase.EndTurn:
                 StartCoroutine(HandleEndTurnPhaseRoutine());
                 break;
@@ -188,7 +192,25 @@ public class TurnManager : MonoBehaviour
                 break;
 
             case TurnPhase.ShotPhase:
-                SetPhase(TurnPhase.EndTurn);
+                if (CheckIfHandExceedsLimit())
+                {
+                    Debug.LogWarning($"Aún tienes {GetHandCount()} cartas en mano. Debes descartar hasta tener {MAX_HAND_SIZE} para pasar de turno.");
+                    SetPhase(TurnPhase.DiscardPostShot);
+                }
+                else
+                {
+                    SetPhase(TurnPhase.EndTurn);
+                }
+                break;
+            case TurnPhase.DiscardPostShot:
+                if (CheckIfHandExceedsLimit())
+                {
+                    Debug.LogWarning($"Aún tienes {GetHandCount()} cartas en mano. Debes descartar hasta tener {MAX_HAND_SIZE} para pasar de turno.");
+                }
+                else
+                {
+                    SetPhase(TurnPhase.EndTurn);
+                }
                 break;
         }
     }
@@ -231,8 +253,15 @@ public class TurnManager : MonoBehaviour
         }
         if(currentTurnPhase != TurnPhase.ActionPhase)
         {
-            Debug.LogWarning("No puedes terminar el turno fuera de la Fase de Acción.");
-            return; // Sale del método sin avanzar la fase.
+            if(currentTurnPhase == TurnPhase.DiscardPostShot)
+            {
+                Debug.LogWarning("Terminar la fase");
+            }
+            else
+            {
+                Debug.LogWarning("No puedes terminar el turno fuera de la Fase de Acción.");
+                return; // Sale del método sin avanzar la fase.
+            }
         }
         
         Debug.Log("Solicitud de finalizar turno del jugador.");
