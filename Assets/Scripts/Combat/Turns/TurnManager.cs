@@ -229,7 +229,12 @@ public class TurnManager : MonoBehaviour
             Debug.LogWarning("No puedes terminar el turno. Debes descartar cartas para reducir tu mano al límite.");
             return; // Sale del método sin avanzar la fase.
         }
-
+        if(currentTurnPhase != TurnPhase.ActionPhase)
+        {
+            Debug.LogWarning("No puedes terminar el turno fuera de la Fase de Acción.");
+            return; // Sale del método sin avanzar la fase.
+        }
+        
         Debug.Log("Solicitud de finalizar turno del jugador.");
         AdvancePhase(); // Si las condiciones son adecuadas, avanza a la siguiente fase.
     }

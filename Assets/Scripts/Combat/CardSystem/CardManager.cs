@@ -510,6 +510,12 @@ public class CardManager : MonoBehaviour
             return false;
         }
 
+/*         if (TurnManager.Instance.CheckIfHandExceedsLimit())
+        {
+            Debug.LogWarning("[CardManager] No se puede disparar: La mano del jugador excede el límite de cartas permitidas.");
+            return false;
+        } */
+
         if (!PlayerStats.Instance.HasWeaponEquipped || !(PlayerStats.Instance.CurrentEquippedWeapon is RevolverCardData))
         {
             Debug.LogWarning("[CardManager] No se puede disparar: El Revolver no está equipado.");
