@@ -1676,7 +1676,7 @@ MonoBehaviour:
   anguloMin: 30
   anguloMax: 270
   tiempoEntrePuntos: 0.2
-  tiempoLimite: 2.5
+  tiempoLimite: 2.7
   tiempoSlider: {fileID: 1937704132}
 --- !u!4 &755011530
 Transform:
