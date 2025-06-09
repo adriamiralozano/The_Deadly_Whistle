@@ -517,12 +517,6 @@ public class CardManager : MonoBehaviour
             return false;
         }
 
-/*         if (TurnManager.Instance.CheckIfHandExceedsLimit())
-        {
-            Debug.LogWarning("[CardManager] No se puede disparar: La mano del jugador excede el límite de cartas permitidas.");
-            return false;
-        } */
-
         if (!PlayerStats.Instance.HasWeaponEquipped || !(PlayerStats.Instance.CurrentEquippedWeapon is RevolverCardData))
         {
             Debug.LogWarning("[CardManager] No se puede disparar: El Revolver no está equipado.");
@@ -600,6 +594,11 @@ public class CardManager : MonoBehaviour
             Debug.Log("[CardManager] No se logró ningún disparo exitoso tras los QTEs.");
         }
 
+        if (aciertos == 3)
+        {
+         targetEnemy.TakeDamage(1); // Si se aciertan los 3 disparos, inflige un daño adicional   
+        }
+        
         yield return new WaitForSeconds(1f);
         if (TurnManager.Instance != null)
             TurnManager.Instance.AdvancePhase();

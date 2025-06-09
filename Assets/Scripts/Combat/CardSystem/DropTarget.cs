@@ -100,6 +100,13 @@ public class DropTarget : MonoBehaviour, IDropHandler, IPointerEnterHandler, IPo
                         return;
                     }
 
+                    OutlawEnemyAI currentEnemyAI = null;
+
+                    if (TurnManager.Instance.activeEnemy != null)
+                    {
+                        currentEnemyAI = TurnManager.Instance.activeEnemy.GetComponent<OutlawEnemyAI>();
+                    }
+                    
                     // --- Lógica de Manejo de Cartas Basada en el Tipo de Objetivo ---
 
                     if (myTargetType == TargetType.Player) // Si la carta se dropea en la zona del jugador (zona de "juego")
@@ -133,6 +140,16 @@ public class DropTarget : MonoBehaviour, IDropHandler, IPointerEnterHandler, IPo
                             {
                                 Debug.LogWarning($"[DropTarget] Ya has jugado una carta de efecto este turno. No puedes dropear '{droppedCardData.cardID}'.");
                                 return; // Cancela el drop, la carta regresa a la mano.
+                            }
+                            if (droppedCardData is DisarmCardData) // Comprueba si la carta es una DisarmCardData
+                            {
+                                // La carta DisarmCardData solo se puede jugar si hay un enemigo Y tiene un arma equipada.
+                                if (currentEnemyAI == null || !currentEnemyAI.HasWeaponEquipped)
+                                {
+                                    Debug.LogWarning($"[DropTarget] No se puede usar la carta 'Desarmar'. El enemigo ya está desarmado o no hay enemigo activo.");
+                                    return; // Cancela el drop si el enemigo ya está desarmado
+                                }
+                                // Si llegamos aquí, la carta SÍ se puede jugar, continuará la ejecución normal del efecto.
                             }
                             // Lógica para cartas de tipo WEAPON
                             if (droppedCardData.type == CardType.Weapon)
@@ -189,7 +206,7 @@ public class DropTarget : MonoBehaviour, IDropHandler, IPointerEnterHandler, IPo
                                 }
                                 // Aquí es donde el efecto se ejecuta y HasPlayedEffectCardThisTurn se pone a true.
                                 Debug.Log($"[DropTarget] Se detectó carta de EFECTO '{droppedCardData.cardID}' soltada en el Player. Ejecutando efecto.");
-                                droppedCardData.ExecuteEffect(); 
+                                droppedCardData.ExecuteEffect();
 
                                 bool played = CardManager.Instance.PlayCard(droppedCardData);
                                 if (played) Debug.Log($"[DropTarget] Carta de Efecto '{droppedCardData.cardID}' jugada exitosamente y movida a descarte.");
@@ -223,6 +240,16 @@ public class DropTarget : MonoBehaviour, IDropHandler, IPointerEnterHandler, IPo
                         {
                             Debug.Log($"[DropTarget] Soltada carta '{droppedCardData.cardID}' (ID de instancia: {droppedCardData.instanceID}) en objetivo '{myTargetType}' durante la Fase de Acción. Jugando la carta.");
 
+                            if (droppedCardData is DisarmCardData)
+                            {
+                                if (currentEnemyAI == null || !currentEnemyAI.HasWeaponEquipped)
+                                {
+                                    Debug.LogWarning($"[DropTarget] No se puede usar la carta 'Desarmar' en el enemigo. Ya está desarmado o no hay enemigo activo.");
+                                    return; // Cancela el drop si el enemigo ya está desarmado
+                                }
+
+                            }
+
                             bool played = CardManager.Instance.PlayCard(droppedCardData);
 
                             if (played)
@@ -244,13 +271,13 @@ public class DropTarget : MonoBehaviour, IDropHandler, IPointerEnterHandler, IPo
                     else if (myTargetType == TargetType.Discard)
                     {
                         // Las cartas pasivas (y todas las demás) SÍ pueden ser descartadas aquí.
-/*                         Debug.Log($"[DropTarget] Soltada carta '{droppedCardData.cardID}' (ID de instancia: {droppedCardData.instanceID}) en objetivo 'Discard'. Intentando descarte manual."); */
+                        /*                         Debug.Log($"[DropTarget] Soltada carta '{droppedCardData.cardID}' (ID de instancia: {droppedCardData.instanceID}) en objetivo 'Discard'. Intentando descarte manual."); */
 
                         // Usamos AttemptManualDiscard de CardManager, que ya tiene las validaciones de fase y límite de mano.
                         bool discarded = CardManager.Instance.AttemptManualDiscard(droppedCardData);
                         if (discarded)
                         {
-                               Debug.Log($"[DropTarget] Carta '{droppedCardData.cardID}' descartada exitosamente en la zona de descarte manual.");
+                            Debug.Log($"[DropTarget] Carta '{droppedCardData.cardID}' descartada exitosamente en la zona de descarte manual.");
                         }
                         else
                         {

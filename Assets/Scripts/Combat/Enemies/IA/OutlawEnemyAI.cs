@@ -22,7 +22,11 @@ public class OutlawEnemyAI : MonoBehaviour, IEnemyAI
     private int disarmPlayerCounter = 0; // Contador para el número de desarmes al jugador
     private int shotsPerTurn = 3;   // Número de disparos que el enemigo puede hacer por turno
     private bool moreThanOneShot = false; // Indica si el enemigo ha fallado más de un disparo en el turno
-    private bool EnemyEffectCardUsed = false;
+    private bool EnemyHasBeenDisarmed = false; // Indica si el enemigo ha sido desarmado por el jugador
+    private bool EnemyEffectCardUsed = false;   
+
+
+    public bool HasWeaponEquipped => weaponEquipped;
 
     public void Initialize(Enemy enemyInstance)
     {
@@ -79,7 +83,8 @@ public class OutlawEnemyAI : MonoBehaviour, IEnemyAI
 
     private void DecidesToShoot()
     {
-        
+        if (moreThanOneShot == false)
+        {
             for (int i = 0; i < shotsPerTurn; i++)
             {
                 if (i == 0 && ShouldMissShot() == false)
@@ -91,6 +96,7 @@ public class OutlawEnemyAI : MonoBehaviour, IEnemyAI
                 {
                     _enemyInstance.TryShootPlayer();
                     shootMissChancePercentage = 90;
+                    moreThanOneShot = true; // Marca que el enemigo ha disparado más de una vez en este turno
                 }
                 else if (i == 2 && ShouldMissShot() == false)
                 {
@@ -104,8 +110,13 @@ public class OutlawEnemyAI : MonoBehaviour, IEnemyAI
                     shootMissChancePercentage = 20; // Resetea la probabilidad de fallo al valor base
                     return; // Si falla un disparo, no hace más disparos en este turno.
                 }
-            }    
-
+            }
+        }
+        else
+        {
+            if (ShouldMissShot() == false) _enemyInstance.TryShootPlayer();
+            moreThanOneShot = false; // Resetea la marca de disparo múltiple al final del turno
+        }
     }
 
     private bool ShouldHeal()
@@ -141,6 +152,12 @@ public class OutlawEnemyAI : MonoBehaviour, IEnemyAI
     
     private void TryEquipWeapon()
     {
+        if (EnemyHasBeenDisarmed)
+        {
+            Debug.Log($"[OutlawEnemyAI] {_enemyInstance.Data.enemyName} no puede equipar un arma porque ha sido desarmado por el jugador.");
+            EnemyHasBeenDisarmed = false; // Resetea el estado de desarme para el próximo turno
+            return; // No equipa el arma si ha sido desarmado
+        }
         if (GetRandomNum() > equipWeaponChancePercentage)
         {
             Debug.Log($"[OutlawEnemyAI] {_enemyInstance.Data.enemyName} no ha equipado un arma (probabilidad de equipar: {equipWeaponChancePercentage}%).");
@@ -172,6 +189,16 @@ public class OutlawEnemyAI : MonoBehaviour, IEnemyAI
             Debug.Log($"[OutlawEnemyAI] {_enemyInstance.Data.enemyName} intentó desarmar, pero el jugador no tiene arma equipada.");
         }
     }
+
+    public void PlayerDisarmedEnemyWeapon()
+    {
+        weaponEquipped = false; // El enemigo pierde su arma
+        EnemyHasBeenDisarmed = true; // Marca que el enemigo ha sido desarmado
+        Debug.Log($"[OutlawEnemyAI] El enemigo {_enemyInstance.Data.enemyName} ha sido desarmado por el jugador.");
+        // Podrías añadir un cooldown para el enemigo aquí también si quieres que no se reequipe inmediatamente.
+        // Por ejemplo, equipWeaponChancePercentage = 0 para el siguiente turno.
+    }
+
     //-------------------FIN ACCIONES DE LA IA ---------------//
 
     private int GetRandomNum()

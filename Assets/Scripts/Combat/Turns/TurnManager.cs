@@ -22,7 +22,7 @@ public class TurnManager : MonoBehaviour
     private PlayerStats playerStats; 
     private CardManager cardManager; 
 
-    [SerializeField] private Enemy activeEnemy; // Referencia al enemigo actual en la escena. ¡Asigna esto en el Inspector!
+    [SerializeField] public Enemy activeEnemy; // Referencia al enemigo actual en la escena. ¡Asigna esto en el Inspector!
     // --- FIN NUEVO ---
 
     // --- Enumeración de Fases de Turno ---
