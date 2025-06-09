@@ -1587,12 +1587,12 @@ MonoBehaviour:
   contenedor: {fileID: 1579919724}
   puntoPrefab: {fileID: 3331374588411191575, guid: 549cc7e1c0dd1b74c832f59a51fc6668, type: 3}
   cantidadPuntos: 5
-  distanciaMin: 100
-  distanciaMax: 300
+  distanciaMin: 150
+  distanciaMax: 400
   anguloMin: 30
-  anguloMax: 150
-  tiempoEntrePuntos: 0.3
-  tiempoLimite: 2.5
+  anguloMax: 270
+  tiempoEntrePuntos: 0.2
+  tiempoLimite: 2.3
   tiempoSlider: {fileID: 1937704132}
 --- !u!4 &755011530
 Transform:
@@ -3256,9 +3256,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 30f169fd1748dc34fa985631ac86bbbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  shootMissChancePercentage: 60
-  healChancePercentage: 50
-  healthThresholdForHealing: 3
+  shootMissChancePercentage: 25
+  equipWeaponChancePercentage: 70
+  disarmSuccessChancePercentage: 15
+  healChancePercentage: 40
+  healthThresholdForHealing: 2
   healAmount: 1
 --- !u!114 &1894651971 stripped
 MonoBehaviour:

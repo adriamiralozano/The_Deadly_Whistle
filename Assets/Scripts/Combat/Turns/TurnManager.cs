@@ -116,7 +116,7 @@ public class TurnManager : MonoBehaviour
     public void StartPlayerTurn()
     {
         currentTurnNumber++; // Esto asegura que el primer turno sea el Turno 1
-        Debug.Log($"--- Inicio del Turno {currentTurnNumber} del Jugador ---");
+        Debug.Log($"--- INICIO DEL TURNO {currentTurnNumber} DEL JUGADOR ---");
 
         OnTurnStart?.Invoke(currentTurnNumber);
 
@@ -158,7 +158,7 @@ public class TurnManager : MonoBehaviour
                 StartCoroutine(HandleEndTurnPhaseRoutine());
                 break;
             case TurnPhase.EnemyTurn:
-                Debug.Log("[TurnManager] ¡Entrando en la fase EnemyTurn!");
+                Debug.Log("[TurnManager] ---¡ENTRANDO EN EL TURNO DEL ENEMIGO!---");
                 StartCoroutine(HandleEnemyTurnPhaseRoutine());
                 break;
             case TurnPhase.None:

@@ -110,7 +110,6 @@ public class Enemy : MonoBehaviour
     /// Delega la lógica de comportamiento al componente de IA.
     public virtual void PerformTurnAction() // Ya no recibe CardManager ni PlayerStats directamente aquí
     {
-        Debug.Log($"[{_enemyData.enemyName}] está preparando su acción de turno...");
         if (_enemyAI != null && (_enemyAI is MonoBehaviour aiMonoBehaviour && aiMonoBehaviour.enabled))
         {
             _enemyAI.PerformTurnAction(); // Llama al método de la IA
