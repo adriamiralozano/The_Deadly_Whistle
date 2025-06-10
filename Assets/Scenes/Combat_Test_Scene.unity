@@ -1676,7 +1676,7 @@ MonoBehaviour:
   anguloMin: 30
   anguloMax: 270
   tiempoEntrePuntos: 0.2
-  tiempoLimite: 2.7
+  tiempoLimite: 2.5
   tiempoSlider: {fileID: 1937704132}
 --- !u!4 &755011530
 Transform:
@@ -3024,8 +3024,8 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: be56df93bbe241d4f8c61620c68af0c9, type: 3}
-  m_Type: 0
+  m_Sprite: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
+  m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 4
@@ -3662,12 +3662,16 @@ PrefabInstance:
       objectReference: {fileID: 8729035579907033317, guid: 460695b57e1702243bba0d6add3172ab, type: 3}
     - target: {fileID: 4799124202126001062, guid: dbbcccbc6aa11ef4bb0fcd12c0a3838b, type: 3}
       propertyPath: m_Type
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4799124202126001062, guid: dbbcccbc6aa11ef4bb0fcd12c0a3838b, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 21300000, guid: c47f5b4bda776c24ea6ad600aba34ee6, type: 3}
+      objectReference: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
+    - target: {fileID: 4799124202126001062, guid: dbbcccbc6aa11ef4bb0fcd12c0a3838b, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6389379470949630967, guid: dbbcccbc6aa11ef4bb0fcd12c0a3838b, type: 3}
       propertyPath: m_Name
       value: EnemyCharacterPanel
