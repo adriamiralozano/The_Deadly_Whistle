@@ -8,12 +8,8 @@ public class AudioManager : MonoBehaviour
     public AudioClip cardDrawClip;
     public AudioClip cardHoverClip;
     public AudioClip WeaponEquippedSound;
-    /*public AudioClip cardPlayClip;
-    public AudioClip qteSuccessClip;
-    public AudioClip qteFailClip;
-    public AudioClip beerClip;
-    public AudioClip bagClip; */
-    // ...otros clips...
+    public AudioClip EnemyWeaponEquippedSound;
+
 
     private AudioSource audioSource;
 
@@ -39,9 +35,6 @@ public class AudioManager : MonoBehaviour
     public void PlayCardDraw() => PlaySFX(cardDrawClip);
     public void PlayCardHover() => PlaySFX(cardHoverClip);
     public void PlayWeaponEquipped() => PlaySFX(WeaponEquippedSound);
-    /*public void PlayCardPlay() => PlaySFX(cardPlayClip);
-    public void PlayQTESuccess() => PlaySFX(qteSuccessClip);
-    public void PlayQTEFail() => PlaySFX(qteFailClip);
-    public void PlayBeer() => PlaySFX(beerClip);
-    public void PlayBag() => PlaySFX(bagClip); */
+    public void PlayEnemyWeaponEquipped() => PlaySFX(EnemyWeaponEquippedSound);
+
 }

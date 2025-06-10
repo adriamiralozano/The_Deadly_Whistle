@@ -1,10 +1,12 @@
 using UnityEngine;
 using Random = UnityEngine.Random; // Para evitar conflictos si se usa System.Random
+using System;
 
 // Importante: Este script DEBE implementar la interfaz IEnemyAI
 public class OutlawEnemyAI : MonoBehaviour, IEnemyAI
 {
     private Enemy _enemyInstance; // Una referencia al componente Enemy en el mismo GameObject
+    public static event Action<bool> OnEnemyWeaponStatusChanged; // Evento para notificar el estado del arma del enemigo
 
     [Header("AI Settings")]
      // Porcentaje de probabilidad de que el disparo falle
@@ -32,6 +34,9 @@ public class OutlawEnemyAI : MonoBehaviour, IEnemyAI
     {
         _enemyInstance = enemyInstance;
         Debug.Log($"[OutlawEnemyAI] IA inicializada para: {_enemyInstance.Data.enemyName}");
+
+        OnEnemyWeaponStatusChanged?.Invoke(weaponEquipped);
+        Debug.Log($"[OutlawEnemyAI] Disparando evento de estado de arma al inicializar: {weaponEquipped}");
     }
 
     // Este método se llamará al inicio del turno del enemigo.
@@ -155,18 +160,24 @@ public class OutlawEnemyAI : MonoBehaviour, IEnemyAI
         if (EnemyHasBeenDisarmed)
         {
             Debug.Log($"[OutlawEnemyAI] {_enemyInstance.Data.enemyName} no puede equipar un arma porque ha sido desarmado por el jugador.");
-            EnemyHasBeenDisarmed = false; // Resetea el estado de desarme para el próximo turno
-            return; // No equipa el arma si ha sido desarmado
+            EnemyHasBeenDisarmed = false;
+            return;
         }
         if (GetRandomNum() > equipWeaponChancePercentage)
         {
             Debug.Log($"[OutlawEnemyAI] {_enemyInstance.Data.enemyName} no ha equipado un arma (probabilidad de equipar: {equipWeaponChancePercentage}%).");
-            return; // No equipa el arma
+            return;
         }
-        weaponEquipped = true; // Simulamos que el enemigo tiene un arma equipada.
-        Debug.Log($"[OutlawEnemyAI] {_enemyInstance.Data.enemyName} ha equipado un arma.");
-    }
 
+        // --- Solo si el arma NO estaba equipada y AHORA se va a equipar ---
+        if (!weaponEquipped) // Verifica si el estado real va a cambiar
+        {
+            weaponEquipped = true; // Simulamos que el enemigo tiene un arma equipada.
+            Debug.Log($"[OutlawEnemyAI] {_enemyInstance.Data.enemyName} ha equipado un arma.");
+            OnEnemyWeaponStatusChanged?.Invoke(weaponEquipped); // Dispara el evento (true)
+            //Debug.Log("[OutlawEnemyAI] Evento OnEnemyWeaponStatusChanged disparado: TRUE");
+        }
+    }
     private void TryDisarmPlayer()
     {
         // Solo intenta desarmar si el jugador realmente tiene un arma equipada.
