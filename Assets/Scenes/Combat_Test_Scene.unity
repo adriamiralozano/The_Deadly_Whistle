@@ -1239,6 +1239,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardDrawClip: {fileID: 8300000, guid: 7d75be656566ef941b300f0b29db8c96, type: 3}
   cardHoverClip: {fileID: 8300000, guid: 8a607351aebba274298816b4b363e8a1, type: 3}
+  WeaponEquippedSound: {fileID: 8300000, guid: c648a65194a0d634e9edde8790bb60ca, type: 3}
 --- !u!4 &612900051
 Transform:
   m_ObjectHideFlags: 0
@@ -2338,7 +2339,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -750, y: 276}
+  m_AnchoredPosition: {x: -760.92, y: 420}
   m_SizeDelta: {x: 300, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1324349257
@@ -2400,7 +2401,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 750, y: 276}
+  m_AnchoredPosition: {x: 750, y: 420}
   m_SizeDelta: {x: 300, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1348337438
@@ -3035,8 +3036,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0.5}
   m_AnchorMax: {x: 0, y: 0.5}
-  m_AnchoredPosition: {x: -700, y: 0}
-  m_SizeDelta: {x: 200, y: 400}
+  m_AnchoredPosition: {x: -598.5492, y: 48.25767}
+  m_SizeDelta: {x: 524.7479, y: 584.5688}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1741159362
 MonoBehaviour:
@@ -3051,7 +3052,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -3088,7 +3089,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 44ab3b4a5434bac49a82a473538c6c25, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  highlightColor: {r: 1, g: 0.083201066, b: 0, a: 1}
+  highlightColor: {r: 0.9339623, g: 0.7052479, b: 0.48900855, a: 0.44705883}
   myTargetType: 0
 --- !u!1 &1755350367
 GameObject:
@@ -3593,7 +3594,7 @@ Transform:
   m_GameObject: {fileID: 1988802624}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -6.33, y: 0, z: 0}
+  m_LocalPosition: {x: -6.5, y: 0.5, z: 0}
   m_LocalScale: {x: 0.5, y: 0.5, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
