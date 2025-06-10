@@ -325,14 +325,21 @@ public class CardManager : MonoBehaviour
             var rect = cardGO.GetComponent<RectTransform>();
             var behaviour = cardGO.GetComponent<CardBehaviour2>();
 
-            // Protección extra: verifica que rect y behaviour no sean null y que el objeto no esté destruido
+            // Protección extra
             if (rect == null || behaviour == null || rect.Equals(null) || cardGO == null)
                 continue;
+
+            // Ajusta el sorting order del Canvas ---
+            var canvas = cardGO.GetComponent<Canvas>();
+            if (canvas != null && (behaviour == null || !behaviour.IsHovering))
+            {
+                canvas.overrideSorting = true;
+                canvas.sortingOrder = i;
+            }
 
             Vector3 targetPos = new Vector3(startX + i * spacing, 0, 0);
 
             rect.DOKill();
-            // Solo animar si el objeto sigue existiendo
             if (rect != null && !rect.Equals(null) && rect.gameObject != null && rect.gameObject.activeInHierarchy)
             {
                 rect.DOKill();
@@ -345,7 +352,6 @@ public class CardManager : MonoBehaviour
             }
         }
     }
-
     public int GetHandCount()
     {
         return playerHand.Count;

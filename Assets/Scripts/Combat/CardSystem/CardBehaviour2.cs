@@ -49,7 +49,8 @@ public class CardBehaviour2 : MonoBehaviour,
 
     private Vector2 initialDragOffset;
 
-    private int originalSortingOrder; // Guarda el sorting order base de la carta
+    private int originalSortingOrder = -1; // Guarda el sorting order base de la carta
+    public bool IsHovering => isHovering;   
 
     // === NUEVO: Variable para el desplazamiento aleatorio de la fase del idle tilt ===
     private float randomIdlePhaseOffset;
@@ -349,7 +350,6 @@ public class CardBehaviour2 : MonoBehaviour,
 
         isHovering = false;
     }
-
     public void OnPointerEnter(PointerEventData eventData)
     {
         if (isDragging || isReturning) return;
@@ -360,7 +360,11 @@ public class CardBehaviour2 : MonoBehaviour,
 
         if (cardCanvas != null)
         {
-            cardCanvas.sortingOrder = hoverUISortingOrder;
+            // Guarda el sorting order actual solo si no está en hover
+            if (!isHovering)
+                originalSortingOrder = cardCanvas.sortingOrder;
+
+            cardCanvas.sortingOrder = hoverUISortingOrder; // 500 o el valor que tengas
         }
         AudioManager.Instance?.PlayCardHover();
     }
@@ -465,6 +469,7 @@ public class CardBehaviour2 : MonoBehaviour,
 
         if (cardCanvas != null && !isDragging && !isReturning)
         {
+            // Restaura el sorting order original
             cardCanvas.sortingOrder = originalSortingOrder;
         }
     }
