@@ -3,11 +3,15 @@ using UnityEngine;
 using UnityEngine.UI; // Necesario para Image y Text
 using TMPro; // Necesario si usas TextMeshProUGUI
 using System.Collections.Generic; // Necesario para List<T>
+using System; 
+
 
 public class PlayerStats : MonoBehaviour
 {
     public static PlayerStats Instance { get; private set; }
+    public static event Action<bool> OnWeaponEquippedStatusChanged;
     public bool HasFiredRevolverThisTurn { get; private set; }
+
 
     // --- Indicador de Arma Equipada ---
     private bool _hasWeaponEquipped = false;
@@ -31,18 +35,29 @@ public class PlayerStats : MonoBehaviour
 
     [Header("UI References")]
     [SerializeField] private GameObject weaponEquippedIndicator; // Asigna tu cuadrado rojo aquí (para el arma)
-    [SerializeField] private GameObject effectActiveIndicator;   // Asigna tu cuadrado naranja aquí (para el efecto)
-    [SerializeField] private TextMeshProUGUI effectCountText;    // Asigna aquí un componente TextMeshProUGUI para el contador de efectos
+    [SerializeField] private GameObject effectActiveIndicator; // Asigna tu cuadrado naranja aquí (para el efecto)
+    [SerializeField] private TextMeshProUGUI effectCountText; // Asigna aquí un componente TextMeshProUGUI para el contador de efectos
 
     public bool HasWeaponEquipped
     {
         get { return _hasWeaponEquipped; }
         private set
         {
-            _hasWeaponEquipped = value;
-            if (weaponEquippedIndicator != null)
+            // Solo actualizamos si el valor realmente ha cambiado
+            if (_hasWeaponEquipped != value)
             {
-                weaponEquippedIndicator.SetActive(_hasWeaponEquipped);
+                _hasWeaponEquipped = value;
+
+                // Actualizar el indicador UI (si está asignado)
+                if (weaponEquippedIndicator != null)
+                {
+                    weaponEquippedIndicator.SetActive(_hasWeaponEquipped);
+                }
+
+                // --- Disparar el evento ---
+                OnWeaponEquippedStatusChanged?.Invoke(_hasWeaponEquipped);
+                Debug.Log($"[PlayerStats] Evento OnWeaponEquippedStatusChanged disparado: {_hasWeaponEquipped}");
+
             }
         }
     }
@@ -63,21 +78,6 @@ public class PlayerStats : MonoBehaviour
         }
     }
 
-    // ELIMINAMOS OnEnable() para la suscripción
-    /*
-    void OnEnable() 
-    {
-        if (TurnManager.Instance != null)
-        {
-            TurnManager.OnTurnStart += OnTurnStartHandler;
-            Debug.Log("[PlayerStats] Suscrito a TurnManager.OnTurnStart en OnEnable().");
-        }
-        else
-        {
-            Debug.LogError("[PlayerStats] TurnManager.Instance es null en OnEnable(). La suscripción al evento de inicio de turno no ocurrirá.");
-        }
-    }
-    */
 
     void OnDisable()
     {
@@ -89,7 +89,7 @@ public class PlayerStats : MonoBehaviour
         }
     }
 
-    private void Start() // <-- ¡MOVEMOS LA SUSCRIPCIÓN AQUI!
+    private void Start() 
     {
         // Suscripción al evento de TurnManager
         if (TurnManager.Instance != null)
