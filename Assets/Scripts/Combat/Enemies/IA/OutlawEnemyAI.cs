@@ -206,6 +206,9 @@ public class OutlawEnemyAI : MonoBehaviour, IEnemyAI
         weaponEquipped = false; // El enemigo pierde su arma
         EnemyHasBeenDisarmed = true; // Marca que el enemigo ha sido desarmado
         Debug.Log($"[OutlawEnemyAI] El enemigo {_enemyInstance.Data.enemyName} ha sido desarmado por el jugador.");
+        
+        OnEnemyWeaponStatusChanged?.Invoke(weaponEquipped); // Dispara el evento (false) para indicar que el arma ya no está equipada.
+        
         // Podrías añadir un cooldown para el enemigo aquí también si quieres que no se reequipe inmediatamente.
         // Por ejemplo, equipWeaponChancePercentage = 0 para el siguiente turno.
     }

@@ -309,7 +309,7 @@ public class CardManager : MonoBehaviour
         }
 
         // Distribuye las cartas en línea centrada (puedes ajustar spacing)
-        float spacing = 180f;
+        float spacing = 120f;
         float startX = -((playerHand.Count - 1) * spacing) / 2f;
 
         for (int i = 0; i < playerHand.Count; i++)
