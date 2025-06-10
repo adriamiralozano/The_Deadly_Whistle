@@ -255,8 +255,15 @@ public class CardManager : MonoBehaviour
 
         if (TurnManager.Instance.CurrentPhase != TurnManager.TurnPhase.ActionPhase)
         {
-            Debug.LogWarning($"[CardManager] Falló el descarte: Solo se puede descartar en la Fase de Acción. Fase actual: {TurnManager.Instance.CurrentPhase}.");
-            return false;
+            if (TurnManager.Instance.CurrentPhase == TurnManager.TurnPhase.DiscardPostShot)
+            {
+                Debug.LogWarning($"Puedes descartar cartas en la Fase de Descarte Post Disparo Fase actual: {TurnManager.Instance.CurrentPhase}.");
+            }
+            else
+            {
+                Debug.LogWarning($"[CardManager] Falló el descarte: Solo se puede descartar en la Fase de Acción. Fase actual: {TurnManager.Instance.CurrentPhase}.");
+                return false;
+            }
         }
 
         // 3. Comprobar que la mano supere el límite de cartas
@@ -330,7 +337,8 @@ public class CardManager : MonoBehaviour
             {
                 rect.DOKill();
                 rect.DOLocalMove(targetPos, cardMoveDuration).SetEase(Ease.InOutQuad)
-                    .OnComplete(() => {
+                    .OnComplete(() =>
+                    {
                         if (behaviour != null && behaviour.gameObject != null)
                             behaviour.UpdateBaseLayoutPosition();
                     });
@@ -586,17 +594,80 @@ public class CardManager : MonoBehaviour
             Debug.Log("[CardManager] No se logró ningún disparo exitoso tras los QTEs.");
         }
 
+        if (aciertos == 3)
+        {
+         targetEnemy.TakeDamage(1); // Si se aciertan los 3 disparos, inflige un daño adicional   
+        }
+        
         yield return new WaitForSeconds(1f);
         if (TurnManager.Instance != null)
             TurnManager.Instance.AdvancePhase();
     }
-    
+
     public IEnumerator DrawCards(int cantidad, float delay = 0.5f)
     {
         for (int i = 0; i < cantidad; i++)
         {
             DrawCard();
             yield return new WaitForSeconds(delay);
+        }
+    }
+
+    public bool AttemptUseBibleCard()
+    {
+        CardData bibleCard = playerHand.FirstOrDefault(card => card != null && card.cardID == "BibleCard");
+
+        if (bibleCard != null)
+        {
+            Debug.Log("[CardManager] Se encontró la carta de la Biblia en la mano. Usándola para revivir.");
+            DiscardCardInternal(bibleCard);
+
+            // 1. Curar al Jugador
+            if (PlayerStats.Instance != null)
+            {
+                PlayerStats.Instance.Heal(3);
+                Debug.Log("[CardManager] El jugador recuperó 3 vida gracias a la Biblia.");
+            }
+            else
+            {
+                Debug.LogError("[CardManager] PlayerStats.Instance es null. No se puede curar al jugador.");
+            }
+
+            Enemy enemy = FindObjectOfType<Enemy>(); // <--- This line is the one to make sure is correct
+            if (enemy != null)
+            {
+                int healAmountForEnemy = 2;
+                enemy.Heal(healAmountForEnemy);
+            }
+            else
+            {
+                Debug.LogWarning("[CardManager] No se encontró ningún Enemy en la escena para curar con la Biblia.");
+            }
+
+            return true;
+        }
+        else
+        {
+            Debug.Log("[CardManager] No se encontró la carta de la Biblia en la mano.");
+            return false;
+        }
+    }
+    
+    public bool AttemptUseCoverCard()
+    {
+        // Busca la primera carta en la mano con el cardID "CoverCard".
+        CardData coverCard = playerHand.FirstOrDefault(card => card != null && card.cardID == "CoverCard");
+
+        if (coverCard != null)
+        {
+            Debug.Log("[CardManager] Se encontró la carta de Cover en la mano. Usándola para bloquear el daño.");
+            DiscardCardInternal(coverCard); // Descarta la carta de Cover.
+            return true; // La CoverCard fue usada con éxito para bloquear el daño.
+        }
+        else
+        {
+            Debug.Log("[CardManager] No se encontró la carta de Cover en la mano. El daño será aplicado.");
+            return false; // La CoverCard no fue encontrada.
         }
     }
 

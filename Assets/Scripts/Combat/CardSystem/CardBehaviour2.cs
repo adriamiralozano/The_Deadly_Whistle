@@ -271,8 +271,22 @@ public class CardBehaviour2 : MonoBehaviour,
 
     public void OnBeginDrag(PointerEventData eventData)
     {
-        if (TurnManager.Instance == null || TurnManager.Instance.CurrentPhase != TurnManager.TurnPhase.ActionPhase)
-            return;
+
+        if (TurnManager.Instance.CurrentPhase != TurnManager.TurnPhase.ActionPhase)
+        {
+            if (TurnManager.Instance.CurrentPhase == TurnManager.TurnPhase.DiscardPostShot)
+            {
+                Debug.LogWarning($"Aquí tambien puede empezar el drag");
+            }
+            else
+            {
+                Debug.LogWarning($"[CardBehaviour2] OnBeginDrag llamado fuera de la ActionPhase para {gameObject.name}. Ignorando.");
+                return;
+            }
+        }
+
+
+
 
         if (!selectable.interactable) return;
 
@@ -499,7 +513,6 @@ public class CardBehaviour2 : MonoBehaviour,
     public void UpdateBaseLayoutPosition()
     {
         if (rectTransform != null)
-            Debug.Log($"[CardBehaviour2] UpdateBaseLayoutPosition: {gameObject.name} base={rectTransform.localPosition}");
             trueBaseLayoutPosition = rectTransform.localPosition;
         basePositionInitialized = true;
     }

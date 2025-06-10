@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 966421b94c503994a9eb4cb6db0b2656, type: 3}
+  m_Name: REVOLVER_DECK
+  m_EditorClassIdentifier: 
+  initialCards:
+  - {fileID: 11400000, guid: 00dc1416b8deaa44e89b374507c27029, type: 2}
+  - {fileID: 11400000, guid: 00dc1416b8deaa44e89b374507c27029, type: 2}
+  - {fileID: 11400000, guid: 00dc1416b8deaa44e89b374507c27029, type: 2}
+  - {fileID: 11400000, guid: d0fe469d196839241aad75d9d9f21666, type: 2}
+  - {fileID: 11400000, guid: d0fe469d196839241aad75d9d9f21666, type: 2}
+  - {fileID: 11400000, guid: d0fe469d196839241aad75d9d9f21666, type: 2}
+  - {fileID: 11400000, guid: d0fe469d196839241aad75d9d9f21666, type: 2}
+  - {fileID: 11400000, guid: d0fe469d196839241aad75d9d9f21666, type: 2}
+  - {fileID: 11400000, guid: d0fe469d196839241aad75d9d9f21666, type: 2}
+  - {fileID: 11400000, guid: d0fe469d196839241aad75d9d9f21666, type: 2}
+  - {fileID: 11400000, guid: d0fe469d196839241aad75d9d9f21666, type: 2}
+  - {fileID: 11400000, guid: f1164e342dd71904f8036cc81c4b1147, type: 2}
+  - {fileID: 11400000, guid: e2bfbd57675d3b54b8e3c7a272d4594a, type: 2}
+  - {fileID: 11400000, guid: e2bfbd57675d3b54b8e3c7a272d4594a, type: 2}
+  - {fileID: 11400000, guid: f1164e342dd71904f8036cc81c4b1147, type: 2}
+  - {fileID: 11400000, guid: f1164e342dd71904f8036cc81c4b1147, type: 2}
+  - {fileID: 11400000, guid: 4dcd35dc765c92b41b63cdba55be9317, type: 2}
+  - {fileID: 11400000, guid: 10c27e3a43ce79f4ebd91e965df16c2c, type: 2}
+  - {fileID: 11400000, guid: 5937bc371d4c95847af895461ce0b2e0, type: 2}
+  - {fileID: 11400000, guid: 5937bc371d4c95847af895461ce0b2e0, type: 2}

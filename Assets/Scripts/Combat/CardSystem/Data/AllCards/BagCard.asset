@@ -13,5 +13,5 @@ MonoBehaviour:
   m_Name: BagCard
   m_EditorClassIdentifier: 
   cardID: BagCard
-  artwork: {fileID: 21300000, guid: 10e6491bc327f8f40a05e25feb066633, type: 3}
+  artwork: {fileID: 21300000, guid: 56c687326adf56942875a4784540ba6d, type: 3}
   type: 2
