@@ -66,6 +66,11 @@ public class DropTarget : MonoBehaviour, IDropHandler, IPointerEnterHandler, IPo
     // Se llama cuando un objeto dragueable se suelta en el área de este DropTarget
     public void OnDrop(PointerEventData eventData)
     {
+
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayCardDrop();
+        }
         //Debug.Log($"Carta soltada en {gameObject.name} (Tipo de objetivo: {myTargetType})");
 
         if (targetImage != null)

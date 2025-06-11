@@ -1341,6 +1341,7 @@ MonoBehaviour:
   WeaponEquippedSound: {fileID: 8300000, guid: c648a65194a0d634e9edde8790bb60ca, type: 3}
   EnemyWeaponEquippedSound: {fileID: 8300000, guid: c648a65194a0d634e9edde8790bb60ca, type: 3}
   EnemyCardAppearSound: {fileID: 8300000, guid: acdaaa09f286742438bb106c183c4c65, type: 3}
+  cardDropSound: {fileID: 8300000, guid: acdaaa09f286742438bb106c183c4c65, type: 3}
 --- !u!4 &612900051
 Transform:
   m_ObjectHideFlags: 0
@@ -2903,7 +2904,7 @@ MonoBehaviour:
   feedbackCanvas: {fileID: 731130333}
   cardFeedbackPrefab: {fileID: 3643597247724120949, guid: 77fbab2e248256f4284c102db2f309bc, type: 3}
   showDuration: 1
-  offsetFromEnemy: {x: -300, y: 50, z: 0}
+  offsetFromEnemy: {x: -400, y: 50, z: 0}
 --- !u!1 &1461188557 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 6389379470949630967, guid: dbbcccbc6aa11ef4bb0fcd12c0a3838b, type: 3}

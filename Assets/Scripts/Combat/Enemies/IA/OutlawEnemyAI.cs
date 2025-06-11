@@ -14,6 +14,7 @@ public class OutlawEnemyAI : MonoBehaviour, IEnemyAI
     public EnemyCardFeedback cardFeedback; // Arrastra el objeto con EnemyCardFeedback
     public Sprite healCardSprite; 
     public Sprite disarmCardSprite;
+    public Sprite weaponCardSprite;
 
 
     [Header("AI Settings")]
@@ -27,7 +28,7 @@ public class OutlawEnemyAI : MonoBehaviour, IEnemyAI
     [SerializeField] private int healthThresholdForHealing = 3; // Umbral de vida para decidir curarse (por ejemplo, si la vida actual es menor o igual a este valor)
     [SerializeField] private int healAmount = 1; // Cantidad de vida que se cura
     
-    private int shootMissChancePercentage = 20; // Porcentaje de probabilidad de que el disparo falle
+    private int shootMissChancePercentage = 45; // Porcentaje de probabilidad de que el disparo falle
     private bool weaponEquipped = false; // Indica si el enemigo tiene un arma equipada
     private int disarmPlayerCounter = 0; // Contador para el número de desarmes al jugador
     private int shotsPerTurn = 3;   // Número de disparos que el enemigo puede hacer por turno
@@ -111,11 +112,21 @@ public class OutlawEnemyAI : MonoBehaviour, IEnemyAI
         
         if (EquipWeaponSuccessful)
         {
-            yield return new WaitForSeconds(0.5f);
+            // Esperar a que termine completamente la animación de la carta de arma
+            if (cardFeedback != null && weaponCardSprite != null)
+            {
+                yield return StartCoroutine(cardFeedback.ShowCardFeedbackCoroutine(weaponCardSprite, _enemyInstance.transform.position));
+            }
+            
+            // AHORA sí equipar el arma realmente (después de que termine la animación)
+            weaponEquipped = true;
+            OnEnemyWeaponStatusChanged?.Invoke(weaponEquipped); // Dispara el evento (true)
+            Debug.Log($"[OutlawEnemyAI] {_enemyInstance.Data.enemyName} ha equipado un arma después de la animación!");
+            
+            yield return new WaitForSeconds(0.5f); // Pausa adicional después de equipar
             EquipWeaponSuccessful = false;
         }
     }
-
     private IEnumerator HealCoroutine()
     {
         Debug.Log($"[OutlawEnemyAI] {_enemyInstance.Data.enemyName} ha decidido curarse.");
@@ -189,7 +200,7 @@ public class OutlawEnemyAI : MonoBehaviour, IEnemyAI
                 if (i == 0 && ShouldMissShot() == false)
                 {
                     _enemyInstance.TryShootPlayer();
-                    shootMissChancePercentage = 70;
+                    shootMissChancePercentage = 75;
                     ShotSuccessful = true; // Marca que el enemigo ha disparado exitosamente
                 }
                 else if (i == 1 && ShouldMissShot() == false)
@@ -201,13 +212,13 @@ public class OutlawEnemyAI : MonoBehaviour, IEnemyAI
                 else if (i == 2 && ShouldMissShot() == false)
                 {
                     _enemyInstance.TryShootPlayer();
-                    shootMissChancePercentage = 20;
+                    shootMissChancePercentage = 45;
                     return;
                 }
                 else
                 {
                     Debug.Log($"[OutlawEnemyAI] {_enemyInstance.Data.enemyName} ha fallado su disparo.");
-                    shootMissChancePercentage = 20; // Resetea la probabilidad de fallo al valor base
+                    shootMissChancePercentage = 45; // Resetea la probabilidad de fallo al valor base
                     return; // Si falla un disparo, no hace más disparos en este turno.
                 }
             }
@@ -293,13 +304,14 @@ public class OutlawEnemyAI : MonoBehaviour, IEnemyAI
             return;
         }
 
-        // --- Solo si el arma NO estaba equipada y AHORA se va a equipar ---
-        if (!weaponEquipped) // Verifica si el estado real va a cambiar
+        // Solo si el arma NO estaba equipada y AHORA se va a equipar
+        if (!weaponEquipped)
         {
-            weaponEquipped = true; // Simulamos que el enemigo tiene un arma equipada.
-            Debug.Log($"[OutlawEnemyAI] {_enemyInstance.Data.enemyName} ha equipado un arma.");
-            OnEnemyWeaponStatusChanged?.Invoke(weaponEquipped); // Dispara el evento (true)
-            EquipWeaponSuccessful = true; // Marca que el enemigo ha equipado un arma exitosamente
+            Debug.Log($"[OutlawEnemyAI] {_enemyInstance.Data.enemyName} decide equipar un arma!");
+            EquipWeaponSuccessful = true; // Marca que el enemigo equipará un arma exitosamente
+            
+            // NO equipar aquí, solo marcar que el equipar será exitoso
+            // La lógica real se ejecutará después de la animación en EquipWeaponCoroutine
         }
     }
     private void TryDisarmPlayer()
