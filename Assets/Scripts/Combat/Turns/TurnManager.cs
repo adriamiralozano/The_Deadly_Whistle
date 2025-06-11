@@ -449,7 +449,13 @@ public class TurnManager : MonoBehaviour
     
     private void HandleShotPhase()
     {
-        Debug.Log("Iniciando Fase de Disparo (ShotPhase). Aquí va la lógica de disparo especial.");
-        // Aquí puedes poner la lógica específica de la ShotPhase
+        Debug.Log("Iniciando Fase de Disparo (ShotPhase). Mostrando panel QTE...");
+        
+        // Mostrar el panel QTE al entrar en ShotPhase
+        CombosManager combosManager = FindObjectOfType<CombosManager>();
+        if (combosManager != null)
+        {
+            combosManager.ShowQTEPanel();
+        }
     }
 }

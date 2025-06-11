@@ -24,7 +24,7 @@ public class OutlawEnemyAI : MonoBehaviour, IEnemyAI
     [SerializeField] private int disarmPlayerCooldown = 2; // Número de turnos que debe esperar el enemigo antes de intentar desarmar al jugador nuevamente
 
     [Header("Healing Settings")]
-    [SerializeField] private int healChancePercentage = 40; // Probabilidad de curarse si la vida está baja
+    [SerializeField] private int healChancePercentage = 45; // Probabilidad de curarse si la vida está baja
     [SerializeField] private int healthThresholdForHealing = 3; // Umbral de vida para decidir curarse (por ejemplo, si la vida actual es menor o igual a este valor)
     [SerializeField] private int healAmount = 1; // Cantidad de vida que se cura
     
@@ -274,7 +274,6 @@ public class OutlawEnemyAI : MonoBehaviour, IEnemyAI
                 EnemyEffectCardUsed = true;
                 healCooldown = 2;
                 HealSuccessful = true;
-                
                 // NO mostrar la carta aquí
             }
             else

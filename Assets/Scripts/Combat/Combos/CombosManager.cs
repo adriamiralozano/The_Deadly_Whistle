@@ -17,6 +17,9 @@ public class CombosManager : MonoBehaviour
     [SerializeField] private float tiempoLimite = 2.5f;
     [SerializeField] private Slider tiempoSlider;
 
+    [Header("Panel Animation")]
+    [SerializeField] private QTEPanelAnimator panelAnimator;
+
     private List<QTEPoint> puntos = new List<QTEPoint>();
     private int currentIndex = 0;
     private bool terminado = true;
@@ -28,12 +31,18 @@ public class CombosManager : MonoBehaviour
     public bool ExitoCombo => exitoCombo;
     private bool desvaneciendo = false;
     public bool Desvaneciendo => desvaneciendo;
+    private bool permitirClicks = false; // NUEVA variable para controlar clicks
 
     private List<Vector2> posicionesQTE = new List<Vector2>();
 
     public void EmpezarQuickTimeEvents()
     {
         if (!terminado) return;
+
+        if (panelAnimator != null)
+        {
+            panelAnimator.ShowPanel();
+        }
 
         if (tiempoSlider != null)
         {
@@ -46,6 +55,7 @@ public class CombosManager : MonoBehaviour
             if (p != null) Destroy(p.gameObject);
         puntos.Clear();
         currentIndex = 0;
+        permitirClicks = false;
 
         GenerarPosicionesQTE();
 
@@ -58,6 +68,89 @@ public class CombosManager : MonoBehaviour
         if (timeoutCoroutine != null)
             StopCoroutine(timeoutCoroutine);
         timeoutCoroutine = StartCoroutine(QTETimeoutCoroutine());
+        
+        // PERMITIR clicks después de un pequeño delay
+        StartCoroutine(HabilitarClicksConDelay());
+    }
+
+    public void ShowQTEPanel()
+    {
+        // Solo muestra el panel, sin iniciar QTEs
+        if (panelAnimator != null)
+        {
+            panelAnimator.ShowPanel();
+        }
+        
+        // NUEVO: Forzar que el contenedor de puntos QTE esté por encima del panel
+        EnsureQTEPointsOnTop();
+    }
+
+    public void HideQTEPanel()
+    {
+        // Solo oculta el panel
+        if (panelAnimator != null)
+        {
+            panelAnimator.HidePanel();
+        }
+    }
+
+    public void EmpezarQuickTimeEventsWithoutPanel()
+    {
+        if (!terminado) return;
+
+        // Asegurar que los puntos estén por encima antes de crearlos
+        EnsureQTEPointsOnTop();
+        
+        if (tiempoSlider != null)
+        {
+            tiempoSlider.maxValue = tiempoLimite;
+            tiempoSlider.value = tiempoLimite;
+            tiempoSlider.gameObject.SetActive(true);
+        }
+
+        foreach (var p in puntos)
+            if (p != null) Destroy(p.gameObject);
+        puntos.Clear();
+        currentIndex = 0;
+        permitirClicks = false; // RESETEAR
+
+        GenerarPosicionesQTE();
+
+        Debug.Log("Generando Quick Time Events...");
+
+        if (mostrarQTECoroutine != null)
+            StopCoroutine(mostrarQTECoroutine);
+        mostrarQTECoroutine = StartCoroutine(MostrarQTECoroutine());
+
+        if (timeoutCoroutine != null)
+            StopCoroutine(timeoutCoroutine);
+        timeoutCoroutine = StartCoroutine(QTETimeoutCoroutine());
+        
+        // PERMITIR clicks después de un pequeño delay
+        StartCoroutine(HabilitarClicksConDelay());
+    }
+
+    // Asegurar que los puntos estén por encima antes de crearlos
+    private void EnsureQTEPointsOnTop()
+    {
+        if (contenedor != null)
+        {
+            // Solo mover al final de la jerarquía para asegurar render order
+            contenedor.SetAsLastSibling();
+            Debug.Log("[CombosManager] Contenedor QTE movido al final de la jerarquía");
+        }
+    }
+
+    private IEnumerator HabilitarClicksConDelay()
+    {
+        yield return new WaitForSeconds(0.3f); // Esperar a que se cree el primer punto
+        permitirClicks = true;
+        Debug.Log("[CombosManager] ¡Clicks habilitados!");
+    }
+
+    public int GetCurrentIndex()
+    {
+        return currentIndex;
     }
 
     private IEnumerator QTETimeoutCoroutine()
@@ -74,6 +167,7 @@ public class CombosManager : MonoBehaviour
         {
             exitoCombo = false;
             falloDetectado = true;
+            permitirClicks = false;
             foreach (var p in puntos)
                 p.SetFail();
             if (mostrarQTECoroutine != null)
@@ -148,12 +242,15 @@ public class CombosManager : MonoBehaviour
 
     private IEnumerator MostrarQTECoroutine()
     {
-        puntos.Clear();
         terminado = false;
         falloDetectado = false;
+        exitoCombo = false;
 
+        // VOLVER al método original: crear puntos progresivamente
         for (int i = 0; i < posicionesQTE.Count; i++)
         {
+            if (falloDetectado) break;
+
             GameObject puntoGO = Instantiate(puntoPrefab, contenedor);
             var qtePoint = puntoGO.GetComponent<QTEPoint>();
             qtePoint.Init(i, this);
@@ -161,34 +258,41 @@ public class CombosManager : MonoBehaviour
             rect.anchoredPosition = posicionesQTE[i];
             puntos.Add(qtePoint);
 
-            // Espera entre cada aparición, o muestra todos de golpe si falloDetectado
-            if (!falloDetectado)
+            Debug.Log($"[CombosManager] Punto QTE {i} creado en posición {posicionesQTE[i]}");
+
+            if (i < posicionesQTE.Count - 1)
                 yield return new WaitForSeconds(tiempoEntrePuntos);
-
-            // Si ya se ha fallado, los nuevos puntos aparecen en rojo y con alpha reducido
-            if (falloDetectado)
-            {
-                if (mostrarQTECoroutine != null)
-                    StopCoroutine(mostrarQTECoroutine);
-
-            }
-
         }
+
+        Debug.Log($"[CombosManager] Todos los puntos QTE creados. Total: {puntos.Count}");
     }
 
     // Llama esto desde QTEPoint
     public void PulsarPunto(int idx)
     {
-        if (terminado) return;
+        Debug.Log($"[CombosManager] PulsarPunto llamado - Índice: {idx}, CurrentIndex: {currentIndex}, Terminado: {terminado}, PermitirClicks: {permitirClicks}");
+        
+        if (terminado || !permitirClicks) 
+        {
+            Debug.LogWarning("[CombosManager] Combo terminado o clicks deshabilitados, ignorando click");
+            return;
+        }
 
         if (idx == currentIndex)
         {
-            puntos[idx].SetCorrect();
+            Debug.Log($"[CombosManager] ¡Click CORRECTO! Punto {idx} acertado");
+            if (idx < puntos.Count && puntos[idx] != null)
+            {
+                puntos[idx].SetCorrect();
+            }
             currentIndex++;
+            
             if (currentIndex >= puntos.Count)
             {
+                Debug.Log("[CombosManager] ¡Combo COMPLETADO exitosamente!");
                 exitoCombo = true;
                 terminado = true;
+                permitirClicks = false;
                 if (timeoutCoroutine != null)
                     StopCoroutine(timeoutCoroutine);
                 if (tiempoSlider != null)
@@ -198,10 +302,15 @@ public class CombosManager : MonoBehaviour
         }
         else
         {
+            Debug.Log($"[CombosManager] ¡¡¡ FALLO DETECTADO !!! Se esperaba índice {currentIndex}, pero se clickeó {idx}");
             exitoCombo = false;
             falloDetectado = true;
+            permitirClicks = false;
+            
             foreach (var p in puntos)
-                p.SetFail();
+            {
+                if (p != null) p.SetFail();
+            }
 
             if (mostrarQTECoroutine != null)
                 StopCoroutine(mostrarQTECoroutine);
@@ -209,11 +318,11 @@ public class CombosManager : MonoBehaviour
                 StopCoroutine(timeoutCoroutine);
             if (tiempoSlider != null)
                 tiempoSlider.gameObject.SetActive(false);
+            
             StartCoroutine(MostrarRestantesFallidos());
             StartCoroutine(DesvanecerYPurgarPuntos(0.5f));
             terminado = true;
         }
-
     }
 
     // Instancia los puntos que faltan tras el fallo, en rojo y alpha reducido
@@ -271,8 +380,8 @@ public class CombosManager : MonoBehaviour
         foreach (var p in puntos)
             if (p != null) p.gameObject.SetActive(false);
         puntos.Clear();
+
         terminado = true;
         desvaneciendo = false;
     }
-    
 }

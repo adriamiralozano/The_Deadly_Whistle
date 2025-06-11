@@ -576,10 +576,13 @@ public class CardManager : MonoBehaviour
     }
     private IEnumerator DisparoConQTECoroutine(CombosManager combosManager, int shotsToFire)
     {
+        // NO mostrar el panel aquí - ya se mostró en HandleShotPhase()
+        
         int aciertos = 0;
         for (int i = 0; i < shotsToFire; i++)
         {
-            combosManager.EmpezarQuickTimeEvents();
+            // Usar el método que NO muestra panel
+            combosManager.EmpezarQuickTimeEventsWithoutPanel();
             yield return new WaitUntil(() => combosManager.Terminado);
 
             if (combosManager.ExitoCombo)
@@ -587,6 +590,12 @@ public class CardManager : MonoBehaviour
 
             yield return new WaitUntil(() => !combosManager.Desvaneciendo);
             yield return new WaitForSeconds(0.05f);
+        }
+        
+        // Ocultar el panel al final de todos los QTEs
+        if (combosManager != null)
+        {
+            combosManager.HideQTEPanel();
         }
 
         Enemy targetEnemy = FindObjectOfType<Enemy>();
@@ -602,7 +611,7 @@ public class CardManager : MonoBehaviour
 
         if (aciertos == 3)
         {
-         targetEnemy.TakeDamage(1); // Si se aciertan los 3 disparos, inflige un daño adicional   
+            targetEnemy.TakeDamage(1); // Si se aciertan los 3 disparos, inflige un daño adicional   
         }
         
         yield return new WaitForSeconds(1f);
