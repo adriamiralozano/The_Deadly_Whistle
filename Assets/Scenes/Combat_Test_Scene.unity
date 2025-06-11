@@ -4040,6 +4040,7 @@ MonoBehaviour:
   cardFeedback: {fileID: 1407837805}
   healCardSprite: {fileID: 21300000, guid: 6ddeab90cab20fc4aa7dd33dfe43686d, type: 3}
   disarmCardSprite: {fileID: 21300000, guid: 2e2c48348b1d3e84bb011b9f4b079d1f, type: 3}
+  weaponCardSprite: {fileID: 21300000, guid: 9054955a5d23d7249857f3f2e8e98a42, type: 3}
   equipWeaponChancePercentage: 70
   disarmSuccessChancePercentage: 15
   disarmPlayerCooldown: 2
