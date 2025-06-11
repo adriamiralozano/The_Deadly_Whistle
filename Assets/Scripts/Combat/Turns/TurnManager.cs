@@ -3,6 +3,7 @@ using UnityEngine;
 using System; // Para Action y Func
 using TMPro; // Para TextMeshProUGUI
 using System.Collections; // Para Coroutines
+using UnityEngine.UI;
 
 
 public class TurnManager : MonoBehaviour
@@ -19,10 +20,13 @@ public class TurnManager : MonoBehaviour
     // --- NUEVO: Referencias a managers y enemigos ---
     [Header("Game References")]
     // ¡IMPORTANTE! Eliminamos [SerializeField] de estas dos, ya que las obtendremos por código.
-    private PlayerStats playerStats; 
-    private CardManager cardManager; 
+    private PlayerStats playerStats;
+    private CardManager cardManager;
 
     [SerializeField] public Enemy activeEnemy; // Referencia al enemigo actual en la escena. ¡Asigna esto en el Inspector!
+    [SerializeField] private GameObject backgroundGO;
+    [SerializeField] private GameObject zoomBackgroundGO; // Asigna el sprite para el zoom en el inspector
+    private Sprite originalSprite;
     // --- FIN NUEVO ---
 
     // --- Enumeración de Fases de Turno ---
@@ -77,12 +81,12 @@ public class TurnManager : MonoBehaviour
         cardManager = GetComponent<CardManager>();
 
         // Validaciones mejoradas:
-        if (playerStats == null) 
+        if (playerStats == null)
             Debug.LogError("[TurnManager] PlayerStats no encontrado en este GameObject. Asegúrate de que PlayerStats.cs esté en el mismo GameObject que TurnManager.cs.", this);
-        if (cardManager == null) 
+        if (cardManager == null)
             Debug.LogError("[TurnManager] CardManager no encontrado en este GameObject. Asegúrate de que CardManager.cs esté en el mismo GameObject que TurnManager.cs.", this);
-        
-        if (activeEnemy == null) 
+
+        if (activeEnemy == null)
             Debug.LogWarning("[TurnManager] No hay un enemigo activo asignado en el Inspector.", this);
     }
 
@@ -122,7 +126,7 @@ public class TurnManager : MonoBehaviour
 
         OnTurnStart?.Invoke(currentTurnNumber);
 
-        if (playerStats != null) 
+        if (playerStats != null)
             playerStats.ClearAllEffects();
         else
             Debug.LogError("[TurnManager] PlayerStats es null al inicio del turno en StartPlayerTurn().");
@@ -253,9 +257,9 @@ public class TurnManager : MonoBehaviour
             Debug.LogWarning("No puedes terminar el turno. Debes descartar cartas para reducir tu mano al límite.");
             return; // Sale del método sin avanzar la fase.
         }
-        if(currentTurnPhase != TurnPhase.ActionPhase)
+        if (currentTurnPhase != TurnPhase.ActionPhase)
         {
-            if(currentTurnPhase == TurnPhase.DiscardPostShot)
+            if (currentTurnPhase == TurnPhase.DiscardPostShot)
             {
                 Debug.LogWarning("Terminar la fase");
             }
@@ -265,7 +269,7 @@ public class TurnManager : MonoBehaviour
                 return; // Sale del método sin avanzar la fase.
             }
         }
-        
+
         Debug.Log("Solicitud de finalizar turno del jugador.");
         AdvancePhase(); // Si las condiciones son adecuadas, avanza a la siguiente fase.
     }
@@ -334,7 +338,7 @@ public class TurnManager : MonoBehaviour
             Debug.LogWarning("[TurnManager] handCountText no asignado en el Inspector.");
         }
     }
-    
+
     private void OnEnemyTurnCompleted()
     {
         enemyTurnCompleted = true;
@@ -398,7 +402,7 @@ public class TurnManager : MonoBehaviour
         yield return new WaitUntil(() => GetHandCount() >= cardsToDraw); // Espera hasta que se hayan robado las cartas
 
 
-        if (cardManager != null) 
+        if (cardManager != null)
         {
             cardManager.RequestRevolverStatusUpdate();
         }
@@ -420,7 +424,7 @@ public class TurnManager : MonoBehaviour
         }
 
         // 2. Intentar el disparo a través de CardManager
-        if (cardManager == null) 
+        if (cardManager == null)
         {
             Debug.LogError("[TurnManager] CardManager es null. No se puede intentar el disparo del Revolver.");
             return;
@@ -446,11 +450,11 @@ public class TurnManager : MonoBehaviour
         yield return new WaitForSeconds(1f); // Espera 1 segundo
         StartPlayerTurn(); // Ahora sí, inicia el primer turno normalmente
     }
-    
+
     private void HandleShotPhase()
     {
         Debug.Log("Iniciando Fase de Disparo (ShotPhase). Mostrando panel QTE...");
-        
+
         // Mostrar el panel QTE al entrar en ShotPhase
         CombosManager combosManager = FindObjectOfType<CombosManager>();
         if (combosManager != null)
@@ -458,4 +462,155 @@ public class TurnManager : MonoBehaviour
             combosManager.ShowQTEPanel();
         }
     }
+
+    public IEnumerator ShotFeedback()
+    {
+        if (backgroundGO == null)
+        {
+            Debug.LogWarning("No se ha asignado el fondo para el zoom.");
+            yield break;
+        }
+
+        var playerVisual = FindObjectOfType<PlayerVisualManager>();
+        if (playerVisual != null)
+            playerVisual.SetRevolverShotSprite();
+
+        var enemyVisual = FindObjectOfType<EnemyVisualManager>();
+        if (enemyVisual != null)
+            enemyVisual.SetShotedEnemySprite();
+
+        if (zoomBackgroundGO != null)
+            zoomBackgroundGO.SetActive(true);
+        backgroundGO.SetActive(false);
+
+        Transform bgTransform = (zoomBackgroundGO != null ? zoomBackgroundGO.transform : backgroundGO.transform);
+        Transform playerTransform = playerVisual != null ? playerVisual.transform : null;
+        Transform enemyTransform = enemyVisual != null ? enemyVisual.transform : null;
+
+        Vector3 bgOriginal = bgTransform.localScale;
+        Vector3 bgTarget = bgOriginal * 1.2f;
+
+        Vector3 playerOriginal = playerTransform != null ? playerTransform.localScale : Vector3.one;
+        Vector3 playerTarget = playerOriginal * 1.2f;
+
+        Vector3 enemyOriginal = enemyTransform != null ? enemyTransform.localScale : Vector3.one;
+        Vector3 enemyTarget = enemyOriginal * 1.2f;
+
+        Vector3 playerPosOriginal = playerTransform != null ? playerTransform.position : Vector3.zero;
+        Vector3 enemyPosOriginal = enemyTransform != null ? enemyTransform.position : Vector3.zero;
+
+        // Calcula el centro de la pantalla en coordenadas de mundo
+        Vector3 centerWorld = Camera.main.ScreenToWorldPoint(new Vector3(Screen.width / 2f, Screen.height / 2f, playerPosOriginal.z - Camera.main.transform.position.z));
+        // Puedes ajustar el offset para que no se superpongan
+        Vector3 playerTargetPos = centerWorld + Vector3.left * 3f; // Ajusta el offset a tu gusto
+        Vector3 enemyTargetPos = centerWorld + Vector3.right * 3f;
+
+        float bgDuration = 1.5f;
+        float charDuration = 0.3f;
+        float charApproachDuration = 0.2f; // Acercamiento rápido
+        float charRetreatDuration = 2.0f;  // Alejamiento lento
+        float approachDuration = 0.2f; // Acercamiento rápido
+        float lateralDuration = 0.7f;  // Alejamiento lateral lento
+        float returnDuration = 0.2f;   // Vuelta rápida
+
+        // Zoom y movimiento rápido de personajes
+if (playerTransform != null)
+    StartCoroutine(ZoomRoutine(playerTransform, playerOriginal, playerTarget, playerPosOriginal, playerTargetPos, approachDuration, lateralDuration, returnDuration, 1.5f));
+if (enemyTransform != null)
+    StartCoroutine(ZoomRoutine(enemyTransform, enemyOriginal, enemyTarget, enemyPosOriginal, enemyTargetPos, approachDuration, lateralDuration, returnDuration, 1.5f));
+
+        // Fondo (animación principal)
+        float elapsed = 0f;
+        while (elapsed < bgDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / bgDuration;
+            bgTransform.localScale = Vector3.Lerp(bgOriginal, bgTarget, t);
+            yield return null;
+        }   
+        bgTransform.localScale = bgTarget;
+
+        yield return new WaitForSeconds(0.2f);
+
+        // Volver a la escala y posición original
+        bgTransform.localScale = bgOriginal;
+        if (playerTransform != null)
+        {
+            playerTransform.localScale = playerOriginal;
+            playerTransform.position = playerPosOriginal;
+        }
+        if (enemyTransform != null)
+        {
+            enemyTransform.localScale = enemyOriginal;
+            enemyTransform.position = enemyPosOriginal;
+        }
+
+        bgTransform.localScale = bgOriginal;
+
+        backgroundGO.SetActive(true);
+        if (zoomBackgroundGO != null)
+            zoomBackgroundGO.SetActive(false);
+
+        if (playerVisual != null)
+            playerVisual.SetRevolverEquippedSprite();
+
+        if (enemyVisual != null)
+            enemyVisual.SetEquippedEnemySprite();
+    }
+    private IEnumerator ZoomRoutine(
+        Transform target,
+        Vector3 originalScale,
+        Vector3 zoomScale,
+        Vector3 originalPos,
+        Vector3 targetPos,
+        float approachDuration,
+        float lateralDuration,
+        float returnDuration,
+        float lateralOffset = 1.5f // Distancia lateral extra desde el centro
+    )
+    {
+        // 1. Acercamiento rápido al centro y zoom
+        float elapsed = 0f;
+        while (elapsed < approachDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / approachDuration;
+            target.localScale = Vector3.Lerp(originalScale, zoomScale, t);
+            target.position = Vector3.Lerp(originalPos, targetPos, t);
+            yield return null;
+        }
+        target.localScale = zoomScale;
+        target.position = targetPos;
+
+        // 2. Alejamiento lateral lento (ambos se separan del centro en X)
+        elapsed = 0f;
+        // Calcula la dirección desde el centro hacia la posición original en X
+        float direction = Mathf.Sign(originalPos.x - targetPos.x); // -1 para izquierda, 1 para derecha
+        Vector3 lateralTarget = targetPos + new Vector3(direction * lateralOffset, 0, 0);
+        while (elapsed < lateralDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / lateralDuration;
+            Vector3 pos = Vector3.Lerp(targetPos, lateralTarget, t);
+            pos.y = targetPos.y;
+            pos.z = targetPos.z;
+            target.position = pos;
+            yield return null;
+        }
+        target.position = lateralTarget;
+
+        // 3. Vuelta rápida a la posición original y escala original
+        elapsed = 0f;
+        while (elapsed < returnDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / returnDuration;
+            target.localScale = Vector3.Lerp(zoomScale, originalScale, t);
+            target.position = Vector3.Lerp(lateralTarget, originalPos, t);
+            yield return null;
+        }
+        target.localScale = originalScale;
+        target.position = originalPos;
+    }
+
 }

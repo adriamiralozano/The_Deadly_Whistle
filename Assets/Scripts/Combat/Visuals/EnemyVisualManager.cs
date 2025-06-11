@@ -7,8 +7,10 @@ public class EnemyVisualManager : MonoBehaviour
     [Header("Sprite References")]
     [SerializeField] private Sprite idleEnemySprite;
     [SerializeField] private Sprite equippedEnemySprite;
+    [SerializeField] private Sprite shotedEnemySprite;
 
     private SpriteRenderer spriteRenderer;
+    private Sprite originalSprite;
 
     void Awake()
     {
@@ -45,7 +47,7 @@ public class EnemyVisualManager : MonoBehaviour
             SetEquippedEnemySprite();
             Debug.Log("[EnemyVisualManager] Recibido evento: Enemigo Arma EQUipada. Cambiando sprite.");
 
-            
+
             if (AudioManager.Instance != null)
             {
                 AudioManager.Instance.PlayEnemyWeaponEquipped(); // Necesitarás crear este método en AudioManager
@@ -85,5 +87,18 @@ public class EnemyVisualManager : MonoBehaviour
         }
     }
 
+    public void SetShotedEnemySprite()
+    {
+        if (spriteRenderer != null && shotedEnemySprite != null)
+            spriteRenderer.sprite = shotedEnemySprite;
+        else
+            Debug.LogWarning("[EnemyVisualManager] shotedEnemySprite no asignado.");
+    }
+
+    public void RestoreOriginalSprite()
+    {
+        if (spriteRenderer != null && originalSprite != null)
+            spriteRenderer.sprite = originalSprite;
+    }
     // Puedes añadir métodos para animaciones, efectos, etc. aquí en el futuro.
 }

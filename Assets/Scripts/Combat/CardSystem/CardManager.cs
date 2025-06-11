@@ -617,6 +617,10 @@ public class CardManager : MonoBehaviour
         }
         
         yield return new WaitForSeconds(1f);
+
+        if (TurnManager.Instance != null)
+            yield return TurnManager.Instance.StartCoroutine(TurnManager.Instance.ShotFeedback());
+
         if (TurnManager.Instance != null)
             TurnManager.Instance.AdvancePhase();
     }
