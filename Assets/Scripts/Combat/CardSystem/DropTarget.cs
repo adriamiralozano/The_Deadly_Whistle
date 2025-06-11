@@ -40,10 +40,12 @@ public class DropTarget : MonoBehaviour, IDropHandler, IPointerEnterHandler, IPo
 
         if (eventData.pointerDrag != null && targetImage != null)
         {
-            // Asegúrate de que el objeto que se arrastra es una carta (tiene un CardUI)
-            if (eventData.pointerDrag.GetComponent<CardUI>() != null)
+            var cardUI = eventData.pointerDrag.GetComponent<CardUI>();
+            var cardBehaviour = eventData.pointerDrag.GetComponent<CardBehaviour2>();
+            if (cardUI != null && cardBehaviour != null)
             {
                 targetImage.color = highlightColor;
+                cardBehaviour.SetDragOverTargetScale(true);
             }
         }
     }
@@ -52,11 +54,15 @@ public class DropTarget : MonoBehaviour, IDropHandler, IPointerEnterHandler, IPo
     public void OnPointerExit(PointerEventData eventData)
     {
         if (targetImage != null)
+            targetImage.color = normalColor;
+
+        if (eventData.pointerDrag != null)
         {
-            targetImage.color = normalColor; // Restaura el color original
+            var cardBehaviour = eventData.pointerDrag.GetComponent<CardBehaviour2>();
+            if (cardBehaviour != null)
+                cardBehaviour.SetDragOverTargetScale(false);
         }
     }
-
     // Se llama cuando un objeto dragueable se suelta en el área de este DropTarget
     public void OnDrop(PointerEventData eventData)
     {

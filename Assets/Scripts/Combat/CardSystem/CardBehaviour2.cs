@@ -5,18 +5,20 @@ using UnityEngine.UI;
 using System.Collections;
 using DG.Tweening;
 
-[RequireComponent(typeof(Selectable))]
 [RequireComponent(typeof(CanvasGroup))]
 public class CardBehaviour2 : MonoBehaviour,
     IBeginDragHandler,
     IDragHandler,
     IEndDragHandler,
     IPointerEnterHandler,
-    IPointerExitHandler
+    IPointerExitHandler,
+    IPointerUpHandler,
+    IPointerDownHandler
 {
-    // === NUEVO: Bandera estática para controlar el dragging global ===
+    // Bandera estática para controlar el dragging global ===
     public static bool IsAnyCardDragging = false;
     // ===============================================================
+
 
     private RectTransform rectTransform;
     private Canvas parentCanvas; // El Canvas principal que contiene esta carta (ej. "HandCanvas")
@@ -29,6 +31,8 @@ public class CardBehaviour2 : MonoBehaviour,
     private bool isHovering = false;
     private bool isDragging = false;
     private bool isReturning = false;
+    private bool wasDragged = false;
+    private bool isOverDropTarget = false;
 
     private float idleTime = 0f;
     private Quaternion targetRotation;
@@ -50,7 +54,7 @@ public class CardBehaviour2 : MonoBehaviour,
     private Vector2 initialDragOffset;
 
     private int originalSortingOrder = -1; // Guarda el sorting order base de la carta
-    public bool IsHovering => isHovering;   
+    public bool IsHovering => isHovering;
 
     // === NUEVO: Variable para el desplazamiento aleatorio de la fase del idle tilt ===
     private float randomIdlePhaseOffset;
@@ -178,6 +182,9 @@ public class CardBehaviour2 : MonoBehaviour,
 
         if (isDragging)
         {
+
+
+
             Vector2 localPoint;
             RectTransformUtility.ScreenPointToLocalPointInRectangle(
                 parentCanvas.transform as RectTransform,
@@ -192,7 +199,8 @@ public class CardBehaviour2 : MonoBehaviour,
             float rotationZ = Mathf.Clamp(-(Input.mousePosition.x - RectTransformUtility.WorldToScreenPoint(parentCanvas.worldCamera, rectTransform.position).x) * 0.1f, -maxRotation, maxRotation);
             targetRotation = Quaternion.Euler(0, 0, rotationZ);
 
-            targetScale = originalScale * 1.5f; // Mantener la escala de arrastre al doble
+            if (!isOverDropTarget)
+                targetScale = originalScale * 1.5f;
             currentLocalOffset = Vector3.up * hoverVerticalOffset;
         }
         else if (!isReturning)
@@ -270,9 +278,15 @@ public class CardBehaviour2 : MonoBehaviour,
         }
     }
 
+    public void OnPointerDown(PointerEventData eventData)
+    {
+        wasDragged = false;
+    }
+
     public void OnBeginDrag(PointerEventData eventData)
     {
-
+        Debug.Log("BEGIN DRAG");
+        wasDragged = false;
         if (TurnManager.Instance.CurrentPhase != TurnManager.TurnPhase.ActionPhase)
         {
             if (TurnManager.Instance.CurrentPhase == TurnManager.TurnPhase.DiscardPostShot)
@@ -287,9 +301,6 @@ public class CardBehaviour2 : MonoBehaviour,
         }
 
 
-
-
-        if (!selectable.interactable) return;
 
         IsAnyCardDragging = true;
 
@@ -328,6 +339,7 @@ public class CardBehaviour2 : MonoBehaviour,
 
     public void OnDrag(PointerEventData eventData)
     {
+        wasDragged = true;
         if (!isDragging) return;
     }
 
@@ -350,6 +362,46 @@ public class CardBehaviour2 : MonoBehaviour,
 
         isHovering = false;
     }
+
+    public void OnPointerUp(PointerEventData eventData)
+    {
+        if (!wasDragged && eventData.button == PointerEventData.InputButton.Left && !isDragging)
+        {
+            Debug.Log("[CardBehaviour2] CLICK SEGURO para la PREVIEW");
+            var cardUI = GetComponent<CardUI>();
+            if (cardUI == null)
+            {
+                Debug.LogError("CardUI es null en " + gameObject.name);
+                return;
+            }
+            if (CardPreviewManager.Instance == null)
+            {
+                Debug.LogError("CardPreviewManager.Instance es null");
+                return;
+            }
+            if (cardUI.CardSprite == null)
+            {
+                Debug.LogError("CardSprite es null en " + gameObject.name);
+                return;
+            }
+            CardPreviewManager.Instance.ShowCard(cardUI.CardSprite);
+        }
+    }
+
+    /*     public void OnPointerClick(PointerEventData eventData)
+        {
+            Debug.Log("CLICK");
+            if (eventData.button == PointerEventData.InputButton.Left && !isDragging)
+            {
+                Debug.Log($"[CardBehaviour2] OnPointerClick llamado para la PREVIEW");
+                // Asume que tienes una referencia al sprite de la carta
+                var cardUI = GetComponent<CardUI>();
+                if (cardUI != null && cardUI.CardSprite != null)
+                {
+                    CardPreviewManager.Instance.ShowCard(cardUI.CardSprite);
+                }
+            }
+        } */
     public void OnPointerEnter(PointerEventData eventData)
     {
         if (isDragging || isReturning) return;
@@ -521,7 +573,7 @@ public class CardBehaviour2 : MonoBehaviour,
             trueBaseLayoutPosition = rectTransform.localPosition;
         basePositionInitialized = true;
     }
-    
+
     public void AnimateToCurrentLayoutPosition(float duration = 0.3f)
     {
         if (moveCoroutine != null)
@@ -533,6 +585,17 @@ public class CardBehaviour2 : MonoBehaviour,
         // Animamos hacia la posición actual del layout
         rectTransform.DOLocalMove(rectTransform.localPosition, duration).SetEase(Ease.InOutQuad);
 
+    }
+
+    public void SetDragOverTargetScale(bool isOverTarget)
+    {
+        isOverDropTarget = isOverTarget;
+        if (isOverDropTarget)
+            targetScale = originalScale * 0.5f;
+        else if (isDragging)
+            targetScale = originalScale * 1.5f;
+        else
+            targetScale = originalScale;
     }
 
 }
