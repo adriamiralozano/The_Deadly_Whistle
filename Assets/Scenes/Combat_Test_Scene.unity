@@ -3884,7 +3884,7 @@ MonoBehaviour:
   equipWeaponChancePercentage: 70
   disarmSuccessChancePercentage: 15
   disarmPlayerCooldown: 2
-  healChancePercentage: 40
+  healChancePercentage: 25
   healthThresholdForHealing: 2
   healAmount: 1
 --- !u!114 &1894651971 stripped

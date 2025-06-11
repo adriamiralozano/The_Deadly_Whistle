@@ -25,6 +25,7 @@ public class OutlawEnemyAI : MonoBehaviour, IEnemyAI
     private int shotsPerTurn = 3;   // Número de disparos que el enemigo puede hacer por turno
     private bool moreThanOneShot = false; // Indica si el enemigo ha fallado más de un disparo en el turno
     private bool EnemyHasBeenDisarmed = false; // Indica si el enemigo ha sido desarmado por el jugador
+    private int healCooldown = 0; // Contador para el cooldown de curación, si se implementa
     private bool EnemyEffectCardUsed = false;   
 
 
@@ -143,14 +144,39 @@ public class OutlawEnemyAI : MonoBehaviour, IEnemyAI
 
     private void DecidesToHeal()
     {
-        if (_enemyInstance != null && GetRandomNum() > healChancePercentage)
+        if (healCooldown == 0)
         {
-            Debug.Log($"[OutlawEnemyAI]  {_enemyInstance.Data.enemyName}Tiene Cerveza y decide curarse {healAmount} de vida!");
-            _enemyInstance.Heal(healAmount); // Asume que el script Enemy tiene un método Heal(int amount)
-            EnemyEffectCardUsed = true; // Marca que se ha usado la carta de efecto del enemigo
+            if (_enemyInstance != null && GetRandomNum() < healChancePercentage)
+            {
+                Debug.Log($"[OutlawEnemyAI]  {_enemyInstance.Data.enemyName}Tiene Cerveza y decide curarse {healAmount} de vida!");
+                _enemyInstance.Heal(healAmount); // Asume que el script Enemy tiene un método Heal(int amount)
+                EnemyEffectCardUsed = true; // Marca que se ha usado la carta de efecto del enemigo
+                healCooldown = 1; // Establece el cooldown de curación para el siguiente turno
+            }
+            else
+            {
+                healCooldown = 0; // Resetea el cooldown si no se cura
+                Debug.Log($"[OutlawEnemyAI]  {_enemyInstance.Data.enemyName}No tiene Cerveza y por lo tanto no se puede curar.");
+            }
         }
-        else
+        else if (healCooldown == 1)
         {
+            if (_enemyInstance != null && GetRandomNum() < 15)
+            {
+                Debug.Log($"[OutlawEnemyAI]  {_enemyInstance.Data.enemyName}Tiene Cerveza y decide curarse {healAmount} de vida!");
+                _enemyInstance.Heal(healAmount); // Asume que el script Enemy tiene un método Heal(int amount)
+                EnemyEffectCardUsed = true; // Marca que se ha usado la carta de efecto del enemigo
+                healCooldown = 2; // Establece el cooldown de curación para el siguiente turno
+
+            }
+            else
+            {
+                healCooldown = 0; // Resetea el cooldown si no se cura
+                Debug.Log($"[OutlawEnemyAI]  {_enemyInstance.Data.enemyName}No tiene Cerveza y por lo tanto no se puede curar.");
+            }
+        }
+        else if(healCooldown == 2){
+            healCooldown = 0; // Resetea el cooldown si no se cura
             Debug.Log($"[OutlawEnemyAI]  {_enemyInstance.Data.enemyName}No tiene Cerveza y por lo tanto no se puede curar.");
         }
     }
