@@ -58,6 +58,7 @@ public class TurnManager : MonoBehaviour
     // --- Eventos para comunicación con CardManager ---
     public static event Action OnRequestDrawCard;       // Solicita al CardManager que robe una carta
     public static event Func<int> OnRequestHandCount;   // Solicita al CardManager el conteo de la mano
+    private bool enemyTurnCompleted = false;
 
 
     void Awake()
@@ -89,11 +90,13 @@ public class TurnManager : MonoBehaviour
     void OnEnable()
     {
         CardManager.OnHandCountUpdated += UpdateHandCountDisplay;
+        OutlawEnemyAI.OnEnemyTurnCompleted += OnEnemyTurnCompleted; // Suscribirse al evento
     }
 
     void OnDisable()
     {
         CardManager.OnHandCountUpdated -= UpdateHandCountDisplay;
+        OutlawEnemyAI.OnEnemyTurnCompleted -= OnEnemyTurnCompleted; // Desuscribirse del evento
     }
 
     // --- Métodos de Inicio ---
@@ -101,7 +104,6 @@ public class TurnManager : MonoBehaviour
     {
         StartGame();
     }
-
 
     /// Inicia el juego y el primer turno del jugador.
     public void StartGame()
@@ -332,6 +334,12 @@ public class TurnManager : MonoBehaviour
             Debug.LogWarning("[TurnManager] handCountText no asignado en el Inspector.");
         }
     }
+    
+    private void OnEnemyTurnCompleted()
+    {
+        enemyTurnCompleted = true;
+        Debug.Log("[TurnManager] El enemigo ha completado su turno.");
+    }
 
     private IEnumerator HandleEnemyTurnPhaseRoutine()
     {
@@ -344,18 +352,23 @@ public class TurnManager : MonoBehaviour
         Debug.Log("Turno del enemigo: esperando 1 segundo antes de la acción...");
         yield return new WaitForSeconds(1f);
 
+        enemyTurnCompleted = false; // Resetea la bandera
+
         if (activeEnemy != null && activeEnemy.IsAlive)
         {
             Debug.Log($"Turno del enemigo: {activeEnemy.Data.enemyName} realizando su acción...");
-            activeEnemy.PerformTurnAction(); 
+            activeEnemy.PerformTurnAction();
+
+            // NUEVO: Espera hasta que el enemigo complete todas sus acciones
+            yield return new WaitUntil(() => enemyTurnCompleted);
         }
         else
         {
             Debug.LogWarning("[TurnManager] No hay un enemigo activo válido para realizar el turno.");
         }
 
-        Debug.Log("Turno del enemigo: esperando 2 segundos después de la acción..."); 
-        yield return new WaitForSeconds(2f); 
+        Debug.Log("Turno del enemigo: esperando 1 segundo después de completar las acciones...");
+        yield return new WaitForSeconds(1f);
 
         if (enemyTurnBanner != null)
             enemyTurnBanner.SetActive(false);

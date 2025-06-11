@@ -9,6 +9,8 @@ public class AudioManager : MonoBehaviour
     public AudioClip cardHoverClip;
     public AudioClip WeaponEquippedSound;
     public AudioClip EnemyWeaponEquippedSound;
+    public AudioClip EnemyCardAppearSound;
+
 
 
     private AudioSource audioSource;
@@ -36,5 +38,6 @@ public class AudioManager : MonoBehaviour
     public void PlayCardHover() => PlaySFX(cardHoverClip);
     public void PlayWeaponEquipped() => PlaySFX(WeaponEquippedSound);
     public void PlayEnemyWeaponEquipped() => PlaySFX(EnemyWeaponEquippedSound);
+    public void PlayEnemyCardAppear() => PlaySFX(EnemyCardAppearSound);
 
 }
