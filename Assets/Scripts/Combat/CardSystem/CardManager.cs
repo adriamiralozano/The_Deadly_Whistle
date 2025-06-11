@@ -577,6 +577,8 @@ public class CardManager : MonoBehaviour
     private IEnumerator DisparoConQTECoroutine(CombosManager combosManager, int shotsToFire)
     {
         // NO mostrar el panel aquí - ya se mostró en HandleShotPhase()
+
+        yield return new WaitForSeconds(1.1f);
         
         int aciertos = 0;
         for (int i = 0; i < shotsToFire; i++)
