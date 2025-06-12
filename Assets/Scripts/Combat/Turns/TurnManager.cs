@@ -465,25 +465,49 @@ public class TurnManager : MonoBehaviour
 
     public IEnumerator ShotFeedback()
     {
-        if (backgroundGO == null)
+        var playerVisual = FindObjectOfType<PlayerVisualManager>();
+        var enemyVisual = FindObjectOfType<EnemyVisualManager>();
+
+        // Guarda el sprite original del enemigo
+        Sprite enemyOriginalSprite = null;
+        Sprite playerOriginalSprite = null;
+        SpriteRenderer enemySpriteRenderer = null;
+        SpriteRenderer playerSpriteRenderer = null;
+
+        if (enemyVisual != null)
         {
-            Debug.LogWarning("No se ha asignado el fondo para el zoom.");
-            yield break;
+            enemySpriteRenderer = enemyVisual.GetComponent<SpriteRenderer>();
+            if (enemySpriteRenderer != null)
+                enemyOriginalSprite = enemySpriteRenderer.sprite;
+            enemyVisual.SetShotedEnemySprite();
         }
 
-        var playerVisual = FindObjectOfType<PlayerVisualManager>();
         if (playerVisual != null)
+        {
+            playerSpriteRenderer = playerVisual.GetComponent<SpriteRenderer>();
+            if (playerSpriteRenderer != null)
+                playerOriginalSprite = playerSpriteRenderer.sprite;
             playerVisual.SetRevolverShotSprite();
+        }
 
-        var enemyVisual = FindObjectOfType<EnemyVisualManager>();
-        if (enemyVisual != null)
-            enemyVisual.SetShotedEnemySprite();
+        // Ambos fondos activos SIEMPRE
+        backgroundGO.SetActive(true);
+        zoomBackgroundGO.SetActive(true);
 
-        if (zoomBackgroundGO != null)
-            zoomBackgroundGO.SetActive(true);
-        backgroundGO.SetActive(false);
+        // Referencias
+        var bgRenderer = backgroundGO.GetComponent<SpriteRenderer>();
+        var zoomBgRenderer = zoomBackgroundGO.GetComponent<SpriteRenderer>();
 
-        Transform bgTransform = (zoomBackgroundGO != null ? zoomBackgroundGO.transform : backgroundGO.transform);
+        // Sorting orders originales
+        int bgOrder = bgRenderer.sortingOrder;
+        int zoomOrder = zoomBgRenderer.sortingOrder;
+
+        // Poner el fondo de zoom delante
+        zoomBgRenderer.sortingOrder = bgOrder + 1;
+
+        // Transforms
+        Transform bgTransform = backgroundGO.transform;
+        Transform zoomBgTransform = zoomBackgroundGO.transform;
         Transform playerTransform = playerVisual != null ? playerVisual.transform : null;
         Transform enemyTransform = enemyVisual != null ? enemyVisual.transform : null;
 
@@ -499,7 +523,6 @@ public class TurnManager : MonoBehaviour
         Vector3 playerPosOriginal = playerTransform != null ? playerTransform.position : Vector3.zero;
         Vector3 enemyPosOriginal = enemyTransform != null ? enemyTransform.position : Vector3.zero;
 
-        // Calcula el centro de la pantalla en coordenadas de mundo
         Vector3 centerWorld = Camera.main.ScreenToWorldPoint(new Vector3(Screen.width / 2f, Screen.height / 2f, playerPosOriginal.z - Camera.main.transform.position.z));
         Vector3 playerTargetPos = centerWorld + Vector3.left * 3f;
         Vector3 enemyTargetPos = centerWorld + Vector3.right * 3f;
@@ -509,15 +532,16 @@ public class TurnManager : MonoBehaviour
         float returnDuration = 0.2f;
         float lateralOffset = 1.5f;
 
-        // --- FASE 1: Zoom y acercamiento al centro (fondo y personajes simultáneos) ---
+        // --- FASE 1: Zoom y acercamiento al centro (ambos fondos y personajes) ---
         float elapsed = 0f;
         while (elapsed < approachDuration)
         {
             elapsed += Time.deltaTime;
             float t = elapsed / approachDuration;
 
-            // Fondo
+            // Ambos fondos hacen zoom
             bgTransform.localScale = Vector3.Lerp(bgOriginal, bgTarget, t);
+            zoomBgTransform.localScale = Vector3.Lerp(bgOriginal, bgTarget, t);
 
             // Personajes
             if (playerTransform != null)
@@ -534,6 +558,7 @@ public class TurnManager : MonoBehaviour
             yield return null;
         }
         bgTransform.localScale = bgTarget;
+        zoomBgTransform.localScale = bgTarget;
         if (playerTransform != null)
         {
             playerTransform.localScale = playerTarget;
@@ -545,7 +570,7 @@ public class TurnManager : MonoBehaviour
             enemyTransform.position = enemyTargetPos;
         }
 
-        // --- FASE 2: Alejamiento lateral de personajes (fondo estático) ---
+        // --- FASE 2: Alejamiento lateral de personajes (fondos estáticos) ---
         elapsed = 0f;
         Vector3 playerLateralTarget = playerTargetPos + Vector3.left * lateralOffset;
         Vector3 enemyLateralTarget = enemyTargetPos + Vector3.right * lateralOffset;
@@ -559,7 +584,6 @@ public class TurnManager : MonoBehaviour
             if (enemyTransform != null)
                 enemyTransform.position = Vector3.Lerp(enemyTargetPos, enemyLateralTarget, t);
 
-            // Fondo se mantiene en bgTarget
             yield return null;
         }
         if (playerTransform != null)
@@ -569,20 +593,29 @@ public class TurnManager : MonoBehaviour
 
         yield return new WaitForSeconds(0.1f);
 
-        // --- FASE 3: Regreso sincronizado de personajes y fondo ---
+        // --- FASE 3: Regreso sincronizado de personajes y fondos ---
         elapsed = 0f;
         Vector3 playerStartPos = playerTransform != null ? playerTransform.position : Vector3.zero;
         Vector3 enemyStartPos = enemyTransform != null ? enemyTransform.position : Vector3.zero;
         Vector3 playerStartScale = playerTransform != null ? playerTransform.localScale : Vector3.one;
         Vector3 enemyStartScale = enemyTransform != null ? enemyTransform.localScale : Vector3.one;
 
+        // Asegura alpha inicial
+        zoomBgRenderer.color = new Color(1f, 1f, 1f, 1f);
+        bgRenderer.color = new Color(1f, 1f, 1f, 1f);
+
         while (elapsed < returnDuration)
         {
             elapsed += Time.deltaTime;
             float t = Mathf.Clamp01(elapsed / returnDuration);
 
-            // Fondo
+            // Ambos fondos hacen zoom out juntos
             bgTransform.localScale = Vector3.Lerp(bgTarget, bgOriginal, t);
+            zoomBgTransform.localScale = Vector3.Lerp(bgTarget, bgOriginal, t);
+
+            // Crossfade: baja alpha del fondo de zoom
+            zoomBgRenderer.color = new Color(1f, 1f, 1f, 1f - t);
+            // (El fondo normal permanece con alpha 1)
 
             // Personajes
             if (playerTransform != null)
@@ -598,7 +631,12 @@ public class TurnManager : MonoBehaviour
 
             yield return null;
         }
+        // Asegura valores finales
         bgTransform.localScale = bgOriginal;
+        zoomBgTransform.localScale = bgOriginal;
+        zoomBgRenderer.color = new Color(1f, 1f, 1f, 0f);
+        bgRenderer.color = new Color(1f, 1f, 1f, 1f);
+
         if (playerTransform != null)
         {
             playerTransform.localScale = playerOriginal;
@@ -610,17 +648,19 @@ public class TurnManager : MonoBehaviour
             enemyTransform.position = enemyPosOriginal;
         }
 
+        // Restaurar sorting order original
+        zoomBgRenderer.sortingOrder = zoomOrder;
+
+        zoomBgRenderer.color = new Color(1f, 1f, 1f, 1f);
+
         yield return new WaitForSeconds(0.2f);
 
-        backgroundGO.SetActive(true);
-        if (zoomBackgroundGO != null)
-            zoomBackgroundGO.SetActive(false);
+        if (enemySpriteRenderer != null && enemyOriginalSprite != null)
+            enemySpriteRenderer.sprite = enemyOriginalSprite;
 
-        if (playerVisual != null)
-            playerVisual.SetRevolverEquippedSprite();
-
-        if (enemyVisual != null)
-            enemyVisual.SetEquippedEnemySprite();
+        // Restaurar sprite original del player
+        if (playerSpriteRenderer != null && playerOriginalSprite != null)
+            playerSpriteRenderer.sprite = playerOriginalSprite;
     }
 
 }
