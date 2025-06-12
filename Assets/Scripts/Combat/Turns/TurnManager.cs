@@ -501,38 +501,103 @@ public class TurnManager : MonoBehaviour
 
         // Calcula el centro de la pantalla en coordenadas de mundo
         Vector3 centerWorld = Camera.main.ScreenToWorldPoint(new Vector3(Screen.width / 2f, Screen.height / 2f, playerPosOriginal.z - Camera.main.transform.position.z));
-        // Puedes ajustar el offset para que no se superpongan
-        Vector3 playerTargetPos = centerWorld + Vector3.left * 3f; // Ajusta el offset a tu gusto
+        Vector3 playerTargetPos = centerWorld + Vector3.left * 3f;
         Vector3 enemyTargetPos = centerWorld + Vector3.right * 3f;
 
-        float bgDuration = 1.5f;
-        float charDuration = 0.3f;
-        float charApproachDuration = 0.2f; // Acercamiento rápido
-        float charRetreatDuration = 2.0f;  // Alejamiento lento
-        float approachDuration = 0.2f; // Acercamiento rápido
-        float lateralDuration = 0.7f;  // Alejamiento lateral lento
-        float returnDuration = 0.2f;   // Vuelta rápida
+        float approachDuration = 0.2f;
+        float lateralDuration = 0.7f;
+        float returnDuration = 0.2f;
+        float lateralOffset = 1.5f;
 
-        // Zoom y movimiento rápido de personajes
-        if (playerTransform != null)
-            StartCoroutine(ZoomRoutine(playerTransform, playerOriginal, playerTarget, playerPosOriginal, playerTargetPos, approachDuration, lateralDuration, returnDuration, 1.5f));
-        if (enemyTransform != null)
-            StartCoroutine(ZoomRoutine(enemyTransform, enemyOriginal, enemyTarget, enemyPosOriginal, enemyTargetPos, approachDuration, lateralDuration, returnDuration, 1.5f));
-
-        // Fondo (animación principal)
+        // --- FASE 1: Zoom y acercamiento al centro (fondo y personajes simultáneos) ---
         float elapsed = 0f;
-        while (elapsed < bgDuration)
+        while (elapsed < approachDuration)
         {
             elapsed += Time.deltaTime;
-            float t = elapsed / bgDuration;
+            float t = elapsed / approachDuration;
+
+            // Fondo
             bgTransform.localScale = Vector3.Lerp(bgOriginal, bgTarget, t);
+
+            // Personajes
+            if (playerTransform != null)
+            {
+                playerTransform.localScale = Vector3.Lerp(playerOriginal, playerTarget, t);
+                playerTransform.position = Vector3.Lerp(playerPosOriginal, playerTargetPos, t);
+            }
+            if (enemyTransform != null)
+            {
+                enemyTransform.localScale = Vector3.Lerp(enemyOriginal, enemyTarget, t);
+                enemyTransform.position = Vector3.Lerp(enemyPosOriginal, enemyTargetPos, t);
+            }
+
             yield return null;
-        }   
+        }
         bgTransform.localScale = bgTarget;
+        if (playerTransform != null)
+        {
+            playerTransform.localScale = playerTarget;
+            playerTransform.position = playerTargetPos;
+        }
+        if (enemyTransform != null)
+        {
+            enemyTransform.localScale = enemyTarget;
+            enemyTransform.position = enemyTargetPos;
+        }
 
-        yield return new WaitForSeconds(0.2f);
+        // --- FASE 2: Alejamiento lateral de personajes (fondo estático) ---
+        elapsed = 0f;
+        Vector3 playerLateralTarget = playerTargetPos + Vector3.left * lateralOffset;
+        Vector3 enemyLateralTarget = enemyTargetPos + Vector3.right * lateralOffset;
+        while (elapsed < lateralDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / lateralDuration;
 
-        // Volver a la escala y posición original
+            if (playerTransform != null)
+                playerTransform.position = Vector3.Lerp(playerTargetPos, playerLateralTarget, t);
+            if (enemyTransform != null)
+                enemyTransform.position = Vector3.Lerp(enemyTargetPos, enemyLateralTarget, t);
+
+            // Fondo se mantiene en bgTarget
+            yield return null;
+        }
+        if (playerTransform != null)
+            playerTransform.position = playerLateralTarget;
+        if (enemyTransform != null)
+            enemyTransform.position = enemyLateralTarget;
+
+        yield return new WaitForSeconds(0.1f);
+
+        // --- FASE 3: Regreso sincronizado de personajes y fondo ---
+        elapsed = 0f;
+        Vector3 playerStartPos = playerTransform != null ? playerTransform.position : Vector3.zero;
+        Vector3 enemyStartPos = enemyTransform != null ? enemyTransform.position : Vector3.zero;
+        Vector3 playerStartScale = playerTransform != null ? playerTransform.localScale : Vector3.one;
+        Vector3 enemyStartScale = enemyTransform != null ? enemyTransform.localScale : Vector3.one;
+
+        while (elapsed < returnDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / returnDuration);
+
+            // Fondo
+            bgTransform.localScale = Vector3.Lerp(bgTarget, bgOriginal, t);
+
+            // Personajes
+            if (playerTransform != null)
+            {
+                playerTransform.localScale = Vector3.Lerp(playerTarget, playerOriginal, t);
+                playerTransform.position = Vector3.Lerp(playerStartPos, playerPosOriginal, t);
+            }
+            if (enemyTransform != null)
+            {
+                enemyTransform.localScale = Vector3.Lerp(enemyTarget, enemyOriginal, t);
+                enemyTransform.position = Vector3.Lerp(enemyStartPos, enemyPosOriginal, t);
+            }
+
+            yield return null;
+        }
         bgTransform.localScale = bgOriginal;
         if (playerTransform != null)
         {
@@ -545,7 +610,7 @@ public class TurnManager : MonoBehaviour
             enemyTransform.position = enemyPosOriginal;
         }
 
-        bgTransform.localScale = bgOriginal;
+        yield return new WaitForSeconds(0.2f);
 
         backgroundGO.SetActive(true);
         if (zoomBackgroundGO != null)
@@ -556,61 +621,6 @@ public class TurnManager : MonoBehaviour
 
         if (enemyVisual != null)
             enemyVisual.SetEquippedEnemySprite();
-    }
-    private IEnumerator ZoomRoutine(
-        Transform target,
-        Vector3 originalScale,
-        Vector3 zoomScale,
-        Vector3 originalPos,
-        Vector3 targetPos,
-        float approachDuration,
-        float lateralDuration,
-        float returnDuration,
-        float lateralOffset = 1.5f // Distancia lateral extra desde el centro
-    )
-    {
-        // 1. Acercamiento rápido al centro y zoom
-        float elapsed = 0f;
-        while (elapsed < approachDuration)
-        {
-            elapsed += Time.deltaTime;
-            float t = elapsed / approachDuration;
-            target.localScale = Vector3.Lerp(originalScale, zoomScale, t);
-            target.position = Vector3.Lerp(originalPos, targetPos, t);
-            yield return null;
-        }
-        target.localScale = zoomScale;
-        target.position = targetPos;
-
-        // 2. Alejamiento lateral lento (ambos se separan del centro en X)
-        elapsed = 0f;
-        // Calcula la dirección desde el centro hacia la posición original en X
-        float direction = Mathf.Sign(originalPos.x - targetPos.x); // -1 para izquierda, 1 para derecha
-        Vector3 lateralTarget = targetPos + new Vector3(direction * lateralOffset, 0, 0);
-        while (elapsed < lateralDuration)
-        {
-            elapsed += Time.deltaTime;
-            float t = elapsed / lateralDuration;
-            Vector3 pos = Vector3.Lerp(targetPos, lateralTarget, t);
-            pos.y = targetPos.y;
-            pos.z = targetPos.z;
-            target.position = pos;
-            yield return null;
-        }
-        target.position = lateralTarget;
-
-        // 3. Vuelta rápida a la posición original y escala original
-        elapsed = 0f;
-        while (elapsed < returnDuration)
-        {
-            elapsed += Time.deltaTime;
-            float t = elapsed / returnDuration;
-            target.localScale = Vector3.Lerp(zoomScale, originalScale, t);
-            target.position = Vector3.Lerp(lateralTarget, originalPos, t);
-            yield return null;
-        }
-        target.localScale = originalScale;
-        target.position = originalPos;
     }
 
 }
