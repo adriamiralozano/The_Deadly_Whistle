@@ -613,7 +613,7 @@ public class TurnManager : MonoBehaviour
 
         // Variables para disparos secuenciales
         float shotInterval = lateralDuration / Mathf.Max(1, lateralDurationLevel); // Espaciado entre disparos
-        float nextShotTime = shotInterval;
+        float nextShotTime = 0f;
         int shotsActivated = 0;
 
         // Desactiva todos los efectos antes de empezar Fase 2
@@ -634,6 +634,8 @@ public class TurnManager : MonoBehaviour
             {
                 if (playerShotEffects[shotsActivated] != null)
                     playerShotEffects[shotsActivated].SetActive(true);
+                if (AudioManager.Instance != null)
+                AudioManager.Instance.PlayBangSound();
                 shotsActivated++;
                 nextShotTime += shotInterval;
                 targetEnemy.TakeDamage(1);

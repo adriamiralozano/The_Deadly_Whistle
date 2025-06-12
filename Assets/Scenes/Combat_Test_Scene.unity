@@ -1493,6 +1493,7 @@ MonoBehaviour:
   EnemyWeaponEquippedSound: {fileID: 8300000, guid: c648a65194a0d634e9edde8790bb60ca, type: 3}
   EnemyCardAppearSound: {fileID: 8300000, guid: acdaaa09f286742438bb106c183c4c65, type: 3}
   cardDropSound: {fileID: 8300000, guid: acdaaa09f286742438bb106c183c4c65, type: 3}
+  BangSound: {fileID: 8300000, guid: e6f54aceda70f9341a633e846ed37171, type: 3}
 --- !u!4 &612900051
 Transform:
   m_ObjectHideFlags: 0
@@ -3680,6 +3681,7 @@ MonoBehaviour:
   cardUIPrefab: {fileID: 5547775891163656974, guid: 53ea122a91b097042894756894c0fc10, type: 3}
   handContainer: {fileID: 1645281860}
   cardSpawnPoint: {fileID: 2012636183}
+  TotalDamage: 0
 --- !u!114 &1546688002
 MonoBehaviour:
   m_ObjectHideFlags: 0
