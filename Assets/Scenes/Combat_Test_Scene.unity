@@ -1237,7 +1237,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &582463643
 Transform:
   m_ObjectHideFlags: 0
@@ -2181,7 +2181,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &847873320
 Transform:
   m_ObjectHideFlags: 0
@@ -2879,7 +2879,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1148669412
 Transform:
   m_ObjectHideFlags: 0
@@ -3698,7 +3698,7 @@ MonoBehaviour:
   activeEnemy: {fileID: 1894651971}
   backgroundGO: {fileID: 1862241186}
   zoomBackgroundGO: {fileID: 108574393}
-  lateralDurationLevel: 1
+  lateralDurationLevel: 2
   playerShotEffects:
   - {fileID: 847873319}
   - {fileID: 1148669411}
