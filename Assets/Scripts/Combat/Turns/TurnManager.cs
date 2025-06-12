@@ -17,9 +17,8 @@ public class TurnManager : MonoBehaviour
     // --- Singleton ---
     public static TurnManager Instance { get; private set; }
 
-    // --- NUEVO: Referencias a managers y enemigos ---
     [Header("Game References")]
-    // ¡IMPORTANTE! Eliminamos [SerializeField] de estas dos, ya que las obtendremos por código.
+
     private PlayerStats playerStats;
     private CardManager cardManager;
 
@@ -27,7 +26,12 @@ public class TurnManager : MonoBehaviour
     [SerializeField] private GameObject backgroundGO;
     [SerializeField] private GameObject zoomBackgroundGO; // Asigna el sprite para el zoom en el inspector
     private Sprite originalSprite;
-    // --- FIN NUEVO ---
+
+
+    [Header("Animación de Disparo")]
+    [SerializeField] private int lateralDurationLevel = 1;
+    [SerializeField] private GameObject[] playerShotEffects;
+
 
     // --- Enumeración de Fases de Turno ---
     public enum TurnPhase
@@ -474,6 +478,14 @@ public class TurnManager : MonoBehaviour
         SpriteRenderer enemySpriteRenderer = null;
         SpriteRenderer playerSpriteRenderer = null;
 
+        if (playerShotEffects != null)
+        {
+            // Desactiva todos primero
+            foreach (var go in playerShotEffects)
+                if (go != null) go.SetActive(false);
+
+        }
+
         if (enemyVisual != null)
         {
             enemySpriteRenderer = enemyVisual.GetComponent<SpriteRenderer>();
@@ -528,8 +540,23 @@ public class TurnManager : MonoBehaviour
         Vector3 enemyTargetPos = centerWorld + Vector3.right * 3f;
 
         float approachDuration = 0.2f;
-        float lateralDuration = 0.7f;
-        float returnDuration = 0.2f;
+        float lateralDuration = 1.2f;
+        switch (lateralDurationLevel)
+        {
+            case 1:
+                lateralDuration = 1.2f;
+                break;
+            case 2:
+                lateralDuration = 1.8f;
+                break;
+            case 3:
+                lateralDuration = 2.4f;
+                break;
+            default:
+                lateralDuration = 1.2f;
+                break;
+        }
+        float returnDuration = 0.12f;
         float lateralOffset = 1.5f;
 
         // --- FASE 1: Zoom y acercamiento al centro (ambos fondos y personajes) ---
@@ -574,15 +601,48 @@ public class TurnManager : MonoBehaviour
         elapsed = 0f;
         Vector3 playerLateralTarget = playerTargetPos + Vector3.left * lateralOffset;
         Vector3 enemyLateralTarget = enemyTargetPos + Vector3.right * lateralOffset;
+
+        // Guarda la rotación original
+        Quaternion bgOriginalRot = bgTransform.rotation;
+        Quaternion zoomBgOriginalRot = zoomBgTransform.rotation;
+        Quaternion bgTargetRot = Quaternion.Euler(0, 0, -6f);
+        Quaternion zoomBgTargetRot = Quaternion.Euler(0, 0, -6f);
+
+        // Variables para disparos secuenciales
+        float shotInterval = lateralDuration / Mathf.Max(1, lateralDurationLevel); // Espaciado entre disparos
+        float nextShotTime = shotInterval;
+        int shotsActivated = 0;
+
+        // Desactiva todos los efectos antes de empezar Fase 2
+        if (playerShotEffects != null)
+        {
+            foreach (var go in playerShotEffects)
+                if (go != null) go.SetActive(false);
+        }
+
         while (elapsed < lateralDuration)
         {
             elapsed += Time.deltaTime;
             float t = elapsed / lateralDuration;
 
+            // Activa disparos uno a uno según el tiempo
+            if (playerShotEffects != null && shotsActivated < lateralDurationLevel && elapsed >= nextShotTime - shotInterval / 2f)
+            {
+                if (playerShotEffects[shotsActivated] != null)
+                    playerShotEffects[shotsActivated].SetActive(true);
+                shotsActivated++;
+                nextShotTime += shotInterval;
+            }
+
+            // Personajes
             if (playerTransform != null)
                 playerTransform.position = Vector3.Lerp(playerTargetPos, playerLateralTarget, t);
             if (enemyTransform != null)
                 enemyTransform.position = Vector3.Lerp(enemyTargetPos, enemyLateralTarget, t);
+
+            // Fondos rotan hacia la derecha
+            bgTransform.rotation = Quaternion.Lerp(bgOriginalRot, bgTargetRot, t);
+            zoomBgTransform.rotation = Quaternion.Lerp(zoomBgOriginalRot, zoomBgTargetRot, t);
 
             yield return null;
         }
@@ -590,6 +650,17 @@ public class TurnManager : MonoBehaviour
             playerTransform.position = playerLateralTarget;
         if (enemyTransform != null)
             enemyTransform.position = enemyLateralTarget;
+
+        // Asegura rotación final de fase 2
+        bgTransform.rotation = bgTargetRot;
+        zoomBgTransform.rotation = zoomBgTargetRot;
+
+        // Desactiva todos los efectos al acabar Fase 2
+        if (playerShotEffects != null)
+        {
+            foreach (var go in playerShotEffects)
+                if (go != null) go.SetActive(false);
+        }
 
         yield return new WaitForSeconds(0.1f);
 
@@ -600,7 +671,6 @@ public class TurnManager : MonoBehaviour
         Vector3 playerStartScale = playerTransform != null ? playerTransform.localScale : Vector3.one;
         Vector3 enemyStartScale = enemyTransform != null ? enemyTransform.localScale : Vector3.one;
 
-        // Asegura alpha inicial
         zoomBgRenderer.color = new Color(1f, 1f, 1f, 1f);
         bgRenderer.color = new Color(1f, 1f, 1f, 1f);
 
@@ -609,15 +679,16 @@ public class TurnManager : MonoBehaviour
             elapsed += Time.deltaTime;
             float t = Mathf.Clamp01(elapsed / returnDuration);
 
-            // Ambos fondos hacen zoom out juntos
+            // Ambos fondos hacen zoom out juntos y regresan la rotación
             bgTransform.localScale = Vector3.Lerp(bgTarget, bgOriginal, t);
             zoomBgTransform.localScale = Vector3.Lerp(bgTarget, bgOriginal, t);
 
-            // Crossfade: baja alpha del fondo de zoom
-            zoomBgRenderer.color = new Color(1f, 1f, 1f, 1f - t);
-            // (El fondo normal permanece con alpha 1)
+            bgTransform.rotation = Quaternion.Lerp(bgTargetRot, bgOriginalRot, t);
+            zoomBgTransform.rotation = Quaternion.Lerp(zoomBgTargetRot, zoomBgOriginalRot, t);
 
-            // Personajes
+            // Crossfade y personajes (igual que antes)
+            zoomBgRenderer.color = new Color(1f, 1f, 1f, 1f - t);
+
             if (playerTransform != null)
             {
                 playerTransform.localScale = Vector3.Lerp(playerTarget, playerOriginal, t);
@@ -634,6 +705,8 @@ public class TurnManager : MonoBehaviour
         // Asegura valores finales
         bgTransform.localScale = bgOriginal;
         zoomBgTransform.localScale = bgOriginal;
+        bgTransform.rotation = bgOriginalRot;
+        zoomBgTransform.rotation = zoomBgOriginalRot;
         zoomBgRenderer.color = new Color(1f, 1f, 1f, 0f);
         bgRenderer.color = new Color(1f, 1f, 1f, 1f);
 
@@ -661,6 +734,8 @@ public class TurnManager : MonoBehaviour
         // Restaurar sprite original del player
         if (playerSpriteRenderer != null && playerOriginalSprite != null)
             playerSpriteRenderer.sprite = playerOriginalSprite;
+
+        zoomBackgroundGO.SetActive(false);
     }
 
 }
