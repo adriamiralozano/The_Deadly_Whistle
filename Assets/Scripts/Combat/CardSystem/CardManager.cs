@@ -41,6 +41,8 @@ public class CardManager : MonoBehaviour
     public static event Action OnCardDiscarded;
     public static event Action<CardData> OnCardPlayed;
 
+    public int TotalDamage = 0; // Para llevar un conteo de daño total infligido
+
     // Singleton instance
     public static CardManager Instance { get; private set; }
 
@@ -577,9 +579,9 @@ public class CardManager : MonoBehaviour
     private IEnumerator DisparoConQTECoroutine(CombosManager combosManager, int shotsToFire)
     {
         // NO mostrar el panel aquí - ya se mostró en HandleShotPhase()
-
+        TotalDamage = 0;
         yield return new WaitForSeconds(1.1f);
-        
+
         int aciertos = 0;
         for (int i = 0; i < shotsToFire; i++)
         {
@@ -593,7 +595,7 @@ public class CardManager : MonoBehaviour
             yield return new WaitUntil(() => !combosManager.Desvaneciendo);
             yield return new WaitForSeconds(0.05f);
         }
-        
+
         // Ocultar el panel al final de todos los QTEs
         if (combosManager != null)
         {
@@ -603,7 +605,7 @@ public class CardManager : MonoBehaviour
         Enemy targetEnemy = FindObjectOfType<Enemy>();
         if (targetEnemy != null && aciertos > 0)
         {
-            targetEnemy.TakeDamage(aciertos);
+            AddAchievedShots(aciertos); // Añade los disparos acertados al total
             Debug.Log($"[CardManager] {aciertos} disparos impactaron a '{targetEnemy.Data.enemyName}' tras QTEs.");
         }
         else if (aciertos == 0)
@@ -611,18 +613,17 @@ public class CardManager : MonoBehaviour
             Debug.Log("[CardManager] No se logró ningún disparo exitoso tras los QTEs.");
         }
 
-        if (aciertos == 3)
-        {
-            targetEnemy.TakeDamage(1); // Si se aciertan los 3 disparos, inflige un daño adicional   
-        }
-        
+
         yield return new WaitForSeconds(1f);
 
-        if (TurnManager.Instance != null)
-            yield return TurnManager.Instance.StartCoroutine(TurnManager.Instance.ShotFeedback());
+        if (TotalDamage > 0)
+        {
+            if (TurnManager.Instance != null)
+                yield return TurnManager.Instance.StartCoroutine(TurnManager.Instance.ShotFeedback());
+        }
 
         if (TurnManager.Instance != null)
-            TurnManager.Instance.AdvancePhase();
+                TurnManager.Instance.AdvancePhase();
     }
 
     public IEnumerator DrawCards(int cantidad, float delay = 0.5f)
@@ -673,7 +674,7 @@ public class CardManager : MonoBehaviour
             return false;
         }
     }
-    
+
     public bool AttemptUseCoverCard()
     {
         // Busca la primera carta en la mano con el cardID "CoverCard".
@@ -690,6 +691,12 @@ public class CardManager : MonoBehaviour
             Debug.Log("[CardManager] No se encontró la carta de Cover en la mano. El daño será aplicado.");
             return false; // La CoverCard no fue encontrada.
         }
+    }
+
+    public int AddAchievedShots(int shotsAchieved)
+    {
+        TotalDamage += shotsAchieved;
+        return TotalDamage;
     }
 
 }

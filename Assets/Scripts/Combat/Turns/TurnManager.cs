@@ -471,6 +471,7 @@ public class TurnManager : MonoBehaviour
     {
         var playerVisual = FindObjectOfType<PlayerVisualManager>();
         var enemyVisual = FindObjectOfType<EnemyVisualManager>();
+        Enemy targetEnemy = activeEnemy;
 
         // Guarda el sprite original del enemigo
         Sprite enemyOriginalSprite = null;
@@ -541,6 +542,8 @@ public class TurnManager : MonoBehaviour
 
         float approachDuration = 0.2f;
         float lateralDuration = 1.2f;
+
+        lateralDurationLevel = cardManager.TotalDamage;
         switch (lateralDurationLevel)
         {
             case 1:
@@ -618,6 +621,7 @@ public class TurnManager : MonoBehaviour
         {
             foreach (var go in playerShotEffects)
                 if (go != null) go.SetActive(false);
+            
         }
 
         while (elapsed < lateralDuration)
@@ -632,6 +636,7 @@ public class TurnManager : MonoBehaviour
                     playerShotEffects[shotsActivated].SetActive(true);
                 shotsActivated++;
                 nextShotTime += shotInterval;
+                targetEnemy.TakeDamage(1);
             }
 
             // Personajes
@@ -737,5 +742,6 @@ public class TurnManager : MonoBehaviour
 
         zoomBackgroundGO.SetActive(false);
     }
+    
 
 }
