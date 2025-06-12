@@ -514,10 +514,10 @@ public class TurnManager : MonoBehaviour
         float returnDuration = 0.2f;   // Vuelta rápida
 
         // Zoom y movimiento rápido de personajes
-if (playerTransform != null)
-    StartCoroutine(ZoomRoutine(playerTransform, playerOriginal, playerTarget, playerPosOriginal, playerTargetPos, approachDuration, lateralDuration, returnDuration, 1.5f));
-if (enemyTransform != null)
-    StartCoroutine(ZoomRoutine(enemyTransform, enemyOriginal, enemyTarget, enemyPosOriginal, enemyTargetPos, approachDuration, lateralDuration, returnDuration, 1.5f));
+        if (playerTransform != null)
+            StartCoroutine(ZoomRoutine(playerTransform, playerOriginal, playerTarget, playerPosOriginal, playerTargetPos, approachDuration, lateralDuration, returnDuration, 1.5f));
+        if (enemyTransform != null)
+            StartCoroutine(ZoomRoutine(enemyTransform, enemyOriginal, enemyTarget, enemyPosOriginal, enemyTargetPos, approachDuration, lateralDuration, returnDuration, 1.5f));
 
         // Fondo (animación principal)
         float elapsed = 0f;
