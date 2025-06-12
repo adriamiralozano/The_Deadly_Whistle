@@ -29,6 +29,7 @@ public class OutlawEnemyAI : MonoBehaviour, IEnemyAI
     [SerializeField] private int healAmount = 1; // Cantidad de vida que se cura
     
     private int shootMissChancePercentage = 45; // Porcentaje de probabilidad de que el disparo falle
+    private int lastShotsHit = 0; // Últimos disparos exitosos del enemigo, para controlar la probabilidad de fallo
     private bool weaponEquipped = false; // Indica si el enemigo tiene un arma equipada
     private int disarmPlayerCounter = 0; // Contador para el número de desarmes al jugador
     private int shotsPerTurn = 3;   // Número de disparos que el enemigo puede hacer por turno
@@ -176,7 +177,8 @@ public class OutlawEnemyAI : MonoBehaviour, IEnemyAI
         Debug.Log($"[OutlawEnemyAI] {_enemyInstance.Data.enemyName} tiene un arma equipada y va a disparar.");
         yield return new WaitForSeconds(1f);
         DecidesToShoot();
-        
+        if (TurnManager.Instance != null && lastShotsHit > 0)
+            yield return TurnManager.Instance.StartCoroutine(TurnManager.Instance.EnemyShotFeedback(lastShotsHit));        
         if (ShotSuccessful)
         {
             yield return new WaitForSeconds(1f);
@@ -193,6 +195,7 @@ public class OutlawEnemyAI : MonoBehaviour, IEnemyAI
 
     private void DecidesToShoot()
     {
+        lastShotsHit = 0;
         if (moreThanOneShot == false)
         {
             for (int i = 0; i < shotsPerTurn; i++)
@@ -202,17 +205,20 @@ public class OutlawEnemyAI : MonoBehaviour, IEnemyAI
                     _enemyInstance.TryShootPlayer();
                     shootMissChancePercentage = 75;
                     ShotSuccessful = true; // Marca que el enemigo ha disparado exitosamente
+                    lastShotsHit++;
                 }
                 else if (i == 1 && ShouldMissShot() == false)
                 {
                     _enemyInstance.TryShootPlayer();
                     shootMissChancePercentage = 90;
                     moreThanOneShot = true; // Marca que el enemigo ha disparado más de una vez en este turno
+                    lastShotsHit++;
                 }
                 else if (i == 2 && ShouldMissShot() == false)
                 {
                     _enemyInstance.TryShootPlayer();
                     shootMissChancePercentage = 45;
+                    lastShotsHit++;
                     return;
                 }
                 else
@@ -225,7 +231,11 @@ public class OutlawEnemyAI : MonoBehaviour, IEnemyAI
         }
         else
         {
-            if (ShouldMissShot() == false) _enemyInstance.TryShootPlayer();
+            if (ShouldMissShot() == false)
+            {
+                _enemyInstance.TryShootPlayer();
+                lastShotsHit++;
+            }
             moreThanOneShot = false; // Resetea la marca de disparo múltiple al final del turno
         }
     }

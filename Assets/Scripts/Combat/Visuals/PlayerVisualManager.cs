@@ -6,6 +6,7 @@ public class PlayerVisualManager : MonoBehaviour
     [SerializeField] private Sprite idlePlayerSprite;
     [SerializeField] private Sprite playerRevolverEquippedSprite;
     [SerializeField] private Sprite playerRevolverShotSprite;
+    [SerializeField] private Sprite playerShotedSprite;
 
     private SpriteRenderer playerSpriteRenderer;
 
@@ -90,7 +91,7 @@ public class PlayerVisualManager : MonoBehaviour
             Debug.LogWarning("PlayerVisualManager: El sprite 'Player Revolver Equipped' no está asignado. No se puede mostrar.");
         }
     }
-    
+
     public void SetRevolverShotSprite()
     {
         if (playerSpriteRenderer != null && playerRevolverShotSprite != null)
@@ -101,5 +102,13 @@ public class PlayerVisualManager : MonoBehaviour
         {
             Debug.LogWarning("PlayerVisualManager: El sprite 'Player Revolver Shot' no está asignado. No se puede mostrar.");
         }
+    }
+    
+    public void SetPlayerShotedSprite()
+    {
+        if (playerSpriteRenderer != null && playerShotedSprite != null)
+            playerSpriteRenderer.sprite = playerShotedSprite;
+        else
+            Debug.LogWarning("[PlayerVisualManager] playerShotedSprite no asignado.");
     }
 }

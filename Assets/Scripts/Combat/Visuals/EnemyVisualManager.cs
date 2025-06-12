@@ -8,6 +8,7 @@ public class EnemyVisualManager : MonoBehaviour
     [SerializeField] private Sprite idleEnemySprite;
     [SerializeField] private Sprite equippedEnemySprite;
     [SerializeField] private Sprite shotedEnemySprite;
+    [SerializeField] private Sprite enemyRevolverShotSprite;
 
     private SpriteRenderer spriteRenderer;
     private Sprite originalSprite;
@@ -95,6 +96,14 @@ public class EnemyVisualManager : MonoBehaviour
             Debug.LogWarning("[EnemyVisualManager] shotedEnemySprite no asignado.");
     }
 
+    public void SetEnemyRevolverShotSprite()
+    {
+        if (spriteRenderer != null && enemyRevolverShotSprite != null)
+            spriteRenderer.sprite = enemyRevolverShotSprite;
+        else
+            Debug.LogWarning("[EnemyVisualManager] enemyRevolverShotSprite no asignado.");
+    }
+    
     public void RestoreOriginalSprite()
     {
         if (spriteRenderer != null && originalSprite != null)

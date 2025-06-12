@@ -34,8 +34,6 @@ public class PlayerStats : MonoBehaviour
     private List<GameObject> activeHearts = new List<GameObject>();
 
     [Header("UI References")]
-    [SerializeField] private GameObject weaponEquippedIndicator; // Asigna tu cuadrado rojo aquí (para el arma)
-    [SerializeField] private GameObject effectActiveIndicator; // Asigna tu cuadrado naranja aquí (para el efecto)
     [SerializeField] private TextMeshProUGUI effectCountText; // Asigna aquí un componente TextMeshProUGUI para el contador de efectos
 
     public bool HasWeaponEquipped
@@ -49,10 +47,6 @@ public class PlayerStats : MonoBehaviour
                 _hasWeaponEquipped = value;
 
                 // Actualizar el indicador UI (si está asignado)
-                if (weaponEquippedIndicator != null)
-                {
-                    weaponEquippedIndicator.SetActive(_hasWeaponEquipped);
-                }
 
                 // --- Disparar el evento ---
                 OnWeaponEquippedStatusChanged?.Invoke(_hasWeaponEquipped);
@@ -110,7 +104,6 @@ public class PlayerStats : MonoBehaviour
         HasWeaponEquipped = false;
         CurrentEquippedWeapon = null;
         _activeEffectCount = 0;
-        UpdateEffectDisplay();
     }
 
     /// Manejador para el evento OnTurnStart de TurnManager.
@@ -168,7 +161,7 @@ public class PlayerStats : MonoBehaviour
 
         _activeEffectCount++;
         Debug.Log($"[PlayerStats] Efecto activado. Contador de efectos: {_activeEffectCount}");
-        UpdateEffectDisplay();
+
     }
 
     public void DeactivateEffect()
@@ -177,7 +170,6 @@ public class PlayerStats : MonoBehaviour
         {
             _activeEffectCount--;
             Debug.Log($"[PlayerStats] Efecto desactivado. Contador de efectos: {_activeEffectCount}");
-            UpdateEffectDisplay();
         }
         else
         {
@@ -192,34 +184,9 @@ public class PlayerStats : MonoBehaviour
             Debug.Log($"[PlayerStats] Limpiando {_activeEffectCount} efectos activos.");
             _activeEffectCount = 0;
         }
-        UpdateEffectDisplay();
     }
 
-    private void UpdateEffectDisplay()
-    {
-        if (effectActiveIndicator != null)
-        {
-            bool shouldBeActive = _activeEffectCount > 0;
-            if (effectActiveIndicator.activeSelf != shouldBeActive)
-            {
-                effectActiveIndicator.SetActive(shouldBeActive);
-                Debug.Log($"[PlayerStats] Cuadradito naranja: Se {(shouldBeActive ? "activó" : "desactivó")} visualmente.");
-            }
-        }
-        else
-        {
-            Debug.LogWarning("[PlayerStats] El indicador de efecto (GameObject) NO ESTÁ ASIGNADO en el Inspector del PlayerStats.");
-        }
 
-        if (effectCountText != null)
-        {
-            effectCountText.text = _activeEffectCount.ToString();
-        }
-        else
-        {
-            Debug.LogWarning("[PlayerStats] El texto del contador de efectos (TextMeshProUGUI) NO ESTÁ ASIGNADO en el Inspector del PlayerStats.");
-        }
-    }
     public void MarkRevolverFired()
     {
         HasFiredRevolverThisTurn = true;

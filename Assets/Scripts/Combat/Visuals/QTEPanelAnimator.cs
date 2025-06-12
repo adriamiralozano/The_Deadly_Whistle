@@ -93,14 +93,14 @@ public class QTEPanelAnimator : MonoBehaviour
             .OnComplete(() => 
             {
                 // Pequeño rebote adicional cuando llega al centro
-                StartCoroutine(ExtraBounceEffect());
+                //StartCoroutine(ExtraBounceEffect());
             });
         
         yield return new WaitForSeconds(fallDuration + 0.3f); // Esperar a que termine la animación
         isAnimating = false;
     }
     
-    private IEnumerator ExtraBounceEffect()
+/*     private IEnumerator ExtraBounceEffect()
     {
         // Pequeño rebote hacia arriba y luego regreso
         Vector2 bouncePos = targetPosition + Vector2.up * bounceHeight;
@@ -114,7 +114,7 @@ public class QTEPanelAnimator : MonoBehaviour
             });
         
         yield return new WaitForSeconds(0.3f);
-    }
+    } */
     
     private IEnumerator HidePanelCoroutine()
     {

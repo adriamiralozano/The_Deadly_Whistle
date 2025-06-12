@@ -31,6 +31,7 @@ public class TurnManager : MonoBehaviour
     [Header("Animación de Disparo")]
     [SerializeField] private int lateralDurationLevel = 1;
     [SerializeField] private GameObject[] playerShotEffects;
+    [SerializeField] private GameObject[] enemyShotEffects;
 
 
     // --- Enumeración de Fases de Turno ---
@@ -745,5 +746,233 @@ public class TurnManager : MonoBehaviour
         zoomBackgroundGO.SetActive(false);
     }
     
+    public IEnumerator EnemyShotFeedback(int shots = 1)
+    {
+        var playerVisual = FindObjectOfType<PlayerVisualManager>();
+        var enemyVisual = FindObjectOfType<EnemyVisualManager>();
+        Enemy targetPlayer = playerStats != null ? playerStats.GetComponent<Enemy>() : null; // Si tienes un método específico para dañar al jugador, úsalo
 
+        // Guarda el sprite original del enemigo y del player
+        Sprite enemyOriginalSprite = null;
+        Sprite playerOriginalSprite = null;
+        SpriteRenderer enemySpriteRenderer = null;
+        SpriteRenderer playerSpriteRenderer = null;
+
+        if (enemyVisual != null)
+        {
+            enemySpriteRenderer = enemyVisual.GetComponent<SpriteRenderer>();
+            if (enemySpriteRenderer != null)
+                enemyOriginalSprite = enemySpriteRenderer.sprite;
+            enemyVisual.SetEnemyRevolverShotSprite();
+        }
+
+        if (playerVisual != null)
+        {
+            playerSpriteRenderer = playerVisual.GetComponent<SpriteRenderer>();
+            if (playerSpriteRenderer != null)
+                playerOriginalSprite = playerSpriteRenderer.sprite;
+            playerVisual.SetPlayerShotedSprite(); // O crea un método para "herido"
+        }
+
+        backgroundGO.SetActive(true);
+        zoomBackgroundGO.SetActive(true);
+
+        var bgRenderer = backgroundGO.GetComponent<SpriteRenderer>();
+        var zoomBgRenderer = zoomBackgroundGO.GetComponent<SpriteRenderer>();
+
+        int bgOrder = bgRenderer.sortingOrder;
+        int zoomOrder = zoomBgRenderer.sortingOrder;
+        zoomBgRenderer.sortingOrder = bgOrder + 1;
+
+        Transform bgTransform = backgroundGO.transform;
+        Transform zoomBgTransform = zoomBackgroundGO.transform;
+        Transform playerTransform = playerVisual != null ? playerVisual.transform : null;
+        Transform enemyTransform = enemyVisual != null ? enemyVisual.transform : null;
+
+        Vector3 bgOriginal = bgTransform.localScale;
+        Vector3 bgTarget = bgOriginal * 1.2f;
+
+        Vector3 playerOriginal = playerTransform != null ? playerTransform.localScale : Vector3.one;
+        Vector3 playerTarget = playerOriginal * 1.2f;
+
+        Vector3 enemyOriginal = enemyTransform != null ? enemyTransform.localScale : Vector3.one;
+        Vector3 enemyTarget = enemyOriginal * 1.2f;
+
+        Vector3 playerPosOriginal = playerTransform != null ? playerTransform.position : Vector3.zero;
+        Vector3 enemyPosOriginal = enemyTransform != null ? enemyTransform.position : Vector3.zero;
+
+        Vector3 centerWorld = Camera.main.ScreenToWorldPoint(new Vector3(Screen.width / 2f, Screen.height / 2f, playerPosOriginal.z - Camera.main.transform.position.z));
+        Vector3 playerTargetPos = centerWorld + Vector3.left * 3f;
+        Vector3 enemyTargetPos = centerWorld + Vector3.right * 3f;
+
+        float approachDuration = 0.2f;
+        float lateralDuration = shots == 1 ? 1.2f : shots == 2 ? 1.8f : 2.4f;
+        float returnDuration = 0.12f;
+        float lateralOffset = 1.5f;
+
+        // --- FASE 1: Zoom y acercamiento al centro ---
+        float elapsed = 0f;
+        while (elapsed < approachDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / approachDuration;
+
+            bgTransform.localScale = Vector3.Lerp(bgOriginal, bgTarget, t);
+            zoomBgTransform.localScale = Vector3.Lerp(bgOriginal, bgTarget, t);
+
+            if (playerTransform != null)
+            {
+                playerTransform.localScale = Vector3.Lerp(playerOriginal, playerTarget, t);
+                playerTransform.position = Vector3.Lerp(playerPosOriginal, playerTargetPos, t);
+            }
+            if (enemyTransform != null)
+            {
+                enemyTransform.localScale = Vector3.Lerp(enemyOriginal, enemyTarget, t);
+                enemyTransform.position = Vector3.Lerp(enemyPosOriginal, enemyTargetPos, t);
+            }
+
+            yield return null;
+        }
+        bgTransform.localScale = bgTarget;
+        zoomBgTransform.localScale = bgTarget;
+        if (playerTransform != null)
+        {
+            playerTransform.localScale = playerTarget;
+            playerTransform.position = playerTargetPos;
+        }
+        if (enemyTransform != null)
+        {
+            enemyTransform.localScale = enemyTarget;
+            enemyTransform.position = enemyTargetPos;
+        }
+
+        // --- FASE 2: Alejamiento lateral y disparos secuenciales ---
+        elapsed = 0f;
+        Vector3 playerLateralTarget = playerTargetPos + Vector3.left * lateralOffset;
+        Vector3 enemyLateralTarget = enemyTargetPos + Vector3.right * lateralOffset;
+
+        Quaternion bgOriginalRot = bgTransform.rotation;
+        Quaternion zoomBgOriginalRot = zoomBgTransform.rotation;
+        Quaternion bgTargetRot = Quaternion.Euler(0, 0, 6f);
+        Quaternion zoomBgTargetRot = Quaternion.Euler(0, 0, 6f);
+
+        float shotInterval = lateralDuration / Mathf.Max(1, shots);
+        float nextShotTime = 0f;
+        int shotsActivated = 0;
+
+        if (enemyShotEffects != null)
+        {
+            foreach (var go in enemyShotEffects)
+                if (go != null) go.SetActive(false);
+        }
+
+        while (elapsed < lateralDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / lateralDuration;
+
+            // Activa disparos uno a uno según el tiempo
+            if (enemyShotEffects != null && shotsActivated < shots && elapsed >= nextShotTime - shotInterval / 2f)
+            {
+                if (enemyShotEffects[shotsActivated] != null)
+                    enemyShotEffects[shotsActivated].SetActive(true);
+                if (AudioManager.Instance != null)
+                    AudioManager.Instance.PlayBangSound();
+                shotsActivated++;
+                nextShotTime += shotInterval;
+                // Aquí puedes aplicar daño al jugador si lo deseas
+            }
+
+            if (playerTransform != null)
+                playerTransform.position = Vector3.Lerp(playerTargetPos, playerLateralTarget, t);
+            if (enemyTransform != null)
+                enemyTransform.position = Vector3.Lerp(enemyTargetPos, enemyLateralTarget, t);
+
+            bgTransform.rotation = Quaternion.Lerp(bgOriginalRot, bgTargetRot, t);
+            zoomBgTransform.rotation = Quaternion.Lerp(zoomBgOriginalRot, zoomBgTargetRot, t);
+
+            yield return null;
+        }
+        if (playerTransform != null)
+            playerTransform.position = playerLateralTarget;
+        if (enemyTransform != null)
+            enemyTransform.position = enemyLateralTarget;
+
+        bgTransform.rotation = bgTargetRot;
+        zoomBgTransform.rotation = zoomBgTargetRot;
+
+        if (enemyShotEffects != null)
+        {
+            foreach (var go in enemyShotEffects)
+                if (go != null) go.SetActive(false);
+        }
+
+        yield return new WaitForSeconds(0.1f);
+
+        // --- FASE 3: Regreso sincronizado ---
+        elapsed = 0f;
+        Vector3 playerStartPos = playerTransform != null ? playerTransform.position : Vector3.zero;
+        Vector3 enemyStartPos = enemyTransform != null ? enemyTransform.position : Vector3.zero;
+
+        zoomBgRenderer.color = new Color(1f, 1f, 1f, 1f);
+        bgRenderer.color = new Color(1f, 1f, 1f, 1f);
+
+        while (elapsed < returnDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / returnDuration);
+
+            bgTransform.localScale = Vector3.Lerp(bgTarget, bgOriginal, t);
+            zoomBgTransform.localScale = Vector3.Lerp(bgTarget, bgOriginal, t);
+
+            bgTransform.rotation = Quaternion.Lerp(bgTargetRot, bgOriginalRot, t);
+            zoomBgTransform.rotation = Quaternion.Lerp(zoomBgTargetRot, zoomBgOriginalRot, t);
+
+            zoomBgRenderer.color = new Color(1f, 1f, 1f, 1f - t);
+
+            if (playerTransform != null)
+            {
+                playerTransform.localScale = Vector3.Lerp(playerTarget, playerOriginal, t);
+                playerTransform.position = Vector3.Lerp(playerStartPos, playerPosOriginal, t);
+            }
+            if (enemyTransform != null)
+            {
+                enemyTransform.localScale = Vector3.Lerp(enemyTarget, enemyOriginal, t);
+                enemyTransform.position = Vector3.Lerp(enemyStartPos, enemyPosOriginal, t);
+            }
+
+            yield return null;
+        }
+        bgTransform.localScale = bgOriginal;
+        zoomBgTransform.localScale = bgOriginal;
+        bgTransform.rotation = bgOriginalRot;
+        zoomBgTransform.rotation = zoomBgOriginalRot;
+        zoomBgRenderer.color = new Color(1f, 1f, 1f, 0f);
+        bgRenderer.color = new Color(1f, 1f, 1f, 1f);
+
+        if (playerTransform != null)
+        {
+            playerTransform.localScale = playerOriginal;
+            playerTransform.position = playerPosOriginal;
+        }
+        if (enemyTransform != null)
+        {
+            enemyTransform.localScale = enemyOriginal;
+            enemyTransform.position = enemyPosOriginal;
+        }
+
+        // Restaurar sorting order original
+        zoomBgRenderer.sortingOrder = zoomOrder;
+        zoomBgRenderer.color = new Color(1f, 1f, 1f, 1f);
+
+        yield return new WaitForSeconds(0.2f);
+
+        if (enemySpriteRenderer != null && enemyOriginalSprite != null)
+            enemySpriteRenderer.sprite = enemyOriginalSprite;
+
+        if (playerSpriteRenderer != null && playerOriginalSprite != null)
+            playerSpriteRenderer.sprite = playerOriginalSprite;
+
+        zoomBackgroundGO.SetActive(false);
+    }
 }

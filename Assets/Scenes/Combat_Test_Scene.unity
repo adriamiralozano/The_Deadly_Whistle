@@ -651,6 +651,7 @@ MonoBehaviour:
   idleEnemySprite: {fileID: 21300000, guid: c47f5b4bda776c24ea6ad600aba34ee6, type: 3}
   equippedEnemySprite: {fileID: 21300000, guid: 7609aca77e5e3cc4ab82fa854a2ab6e2, type: 3}
   shotedEnemySprite: {fileID: 21300000, guid: 0aecce45a38306a48aca68e5862cf86c, type: 3}
+  enemyRevolverShotSprite: {fileID: 21300000, guid: 36f59d580d329684bad55666f1b12656, type: 3}
 --- !u!212 &232757675
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -3705,6 +3706,10 @@ MonoBehaviour:
   - {fileID: 847873319}
   - {fileID: 1148669411}
   - {fileID: 582463642}
+  enemyShotEffects:
+  - {fileID: 847873319}
+  - {fileID: 1148669411}
+  - {fileID: 582463642}
 --- !u!114 &1546688003
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4694,6 +4699,7 @@ MonoBehaviour:
   idlePlayerSprite: {fileID: 21300000, guid: be56df93bbe241d4f8c61620c68af0c9, type: 3}
   playerRevolverEquippedSprite: {fileID: 21300000, guid: d3efdce6d97f22e45a3ffd458acfea1b, type: 3}
   playerRevolverShotSprite: {fileID: 21300000, guid: db4986539a3979248ae2426c3281e3f1, type: 3}
+  playerShotedSprite: {fileID: 21300000, guid: bfe771ca6aa3dc6449270179f69514f2, type: 3}
 --- !u!212 &1988802627
 SpriteRenderer:
   m_ObjectHideFlags: 0
