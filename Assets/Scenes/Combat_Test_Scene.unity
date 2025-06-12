@@ -207,6 +207,7 @@ GameObject:
   m_Component:
   - component: {fileID: 108574394}
   - component: {fileID: 108574395}
+  - component: {fileID: 108574396}
   m_Layer: 0
   m_Name: BackgroundTownBlur
   m_TagString: Untagged
@@ -281,6 +282,18 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!225 &108574396
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 108574393}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &110603049
 GameObject:
   m_ObjectHideFlags: 0
@@ -4109,6 +4122,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1862241188}
   - component: {fileID: 1862241187}
+  - component: {fileID: 1862241189}
   m_Layer: 0
   m_Name: BackgroundTown
   m_TagString: Untagged
@@ -4183,6 +4197,18 @@ Transform:
   m_Children: []
   m_Father: {fileID: 939762802}
   m_LocalEulerAnglesHint: {x: 0, y: -0.403, z: 0}
+--- !u!225 &1862241189
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1862241186}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!224 &1894651969 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 7865893734661111232, guid: dbbcccbc6aa11ef4bb0fcd12c0a3838b, type: 3}
