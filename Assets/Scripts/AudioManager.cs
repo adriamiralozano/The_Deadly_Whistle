@@ -7,12 +7,12 @@ public class AudioManager : MonoBehaviour
     [Header("Efectos de sonido")]
     public AudioClip cardDrawClip;
     public AudioClip cardHoverClip;
-    /*public AudioClip cardPlayClip;
-    public AudioClip qteSuccessClip;
-    public AudioClip qteFailClip;
-    public AudioClip beerClip;
-    public AudioClip bagClip; */
-    // ...otros clips...
+    public AudioClip WeaponEquippedSound;
+    public AudioClip EnemyWeaponEquippedSound;
+    public AudioClip EnemyCardAppearSound;
+    public AudioClip cardDropSound;
+
+    public AudioClip BangSound;
 
     private AudioSource audioSource;
 
@@ -37,9 +37,10 @@ public class AudioManager : MonoBehaviour
     // Métodos de conveniencia
     public void PlayCardDraw() => PlaySFX(cardDrawClip);
     public void PlayCardHover() => PlaySFX(cardHoverClip);
-    /*public void PlayCardPlay() => PlaySFX(cardPlayClip);
-    public void PlayQTESuccess() => PlaySFX(qteSuccessClip);
-    public void PlayQTEFail() => PlaySFX(qteFailClip);
-    public void PlayBeer() => PlaySFX(beerClip);
-    public void PlayBag() => PlaySFX(bagClip); */
+    public void PlayWeaponEquipped() => PlaySFX(WeaponEquippedSound);
+    public void PlayEnemyWeaponEquipped() => PlaySFX(EnemyWeaponEquippedSound);
+    public void PlayEnemyCardAppear() => PlaySFX(EnemyCardAppearSound);
+    public void PlayCardDrop() => PlaySFX(cardDropSound);
+    public void PlayBangSound() => PlaySFX(BangSound);
+
 }

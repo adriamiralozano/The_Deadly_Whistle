@@ -41,6 +41,8 @@ public class CardManager : MonoBehaviour
     public static event Action OnCardDiscarded;
     public static event Action<CardData> OnCardPlayed;
 
+    public int TotalDamage = 0; // Para llevar un conteo de daño total infligido
+
     // Singleton instance
     public static CardManager Instance { get; private set; }
 
@@ -309,7 +311,7 @@ public class CardManager : MonoBehaviour
         }
 
         // Distribuye las cartas en línea centrada (puedes ajustar spacing)
-        float spacing = 180f;
+        float spacing = 120f;
         float startX = -((playerHand.Count - 1) * spacing) / 2f;
 
         for (int i = 0; i < playerHand.Count; i++)
@@ -325,14 +327,21 @@ public class CardManager : MonoBehaviour
             var rect = cardGO.GetComponent<RectTransform>();
             var behaviour = cardGO.GetComponent<CardBehaviour2>();
 
-            // Protección extra: verifica que rect y behaviour no sean null y que el objeto no esté destruido
+            // Protección extra
             if (rect == null || behaviour == null || rect.Equals(null) || cardGO == null)
                 continue;
+
+            // Ajusta el sorting order del Canvas ---
+            var canvas = cardGO.GetComponent<Canvas>();
+            if (canvas != null && (behaviour == null || !behaviour.IsHovering))
+            {
+                canvas.overrideSorting = true;
+                canvas.sortingOrder = i;
+            }
 
             Vector3 targetPos = new Vector3(startX + i * spacing, 0, 0);
 
             rect.DOKill();
-            // Solo animar si el objeto sigue existiendo
             if (rect != null && !rect.Equals(null) && rect.gameObject != null && rect.gameObject.activeInHierarchy)
             {
                 rect.DOKill();
@@ -345,7 +354,6 @@ public class CardManager : MonoBehaviour
             }
         }
     }
-
     public int GetHandCount()
     {
         return playerHand.Count;
@@ -570,10 +578,15 @@ public class CardManager : MonoBehaviour
     }
     private IEnumerator DisparoConQTECoroutine(CombosManager combosManager, int shotsToFire)
     {
+        // NO mostrar el panel aquí - ya se mostró en HandleShotPhase()
+        TotalDamage = 0;
+        yield return new WaitForSeconds(1.1f);
+
         int aciertos = 0;
         for (int i = 0; i < shotsToFire; i++)
         {
-            combosManager.EmpezarQuickTimeEvents();
+            // Usar el método que NO muestra panel
+            combosManager.EmpezarQuickTimeEventsWithoutPanel();
             yield return new WaitUntil(() => combosManager.Terminado);
 
             if (combosManager.ExitoCombo)
@@ -583,10 +596,16 @@ public class CardManager : MonoBehaviour
             yield return new WaitForSeconds(0.05f);
         }
 
+        // Ocultar el panel al final de todos los QTEs
+        if (combosManager != null)
+        {
+            combosManager.HideQTEPanel();
+        }
+
         Enemy targetEnemy = FindObjectOfType<Enemy>();
         if (targetEnemy != null && aciertos > 0)
         {
-            targetEnemy.TakeDamage(aciertos);
+            AddAchievedShots(aciertos); // Añade los disparos acertados al total
             Debug.Log($"[CardManager] {aciertos} disparos impactaron a '{targetEnemy.Data.enemyName}' tras QTEs.");
         }
         else if (aciertos == 0)
@@ -594,14 +613,17 @@ public class CardManager : MonoBehaviour
             Debug.Log("[CardManager] No se logró ningún disparo exitoso tras los QTEs.");
         }
 
-        if (aciertos == 3)
-        {
-         targetEnemy.TakeDamage(1); // Si se aciertan los 3 disparos, inflige un daño adicional   
-        }
-        
+
         yield return new WaitForSeconds(1f);
+
+        if (TotalDamage > 0)
+        {
+            if (TurnManager.Instance != null)
+                yield return TurnManager.Instance.StartCoroutine(TurnManager.Instance.ShotFeedback());
+        }
+
         if (TurnManager.Instance != null)
-            TurnManager.Instance.AdvancePhase();
+                TurnManager.Instance.AdvancePhase();
     }
 
     public IEnumerator DrawCards(int cantidad, float delay = 0.5f)
@@ -652,7 +674,7 @@ public class CardManager : MonoBehaviour
             return false;
         }
     }
-    
+
     public bool AttemptUseCoverCard()
     {
         // Busca la primera carta en la mano con el cardID "CoverCard".
@@ -669,6 +691,12 @@ public class CardManager : MonoBehaviour
             Debug.Log("[CardManager] No se encontró la carta de Cover en la mano. El daño será aplicado.");
             return false; // La CoverCard no fue encontrada.
         }
+    }
+
+    public int AddAchievedShots(int shotsAchieved)
+    {
+        TotalDamage += shotsAchieved;
+        return TotalDamage;
     }
 
 }

@@ -5,6 +5,8 @@ public class CardUI : MonoBehaviour
 {
     private CardData cardData; // Referencia a los datos de la carta
     private Image cardImage; // Referencia al componente Image del GameObject principal
+    public Sprite CardSprite => cardData != null ? cardData.artwork : null;
+
 
     void Awake()
     {
@@ -37,5 +39,7 @@ public class CardUI : MonoBehaviour
     {
         return cardData;
     }
+
+
 
 }

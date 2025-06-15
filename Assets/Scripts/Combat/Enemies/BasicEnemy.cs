@@ -202,4 +202,5 @@ public class Enemy : MonoBehaviour
             Debug.Log($"[{_enemyData.enemyName}] already has max health ({_enemyData.maxHealth}/{_enemyData.maxHealth}). Cannot heal further.");
         }
     }
+    
 }
