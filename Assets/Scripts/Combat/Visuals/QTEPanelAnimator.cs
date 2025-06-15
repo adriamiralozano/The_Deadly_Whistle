@@ -7,7 +7,7 @@ public class QTEPanelAnimator : MonoBehaviour
 {
     [Header("Animation Settings")]
     [SerializeField] private float fallDuration = 0.8f;
-    [SerializeField] private float bounceHeight = 50f;
+
     [SerializeField] private Ease fallEase = Ease.OutBounce;
     
     [Header("Panel Settings")]
@@ -100,21 +100,6 @@ public class QTEPanelAnimator : MonoBehaviour
         isAnimating = false;
     }
     
-/*     private IEnumerator ExtraBounceEffect()
-    {
-        // Pequeño rebote hacia arriba y luego regreso
-        Vector2 bouncePos = targetPosition + Vector2.up * bounceHeight;
-        
-        panelRect.DOAnchorPos(bouncePos, 0.15f)
-            .SetEase(Ease.OutQuad)
-            .OnComplete(() => 
-            {
-                panelRect.DOAnchorPos(targetPosition, 0.15f)
-                    .SetEase(Ease.InQuad);
-            });
-        
-        yield return new WaitForSeconds(0.3f);
-    } */
     
     private IEnumerator HidePanelCoroutine()
     {
