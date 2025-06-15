@@ -4,6 +4,7 @@ using System; // Para Action y Func
 using TMPro; // Para TextMeshProUGUI
 using System.Collections; // Para Coroutines
 using UnityEngine.UI;
+using DG.Tweening;
 
 
 public class TurnManager : MonoBehaviour
@@ -622,7 +623,7 @@ public class TurnManager : MonoBehaviour
         {
             foreach (var go in playerShotEffects)
                 if (go != null) go.SetActive(false);
-            
+
         }
 
         while (elapsed < lateralDuration)
@@ -636,10 +637,13 @@ public class TurnManager : MonoBehaviour
                 if (playerShotEffects[shotsActivated] != null)
                     playerShotEffects[shotsActivated].SetActive(true);
                 if (AudioManager.Instance != null)
-                AudioManager.Instance.PlayBangSound();
+                    AudioManager.Instance.PlayBangSound();
                 shotsActivated++;
                 nextShotTime += shotInterval;
                 targetEnemy.TakeDamage(1);
+                
+                ShakeTransformsDOTween(new Transform[] { bgTransform, zoomBgTransform, playerTransform, enemyTransform }, 0.15f, 0.8f);
+                yield return new WaitForSeconds(0.15f);
             }
 
             // Personajes
@@ -745,7 +749,7 @@ public class TurnManager : MonoBehaviour
 
         zoomBackgroundGO.SetActive(false);
     }
-    
+
     public IEnumerator EnemyShotFeedback(int shots = 1)
     {
         var playerVisual = FindObjectOfType<PlayerVisualManager>();
@@ -881,6 +885,10 @@ public class TurnManager : MonoBehaviour
                 shotsActivated++;
                 nextShotTime += shotInterval;
                 // Aquí puedes aplicar daño al jugador si lo deseas
+
+                ShakeTransformsDOTween(new Transform[] { bgTransform, zoomBgTransform, playerTransform, enemyTransform }, 0.15f, 0.8f);
+                yield return new WaitForSeconds(0.15f);
+                
             }
 
             if (playerTransform != null)
@@ -974,5 +982,14 @@ public class TurnManager : MonoBehaviour
             playerSpriteRenderer.sprite = playerOriginalSprite;
 
         zoomBackgroundGO.SetActive(false);
+    }
+    
+    private void ShakeTransformsDOTween(Transform[] targets, float duration = 0.15f, float strength = 0.5f)
+    {
+        foreach (var t in targets)
+        {
+            if (t != null)
+                t.DOShakePosition(duration, strength, vibrato: 20, randomness: 90, snapping: false, fadeOut: true);
+        }
     }
 }
