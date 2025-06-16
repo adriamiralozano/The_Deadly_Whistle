@@ -1,0 +1,73 @@
+using UnityEngine;
+using UnityEngine.Rendering.PostProcessing;
+using UnityEngine.SceneManagement;
+using System.Collections;
+
+public class FinalScreen : MonoBehaviour
+{
+    [Header("Panel de contrato")]
+    public GameObject contratoFallidoPanel;
+    public GameObject contratoCompletadoPanel;
+
+    [Header("PostProcess")]
+    public PostProcessVolume postProcessVolume;
+
+    [Header("Bloqueo de interacción")]
+    public GameObject blockerOverlay; 
+
+    private void OnEnable()
+    {
+        PlayerStats.OnPlayerDeath += ShowContratoFallido;
+        Enemy.OnEnemyDied += ShowContratoCompletado;
+    }
+
+    private void OnDisable()
+    {
+        PlayerStats.OnPlayerDeath -= ShowContratoFallido;
+        Enemy.OnEnemyDied -= ShowContratoCompletado;
+    }
+
+    private void ShowContratoFallido()
+    {
+        StartCoroutine(ShowContratoFallidoCoroutine());
+    }
+
+    private IEnumerator ShowContratoFallidoCoroutine()
+    {
+        yield return new WaitForSeconds(2f);
+
+        if (contratoFallidoPanel != null)
+            contratoFallidoPanel.SetActive(true);
+
+        if (postProcessVolume != null)
+            postProcessVolume.enabled = true;
+
+        if (blockerOverlay != null)
+            blockerOverlay.SetActive(true);
+
+        yield return new WaitForSeconds(4f);
+        SceneManager.LoadScene("Campamento");
+    }
+
+    private void ShowContratoCompletado(Enemy enemy)
+    {
+        StartCoroutine(ShowContratoCompletadoCoroutine());
+    }
+
+    private IEnumerator ShowContratoCompletadoCoroutine()
+    {
+        yield return new WaitForSeconds(2f);
+
+        if (contratoCompletadoPanel != null)
+            contratoCompletadoPanel.SetActive(true);
+
+        if (postProcessVolume != null)
+            postProcessVolume.enabled = true;
+
+        if (blockerOverlay != null)
+            blockerOverlay.SetActive(true);
+
+        yield return new WaitForSeconds(4f);
+        SceneManager.LoadScene("Campamento");
+    }
+}

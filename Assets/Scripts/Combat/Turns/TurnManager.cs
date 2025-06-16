@@ -181,6 +181,12 @@ public class TurnManager : MonoBehaviour
     /// Avanza a la siguiente fase del turno del jugador, basada en la fase actual.
     public void AdvancePhase()
     {
+
+        if ((playerStats != null && !playerStats.IsAlive) || (activeEnemy != null && !activeEnemy.IsAlive))
+        {
+            Debug.LogWarning("[TurnManager] No se avanza de fase porque el jugador o el enemigo han muerto.");
+            return;
+        }
         switch (currentTurnPhase)
         {
             case TurnPhase.None:
@@ -383,7 +389,14 @@ public class TurnManager : MonoBehaviour
         if (enemyTurnBanner != null)
             enemyTurnBanner.SetActive(false);
 
-        StartPlayerTurn();
+        if (playerStats != null && playerStats.IsAlive && activeEnemy != null && activeEnemy.IsAlive)
+        {
+            StartPlayerTurn();
+        }
+        else
+        {
+            Debug.LogWarning("[TurnManager] No se inicia el turno del jugador porque el jugador o el enemigo han muerto.");
+        }
     }
 
     private IEnumerator DrawCardsAndLogRevolverRoutine()
@@ -641,7 +654,7 @@ public class TurnManager : MonoBehaviour
                 shotsActivated++;
                 nextShotTime += shotInterval;
                 targetEnemy.TakeDamage(1);
-                
+
                 ShakeTransformsDOTween(new Transform[] { bgTransform, zoomBgTransform, playerTransform, enemyTransform }, 0.15f, 0.8f);
                 yield return new WaitForSeconds(0.15f);
             }
@@ -888,7 +901,7 @@ public class TurnManager : MonoBehaviour
 
                 ShakeTransformsDOTween(new Transform[] { bgTransform, zoomBgTransform, playerTransform, enemyTransform }, 0.15f, 0.8f);
                 yield return new WaitForSeconds(0.15f);
-                
+
             }
 
             if (playerTransform != null)
@@ -983,7 +996,7 @@ public class TurnManager : MonoBehaviour
 
         zoomBackgroundGO.SetActive(false);
     }
-    
+
     private void ShakeTransformsDOTween(Transform[] targets, float duration = 0.15f, float strength = 0.5f)
     {
         foreach (var t in targets)
@@ -992,4 +1005,5 @@ public class TurnManager : MonoBehaviour
                 t.DOShakePosition(duration, strength, vibrato: 20, randomness: 90, snapping: false, fadeOut: true);
         }
     }
+
 }
