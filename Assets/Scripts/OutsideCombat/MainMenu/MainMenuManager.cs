@@ -11,6 +11,7 @@ public class MainMenuManager : MonoBehaviour
     public GameObject menu1;
     public GameObject menuHistoria;
     public GameObject ConfirmationExitDesktop;
+    public GameObject ConfirmationNewGame;
     public GameObject CanvasBloqueador;
 
     [Header("Botones de partida")]
@@ -46,9 +47,9 @@ public class MainMenuManager : MonoBehaviour
         }
     }
 
-    public void OnNewGameButton()
+    public void OnNewGameButtonConfirmation()
     {
-        Debug.Log("OnNewGameButton PRESSED");
+        Debug.Log("OnNewGameButtonConfirmation PRESSED");
 
         if (SaveManager.Instance != null)
             SaveManager.Instance.NewGame();
@@ -58,6 +59,24 @@ public class MainMenuManager : MonoBehaviour
             ActManager.Instance.LoadFromSave(SaveManager.Instance.LoadGame());
 
         SceneManager.LoadScene(campamentoSceneName);
+    }
+
+    public void OnNewGameButton()
+    {
+        Debug.Log("OnNewGameButton PRESSED");
+        if (ConfirmationNewGame != null)
+            ConfirmationNewGame.SetActive(true);
+        if (CanvasBloqueador != null)
+            CanvasBloqueador.SetActive(true);
+    }
+
+     public void NewGameButtonCancel()
+    {
+        Debug.Log("NewGameButtonCancel called");
+        if (ConfirmationNewGame != null)
+            ConfirmationNewGame.SetActive(false);
+        if (CanvasBloqueador != null)
+            CanvasBloqueador.SetActive(false);
     }
 
     public void OnStoryButtonClick()
@@ -75,6 +94,10 @@ public class MainMenuManager : MonoBehaviour
         if (menu1 != null)
             menu1.SetActive(true);
 
+    }
+    public void TestButton()
+    {
+        Debug.Log("¡El botón funciona!");
     }
 
 
