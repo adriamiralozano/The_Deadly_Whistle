@@ -18,6 +18,33 @@ public class ActManager : MonoBehaviour
         }
     }
 
+    void Start()
+    {
+        Debug.Log("ActManager Start. Persistent Data Path: " + Application.persistentDataPath);
+        SaveData data = SaveManager.Instance.LoadGame();
+        if (data != null)
+        {
+            LoadFromSave(data);
+            Debug.Log("Acto actual al cargar partida: " + CurrentAct);
+        }
+    }
+
+    private void Update()
+    {
+        // Solo para pruebas: avanzar de acto al pulsar la tecla A
+        if (Input.GetKeyDown(KeyCode.A))
+        {
+            AdvanceAct();
+            Debug.Log("Acto avanzado manualmente. Acto actual: " + CurrentAct);
+        }
+
+        // Mostrar el acto actual al pulsar la tecla B
+        if (Input.GetKeyDown(KeyCode.B))
+        {
+            Debug.Log("Acto actual: " + CurrentAct);
+        }
+    }
+
     public void LoadFromSave(SaveData data)
     {
         if (data != null)
@@ -29,16 +56,9 @@ public class ActManager : MonoBehaviour
         if (CurrentAct < GameAct.Epilogue)
         {
             CurrentAct++;
-            SaveManager.Instance.SaveGame(GatherCurrentGameData());
+            SaveManager.Instance.SaveCurrentGame(); // Centraliza el guardado en SaveManager
             // Aquí puedes cargar la escena del siguiente acto o mostrar una transición
         }
     }
 
-    private SaveData GatherCurrentGameData()
-    {
-        SaveData data = new SaveData();
-        data.currentAct = (int)CurrentAct;
-        // ...añade el resto de datos necesarios...
-        return data;
-    }
 }

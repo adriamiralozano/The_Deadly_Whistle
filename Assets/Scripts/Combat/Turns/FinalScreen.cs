@@ -67,6 +67,8 @@ public class FinalScreen : MonoBehaviour
         if (blockerOverlay != null)
             blockerOverlay.SetActive(true);
 
+        if (SaveManager.Instance != null)
+            SaveManager.Instance.SaveCurrentGame();
         yield return new WaitForSeconds(4f);
         SceneManager.LoadScene("Campamento");
     }
