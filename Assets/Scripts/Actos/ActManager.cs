@@ -4,6 +4,7 @@ public class ActManager : MonoBehaviour
 {
     public static ActManager Instance { get; private set; }
     public GameAct CurrentAct { get; private set; } = GameAct.Tutorial;
+    public ActPhase CurrentPhase { get; private set; } = ActPhase.PreCombat;
 
     private void Awake()
     {
@@ -43,12 +44,26 @@ public class ActManager : MonoBehaviour
         {
             Debug.Log("Acto actual: " + CurrentAct);
         }
+
+        if (Input.GetKeyDown(KeyCode.V))
+        {
+            Debug.Log("Fase actual: " + CurrentPhase);
+        }
+
+        if (Input.GetKeyDown(KeyCode.P))
+        {
+            AdvancePhase();
+            Debug.Log("Fase cambiada manualmente. Nueva fase: " + CurrentPhase);
+        }
     }
 
     public void LoadFromSave(SaveData data)
     {
         if (data != null)
+        {
             CurrentAct = (GameAct)data.currentAct;
+            CurrentPhase = (ActPhase)data.currentPhase;
+        }
     }
 
     public void AdvanceAct()
@@ -56,9 +71,30 @@ public class ActManager : MonoBehaviour
         if (CurrentAct < GameAct.Epilogue)
         {
             CurrentAct++;
-            SaveManager.Instance.SaveCurrentGame(); // Centraliza el guardado en SaveManager
-            // Aquí puedes cargar la escena del siguiente acto o mostrar una transición
+            CurrentPhase = ActPhase.PreCombat;
+            SaveManager.Instance.SaveCurrentGame();
+            Debug.Log("¡Acto avanzado! Nuevo acto: " + CurrentAct + ", fase: " + CurrentPhase);
+        }
+        else
+        {
+            Debug.Log("Ya estás en el Epilogue, no se puede avanzar más.");
         }
     }
+
+    public void AdvancePhase()
+    {
+        if (CurrentPhase == ActPhase.PreCombat)
+        {
+            CurrentPhase = ActPhase.PostCombat;
+        }
+        else
+        {
+            AdvanceAct();
+            CurrentPhase = ActPhase.PreCombat;
+        }
+        SaveManager.Instance.SaveCurrentGame();
+        Debug.Log("Fase cambiada. Nueva fase: " + CurrentPhase + ", Acto: " + CurrentAct);
+    }
+    
 
 }

@@ -11,15 +11,22 @@ public class ContractVisualManager : MonoBehaviour
     public TextMeshProUGUI titleText;
     public TextMeshProUGUI descriptionText;
     public TextMeshProUGUI priceText;
+    public GameObject[] contractButtons;
 
     [Header("Post Process")]
     public Camera mainCamera; // Arrastra aquí tu Main Camera
 
     [Header("Botón de salida")]
-    public PolygonCollider2D backButtonCollider; 
+    public PolygonCollider2D backButtonCollider;
 
     private PostProcessVolume postProcessVolume;
 
+
+    void Start()
+    {
+        UpdateContractButtonsState();
+    }
+    
     void Awake()
     {
         if (mainCamera == null)
@@ -55,5 +62,14 @@ public class ContractVisualManager : MonoBehaviour
 
         if (backButtonCollider != null)
             backButtonCollider.enabled = true;
+    }
+    
+    public void UpdateContractButtonsState()
+    {
+        bool preCombat = ActManager.Instance != null && ActManager.Instance.CurrentPhase == ActPhase.PreCombat;
+        foreach (var btn in contractButtons)
+        {
+            btn.SetActive(preCombat);
+        }
     }
 }

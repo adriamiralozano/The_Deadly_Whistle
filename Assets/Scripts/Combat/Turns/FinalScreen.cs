@@ -46,7 +46,7 @@ public class FinalScreen : MonoBehaviour
             blockerOverlay.SetActive(true);
 
         yield return new WaitForSeconds(4f);
-        SceneManager.LoadScene("Campamento");
+        SceneManager.LoadScene("Tablon");
     }
 
     private void ShowContratoCompletado(Enemy enemy)
@@ -67,8 +67,12 @@ public class FinalScreen : MonoBehaviour
         if (blockerOverlay != null)
             blockerOverlay.SetActive(true);
 
+        if (ActManager.Instance != null)
+            ActManager.Instance.AdvancePhase();
+
         if (SaveManager.Instance != null)
             SaveManager.Instance.SaveCurrentGame();
+
         yield return new WaitForSeconds(4f);
         SceneManager.LoadScene("Campamento");
     }

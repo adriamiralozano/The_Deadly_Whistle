@@ -58,41 +58,40 @@ public class SaveManager : MonoBehaviour
 
         // Ejemplo: Recoge el acto actual
         if (ActManager.Instance != null)
+        {
             data.currentAct = (int)ActManager.Instance.CurrentAct;
-
+            data.currentPhase = (int)ActManager.Instance.CurrentPhase;
+        }
         // Recoge el dinero del jugador
-        // data.playerMoney = PlayerStats.Instance.Money; // Si tienes un PlayerStats.Instance
+            // data.playerMoney = PlayerStats.Instance.Money; // Si tienes un PlayerStats.Instance
 
-        // Recoge la baraja actual
-        // data.deckCardIDs = CardManager.Instance.GetCurrentDeckIDs();
+            // Recoge la baraja actual
+            // data.deckCardIDs = CardManager.Instance.GetCurrentDeckIDs();
 
-        // Recoge el estado de los diálogos
-        // data.dialogueStates = DialogueManager.Instance.GetDialogueStates();
+            // Recoge el estado de los diálogos
+            // data.dialogueStates = DialogueManager.Instance.GetDialogueStates();
 
-        // Recoge contratos completados/fallidos
-        // data.completedContracts = ContractManager.Instance.GetCompletedContracts();
-        // data.failedContracts = ContractManager.Instance.GetFailedContracts();
+            // Recoge contratos completados/fallidos
+            // data.completedContracts = ContractManager.Instance.GetCompletedContracts();
+            // data.failedContracts = ContractManager.Instance.GetFailedContracts();
 
-        // ...añade aquí el resto de datos relevantes...
+            // ...añade aquí el resto de datos relevantes...
 
-        return data;
+            return data;
     }
 
     public void NewGame()
     {
-
         Debug.Log("NewGame called. Creating default save data...");
         SaveData newSave = new SaveData();
         newSave.currentAct = 0; // Tutorial
+        newSave.currentPhase = 0; // PreCombat
         newSave.playerMoney = 0;
         newSave.deckCardIDs = new List<string>();
         newSave.dialogueStates = new Dictionary<string, int>();
         newSave.completedContracts = new List<string>();
         newSave.failedContracts = new List<string>();
-        // ...otros valores por defecto...
-
         SaveGame(newSave);
-
         Debug.Log("Contenido del guardado tras NewGame: " + File.ReadAllText(savePath));
     }
 }
