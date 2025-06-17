@@ -36,6 +36,12 @@ public class FinalScreen : MonoBehaviour
     {
         yield return new WaitForSeconds(2f);
 
+        // CONTRATO PERDIDO - Restaura estado pre-contrato
+        if (ContractManager.Instance != null)
+        {
+            ContractManager.Instance.OnContractLost();
+        }
+
         if (contratoFallidoPanel != null)
             contratoFallidoPanel.SetActive(true);
 
@@ -46,7 +52,7 @@ public class FinalScreen : MonoBehaviour
             blockerOverlay.SetActive(true);
 
         yield return new WaitForSeconds(4f);
-        SceneManager.LoadScene("Tablon");
+        SceneManager.LoadScene("Tablon"); // Vuelve al Tablon
     }
 
     private void ShowContratoCompletado(Enemy enemy)
@@ -57,6 +63,12 @@ public class FinalScreen : MonoBehaviour
     private IEnumerator ShowContratoCompletadoCoroutine()
     {
         yield return new WaitForSeconds(2f);
+
+        // CONTRATO GANADO - Añade dinero y contrato completado
+        if (ContractManager.Instance != null)
+        {
+            ContractManager.Instance.OnContractWon();
+        }
 
         if (contratoCompletadoPanel != null)
             contratoCompletadoPanel.SetActive(true);
@@ -74,6 +86,6 @@ public class FinalScreen : MonoBehaviour
             SaveManager.Instance.SaveCurrentGame();
 
         yield return new WaitForSeconds(4f);
-        SceneManager.LoadScene("Campamento");
+        SceneManager.LoadScene("Campamento"); // Va al Campamento
     }
 }

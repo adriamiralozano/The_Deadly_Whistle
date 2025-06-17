@@ -10,12 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: aa3a30e5efb837f4682e9ba04c6757d6, type: 3}
-  m_Name: legalContract1
+  m_Name: legalContract2
   m_EditorClassIdentifier: 
-  Title: TownSnoop
+  Title: Horse Thief
   Description: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer eleifend
     fringilla est, id commodo arcu suscipit faucibus. Ut sed malesuada lacus. Nunc
     semper augue magna, ut suscipit risus aliquam vel. Curabitur tempus cursus diam,
     non laoreet ligula luctus vel.
-  Price: 20
-  PreviewSprite: {fileID: 21300000, guid: b155beba619cb5d499a5e4c158fb6848, type: 3}
+  Price: 50
+  PreviewSprite: {fileID: 21300000, guid: 56c687326adf56942875a4784540ba6d, type: 3}

@@ -1,13 +1,17 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class GameStats : MonoBehaviour
 {
     public static GameStats Instance { get; private set; }
 
-    // Ejemplo de stats importantes
+    // Stats importantes
     public int familyMoney;
     public int gangMoney;
     public int playerMoney;
+    
+    // Lista de contratos completados
+    public List<string> completedContracts = new List<string>();
 
     private void Awake()
     {
@@ -44,6 +48,16 @@ public class GameStats : MonoBehaviour
             familyMoney = data.familyMoney;
             gangMoney = data.gangMoney;
             playerMoney = data.playerMoney;
+            //completedContracts = data.completedContracts ?? new List<string>();
+        }
+    }
+
+    public void AddCompletedContract(string contractTitle)
+    {
+        if (!completedContracts.Contains(contractTitle))
+        {
+            completedContracts.Add(contractTitle);
+            Debug.Log($"Contrato completado añadido: {contractTitle}");
         }
     }
 }

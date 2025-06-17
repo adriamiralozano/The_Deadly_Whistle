@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5352569c829fee64698b2638b84c64ed, type: 3}
+  m_Name: ActContractsManager
+  m_EditorClassIdentifier: 
+  contractsByAct:
+  - actNumber: 1
+    legalContract: {fileID: 11400000, guid: ab8c27bbab1efab44995cf4cc4d28c0c, type: 2}
+    illegalContract: {fileID: 11400000, guid: cc04dc5fa6343df4a90bf35604177ba6, type: 2}
+  - actNumber: 2
+    legalContract: {fileID: 11400000, guid: fb41147a6d18ca84aaad8c9edafcde89, type: 2}
+    illegalContract: {fileID: 11400000, guid: c8b70c5a26c9ea844871f7bc95cf27ab, type: 2}
+  - actNumber: 3
+    legalContract: {fileID: 11400000, guid: 437cf46231e473d4fbb7ca914bd1b658, type: 2}
+    illegalContract: {fileID: 11400000, guid: 35ea29fe3b4f5d040aff566ff6790139, type: 2}

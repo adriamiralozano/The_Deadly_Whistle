@@ -11,7 +11,7 @@ public class ActManager : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
-            DontDestroyOnLoad(gameObject);
+            //DontDestroyOnLoad(gameObject);
         }
         else
         {
@@ -21,13 +21,25 @@ public class ActManager : MonoBehaviour
 
     void Start()
     {
-        Debug.Log("ActManager Start. Persistent Data Path: " + Application.persistentDataPath);
+        Debug.Log("=== ACTMANAGER START ===");
+        Debug.Log("ActManager Start iniciado. Persistent Data Path: " + Application.persistentDataPath);
+        
         SaveData data = SaveManager.Instance.LoadGame();
         if (data != null)
         {
+            Debug.Log($"📊 Datos de guardado encontrados:");
+            Debug.Log($"   currentAct: {data.currentAct}");
+            Debug.Log($"   currentPhase: {data.currentPhase}");
+            
             LoadFromSave(data);
-            Debug.Log("Acto actual al cargar partida: " + CurrentAct);
+            Debug.Log($"✅ ActManager: Datos cargados - Acto: {CurrentAct}, Fase: {CurrentPhase}");
         }
+        else
+        {
+            Debug.Log("⚠️ ActManager: No hay datos de guardado, usando valores por defecto");
+            Debug.Log($"   Valores por defecto - Acto: {CurrentAct}, Fase: {CurrentPhase}");
+        }
+        Debug.Log("=== ACTMANAGER START COMPLETADO ===");
     }
 
     private void Update()
@@ -60,7 +72,7 @@ public class ActManager : MonoBehaviour
             AdvancePhase();
             Debug.Log("Fase cambiada manualmente. Nueva fase: " + CurrentPhase);
         }
-            if (Input.GetKeyDown(KeyCode.I))
+        if (Input.GetKeyDown(KeyCode.I))
         {
             if (GameStats.Instance != null)
             {
@@ -88,6 +100,7 @@ public class ActManager : MonoBehaviour
             CurrentPhase = ActPhase.PreCombat;
             SaveManager.Instance.SaveCurrentGame();
             Debug.Log("¡Acto avanzado! Nuevo acto: " + CurrentAct + ", fase: " + CurrentPhase);
+            // QUITAR EL EVENTO - Los contratos se cargarán cuando entres al Tablón
         }
         else
         {
@@ -97,16 +110,17 @@ public class ActManager : MonoBehaviour
 
     public void RetrocedeAct()
     {
-        if (CurrentAct < GameAct.Epilogue)
+        if (CurrentAct > GameAct.Tutorial)
         {
             CurrentAct--;
             CurrentPhase = ActPhase.PreCombat;
             SaveManager.Instance.SaveCurrentGame();
             Debug.Log("¡Acto retrocedido! Nuevo acto: " + CurrentAct + ", fase: " + CurrentPhase);
+            // QUITAR EL EVENTO
         }
         else
         {
-            Debug.Log("Ya estás en el Epilogue, no se puede avanzar más.");
+            Debug.Log("Ya estás en el Tutorial, no se puede retroceder más.");
         }
     }
 
@@ -124,6 +138,4 @@ public class ActManager : MonoBehaviour
         SaveManager.Instance.SaveCurrentGame();
         Debug.Log("Fase cambiada. Nueva fase: " + CurrentPhase + ", Acto: " + CurrentAct);
     }
-    
-
 }

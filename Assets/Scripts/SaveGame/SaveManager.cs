@@ -68,6 +68,7 @@ public class SaveManager : MonoBehaviour
             data.familyMoney = GameStats.Instance.familyMoney;
             data.gangMoney = GameStats.Instance.gangMoney;
             data.playerMoney = GameStats.Instance.playerMoney;
+
         }
 
 
@@ -83,6 +84,7 @@ public class SaveManager : MonoBehaviour
         newSave.playerMoney = 200; // Cantidad inicial de dinero del jugador
         newSave.familyMoney = 0;
         newSave.gangMoney = 0;
+
         /*         newSave.deckCardIDs = new List<string>();
                 newSave.dialogueStates = new Dictionary<string, int>();
                 newSave.completedContracts = new List<string>();

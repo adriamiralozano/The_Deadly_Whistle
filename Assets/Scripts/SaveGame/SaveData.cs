@@ -4,12 +4,13 @@ using System.Collections.Generic;
 public class SaveData
 {
     public int currentAct;
-    public int currentPhase; 
+    public int currentPhase;
     public int playerMoney;
     public int familyMoney;
     public int gangMoney;
+
 /*     public List<string> deckCardIDs;
-    public Dictionary<string, int> dialogueStates;
-    public List<string> completedContracts;
-    public List<string> failedContracts; */
+        public Dictionary<string, int> dialogueStates;
+        public List<string> completedContracts;
+        public List<string> failedContracts; */
 }
