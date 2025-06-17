@@ -21,4 +21,12 @@ public class TiendaSceneManager : MonoBehaviour
             Debug.Log("No puedes dormir aún, no has terminado la fase de combate.");
         }
     }
+    public void OnMoneyElection()
+    {
+            if (SaveManager.Instance != null)
+                SaveManager.Instance.SaveCurrentGame();
+
+            SceneManager.LoadScene("MoneyElection");
+
+    }
 }

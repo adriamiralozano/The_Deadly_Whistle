@@ -5,9 +5,6 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
-  - enabled: 0
-    path: Assets/Scenes/EscenaPrueba.unity
-    guid: 2cda990e2423bbf4892e6590ba056729
   - enabled: 1
     path: Assets/Scenes/MainMenu.unity
     guid: afcee3826a2564d4bb7b3e8d8e496756
@@ -26,4 +23,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Combat_Test_Scene.unity
     guid: 1275755930a71a946a29d60cf523a244
+  - enabled: 1
+    path: Assets/Scenes/MoneyElection.unity
+    guid: 2e84556ee5814b047af76658873e8d0d
   m_configObjects: {}

@@ -1,0 +1,140 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using TMPro;
+using UnityEngine.UI;
+
+public class MoneyElectionManager : MonoBehaviour
+{
+    public TMP_Text tituloDiaText;
+    public TMP_Text RecompensaText;
+    public TMP_Text dineroActualText;
+    public TMP_Text dineroFamiliaText;
+    public TMP_Text dineroBandaText;
+
+    public Toggle checkboxFamilia;
+    public Toggle checkboxBanda;
+    private int dineroActualPrueba;
+    private int dineroActualInicial;
+    private int NuevaCantidadBanda;
+    private int NuevaCantidadFamilia;
+
+
+    private int recompensa;
+
+    [System.Serializable]
+    public class MoneyRequest
+    {
+        public int familia;
+        public int banda;
+    }
+
+    // Lista inicializada con los valores para cada acto
+    public List<MoneyRequest> moneyRequestsPorActo = new List<MoneyRequest>()
+    {
+        new MoneyRequest() { familia = 40, banda = 10 },   // Tutorial
+        new MoneyRequest() { familia = 50, banda = 20 },   // Acto 1
+        new MoneyRequest() { familia = 65, banda = 35 },   // Acto 2
+        new MoneyRequest() { familia = 100, banda = -50 }   // Acto 3
+    };
+
+    void Start()
+    {
+        int acto = (int)ActManager.Instance.CurrentAct;
+        if (acto < 0 || acto >= moneyRequestsPorActo.Count)
+        {
+            Debug.LogError($"El índice de acto ({acto}) está fuera de rango para moneyRequestsPorActo (tamaño: {moneyRequestsPorActo.Count})");
+            return;
+        }
+        int dia = acto + 1;
+
+        string titulo = acto == 0 ? "DAY 1" : $"DAY {dia}";
+        tituloDiaText.text = titulo;
+        int recompensa = 80; // Recompensa fija de 80 de momento
+        int dineroActual = SaveManager.Instance.LoadGame().playerMoney;
+        dineroActualPrueba = recompensa;
+        dineroActualText.text = $"Total money ....................... {dineroActualPrueba}";
+
+
+        int dineroFamilia = moneyRequestsPorActo[acto].familia;
+        int dineroBanda = moneyRequestsPorActo[acto].banda;
+        RecompensaText.text = $"Day rewards ....................... {recompensa}";
+        dineroFamiliaText.text = $"Family wastes .................... -{dineroFamilia}";
+        dineroBandaText.text = $"Gang wastes ...................... -{dineroBanda}";
+
+        checkboxFamilia.isOn = false;
+        checkboxBanda.isOn = false;
+
+        dineroActualInicial = dineroActualPrueba;
+
+        checkboxFamilia.onValueChanged.AddListener((isOn) => OnToggleFamilia(isOn, dineroFamilia));
+        checkboxBanda.onValueChanged.AddListener((isOn) => OnToggleBanda(isOn, dineroBanda));
+    }
+    
+    void OnToggleFamilia(bool isOn, int cantidad)
+    {
+
+        Debug.Log($"DineroTotal al reiniciar familia: {dineroActualPrueba}");
+        if (isOn)
+        {
+            NuevaCantidadFamilia = cantidad - dineroActualPrueba;
+            if (NuevaCantidadFamilia < 0)
+            {
+                NuevaCantidadFamilia = 0;
+                dineroFamiliaText.text = $"Family wastes .................... {NuevaCantidadFamilia}";
+                Debug.Log($"DineroActual cuando On 1: {dineroActualPrueba}");
+            }
+            else
+            {
+                dineroFamiliaText.text = $"Family wastes .................... -{NuevaCantidadFamilia}";
+                Debug.Log($"DineroActual cuando On 2: {dineroActualPrueba}");
+            }
+            Debug.Log($"lo que sumamos: {cantidad}");
+            dineroActualPrueba = dineroActualPrueba - (cantidad - NuevaCantidadFamilia);
+            Debug.Log($"DineroActual cuando On 3: {dineroActualPrueba}");
+            dineroActualText.text = $"Total money ....................... {dineroActualPrueba}";
+        }
+        else
+        {
+            Debug.Log($"NuevaCantidad off: {NuevaCantidadFamilia}");
+            dineroActualPrueba = dineroActualPrueba + (cantidad - NuevaCantidadFamilia); 
+            Debug.Log($"DineroTotal cuando Off familia: {dineroActualPrueba}");
+            dineroFamiliaText.text = $"Family wastes .................... -{cantidad}";
+            dineroActualText.text = $"Total money ....................... {dineroActualPrueba}";
+        }
+    }
+
+
+    void OnToggleBanda(bool isOn, int cantidad)
+    {
+        
+        Debug.Log($"DineroTotal al reiniciar banda: {dineroActualPrueba}");
+        if (isOn)
+        {
+            NuevaCantidadBanda = cantidad - dineroActualPrueba;
+
+            if (NuevaCantidadBanda < 0)
+            {
+                NuevaCantidadBanda = 0;
+                dineroBandaText.text = $"Gang wastes ...................... {NuevaCantidadBanda}";
+                Debug.Log($"DineroActual cuando On 1: {dineroActualPrueba}");
+            }
+            else
+            {
+                dineroBandaText.text = $"Gang wastes ...................... -{NuevaCantidadBanda}";
+                Debug.Log($"DineroActual cuando On 2: {dineroActualPrueba}");
+            }
+            dineroActualPrueba = dineroActualPrueba - (cantidad - NuevaCantidadBanda);
+            Debug.Log($"DineroActual cuando On 3: {dineroActualPrueba}");
+            dineroActualText.text = $"Total money ....................... {dineroActualPrueba}";
+        }
+        else
+        {
+            Debug.Log($"NuevaCantidad off: {NuevaCantidadBanda}");
+            dineroActualPrueba = dineroActualPrueba + (cantidad - NuevaCantidadBanda);
+            Debug.Log($"DineroTotal cuando Off banda: {dineroActualPrueba}");
+            dineroBandaText.text = $"Gang wastes ...................... -{cantidad}";
+            dineroActualText.text = $"Total money ....................... {dineroActualPrueba}";
+        }
+    }
+}

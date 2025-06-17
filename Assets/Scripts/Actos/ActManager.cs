@@ -38,6 +38,11 @@ public class ActManager : MonoBehaviour
             AdvanceAct();
             Debug.Log("Acto avanzado manualmente. Acto actual: " + CurrentAct);
         }
+        if (Input.GetKeyDown(KeyCode.S))
+        {
+            RetrocedeAct();
+            Debug.Log("Acto retrocedido manualmente. Acto actual: " + CurrentAct);
+        }
 
         // Mostrar el acto actual al pulsar la tecla B
         if (Input.GetKeyDown(KeyCode.B))
@@ -74,6 +79,21 @@ public class ActManager : MonoBehaviour
             CurrentPhase = ActPhase.PreCombat;
             SaveManager.Instance.SaveCurrentGame();
             Debug.Log("¡Acto avanzado! Nuevo acto: " + CurrentAct + ", fase: " + CurrentPhase);
+        }
+        else
+        {
+            Debug.Log("Ya estás en el Epilogue, no se puede avanzar más.");
+        }
+    }
+
+    public void RetrocedeAct()
+    {
+        if (CurrentAct < GameAct.Epilogue)
+        {
+            CurrentAct--;
+            CurrentPhase = ActPhase.PreCombat;
+            SaveManager.Instance.SaveCurrentGame();
+            Debug.Log("¡Acto retrocedido! Nuevo acto: " + CurrentAct + ", fase: " + CurrentPhase);
         }
         else
         {
