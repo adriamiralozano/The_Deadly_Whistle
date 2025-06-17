@@ -48,7 +48,7 @@ public class MoneyElectionManager : MonoBehaviour
             Debug.LogError($"El índice de acto ({acto}) está fuera de rango para moneyRequestsPorActo (tamaño: {moneyRequestsPorActo.Count})");
             return;
         }
-        int dia = acto + 1;
+        int dia = acto;
 
         string titulo = acto == 0 ? "DAY 1" : $"DAY {dia}";
         tituloDiaText.text = titulo;
