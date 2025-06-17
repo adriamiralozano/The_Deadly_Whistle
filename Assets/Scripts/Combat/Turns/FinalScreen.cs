@@ -64,11 +64,19 @@ public class FinalScreen : MonoBehaviour
     {
         yield return new WaitForSeconds(2f);
 
-        // CONTRATO GANADO - Añade dinero y contrato completado
+        // 1. CONTRATO GANADO - Añade dinero y contrato completado
         if (ContractManager.Instance != null)
         {
             ContractManager.Instance.OnContractWon();
         }
+
+        // 2. Cambia la fase a PostCombat SOLO si estamos en PreCombat
+        if (ActManager.Instance != null && ActManager.Instance.CurrentPhase == ActPhase.PreCombat)
+            ActManager.Instance.AdvancePhase();
+
+        // 3. Guarda el juego después de actualizar todo
+        if (SaveManager.Instance != null)
+            SaveManager.Instance.SaveCurrentGame();
 
         if (contratoCompletadoPanel != null)
             contratoCompletadoPanel.SetActive(true);
@@ -78,12 +86,6 @@ public class FinalScreen : MonoBehaviour
 
         if (blockerOverlay != null)
             blockerOverlay.SetActive(true);
-
-        if (ActManager.Instance != null)
-            ActManager.Instance.AdvancePhase();
-
-        if (SaveManager.Instance != null)
-            SaveManager.Instance.SaveCurrentGame();
 
         yield return new WaitForSeconds(4f);
         SceneManager.LoadScene("Campamento"); // Va al Campamento

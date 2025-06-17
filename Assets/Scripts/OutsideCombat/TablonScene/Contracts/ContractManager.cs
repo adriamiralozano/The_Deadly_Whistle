@@ -3,6 +3,7 @@ using UnityEngine;
 public class ContractManager : MonoBehaviour
 {
     public static ContractManager Instance { get; private set; }
+    public static ContractSO PendingAcceptedContract = null;
     
     private ContractSO acceptedContract;
     private SaveData preContractSave; // Guardado antes de elegir contrato
@@ -15,6 +16,14 @@ public class ContractManager : MonoBehaviour
             return;
         }
         Instance = this;
+
+        // Si hay un contrato pendiente, lo asignamos al entrar en la escena de combate
+        if (PendingAcceptedContract != null)
+        {
+            acceptedContract = PendingAcceptedContract;
+            Debug.Log($"[ContractManager] Contrato transferido a escena de combate: {acceptedContract.Title}");
+            PendingAcceptedContract = null; // Limpiamos la variable estática
+        }
     }
     public void SavePreContractState()
     {

@@ -43,9 +43,13 @@ public class MoneyElectionManager : MonoBehaviour
     void Start()
     {
         int acto = (int)ActManager.Instance.CurrentAct;
-        if (acto < 0 || acto >= moneyRequestsPorActo.Count)
+        int index = acto == 0 ? 0 : acto - 1;
+
+        Debug.Log($"[MoneyElectionManager] CurrentAct: {ActManager.Instance.CurrentAct} (int: {acto}), usando índice: {index}");
+
+        if (index < 0 || index >= moneyRequestsPorActo.Count)
         {
-            Debug.LogError($"El índice de acto ({acto}) está fuera de rango para moneyRequestsPorActo (tamaño: {moneyRequestsPorActo.Count})");
+            Debug.LogError($"El índice de acto ({index}) está fuera de rango para moneyRequestsPorActo (tamaño: {moneyRequestsPorActo.Count})");
             return;
         }
         int dia = acto;
@@ -58,8 +62,8 @@ public class MoneyElectionManager : MonoBehaviour
         dineroActualText.text = $"Total money ....................... {dineroActualPrueba}";
 
 
-        int dineroFamilia = moneyRequestsPorActo[acto].familia;
-        int dineroBanda = moneyRequestsPorActo[acto].banda;
+        int dineroFamilia = moneyRequestsPorActo[index].familia;
+        int dineroBanda = moneyRequestsPorActo[index].banda;
         RecompensaText.text = $"Day rewards ...................... +{dineroActual}"; //CAMBIAR EN UN FUTURO A RECOMPENSA DEL COMBATE
         dineroFamiliaText.text = $"Family wastes .................... -{dineroFamilia}";
         dineroBandaText.text = $"Gang wastes ...................... -{dineroBanda}";

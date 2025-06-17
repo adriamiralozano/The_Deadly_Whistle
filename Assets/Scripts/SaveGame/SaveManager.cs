@@ -81,7 +81,7 @@ public class SaveManager : MonoBehaviour
         SaveData newSave = new SaveData();
         newSave.currentAct = 0; // Tutorial
         newSave.currentPhase = 0; // PreCombat
-        newSave.playerMoney = 200; // Cantidad inicial de dinero del jugador
+        newSave.playerMoney = 0; // Cantidad inicial de dinero del jugador
         newSave.familyMoney = 0;
         newSave.gangMoney = 0;
 

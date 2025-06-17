@@ -52,11 +52,9 @@ public class AcceptContractHandler : MonoBehaviour
 
         // Guarda el estado antes de elegir contrato
         ContractManager.Instance.SavePreContractState();
-        ContractManager.Instance.SetAcceptedContract(currentContract);
+        ContractManager.PendingAcceptedContract = currentContract;
         
-        // Cambia a fase de combate
-        ActManager.Instance.AdvancePhase(); // PreCombat → PostCombat
-        
+
         SceneManager.LoadScene("Combat_Test_Scene");
     }
 
