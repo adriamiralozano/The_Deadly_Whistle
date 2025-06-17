@@ -5,7 +5,7 @@ using UnityEngine.SceneManagement;
 
 public class TiendaSceneManager : MonoBehaviour
 {
-    public void OnSleepButton()
+    public void OnMoneyElection()
     {
         if (ActManager.Instance != null && ActManager.Instance.CurrentPhase == ActPhase.PostCombat)
         {
@@ -14,19 +14,11 @@ public class TiendaSceneManager : MonoBehaviour
             if (SaveManager.Instance != null)
                 SaveManager.Instance.SaveCurrentGame();
 
-            SceneManager.LoadScene("Campamento");
+            SceneManager.LoadScene("MoneyElection");
         }
         else
         {
             Debug.Log("No puedes dormir aún, no has terminado la fase de combate.");
         }
-    }
-    public void OnMoneyElection()
-    {
-            if (SaveManager.Instance != null)
-                SaveManager.Instance.SaveCurrentGame();
-
-            SceneManager.LoadScene("MoneyElection");
-
     }
 }

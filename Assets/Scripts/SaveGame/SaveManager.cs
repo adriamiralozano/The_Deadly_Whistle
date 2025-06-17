@@ -52,7 +52,7 @@ public class SaveManager : MonoBehaviour
         return null;
     }
 
-    private SaveData GatherCurrentGameData()
+    private SaveData GatherCurrentGameData() //
     {
         SaveData data = new SaveData();
 
@@ -61,23 +61,17 @@ public class SaveManager : MonoBehaviour
         {
             data.currentAct = (int)ActManager.Instance.CurrentAct;
             data.currentPhase = (int)ActManager.Instance.CurrentPhase;
+
         }
-        // Recoge el dinero del jugador
-            // data.playerMoney = PlayerStats.Instance.Money; // Si tienes un PlayerStats.Instance
+        if (GameStats.Instance != null)
+        {
+            data.familyMoney = GameStats.Instance.familyMoney;
+            data.gangMoney = GameStats.Instance.gangMoney;
+            data.playerMoney = GameStats.Instance.playerMoney;
+        }
 
-            // Recoge la baraja actual
-            // data.deckCardIDs = CardManager.Instance.GetCurrentDeckIDs();
 
-            // Recoge el estado de los diálogos
-            // data.dialogueStates = DialogueManager.Instance.GetDialogueStates();
-
-            // Recoge contratos completados/fallidos
-            // data.completedContracts = ContractManager.Instance.GetCompletedContracts();
-            // data.failedContracts = ContractManager.Instance.GetFailedContracts();
-
-            // ...añade aquí el resto de datos relevantes...
-
-            return data;
+        return data;
     }
 
     public void NewGame()
@@ -86,12 +80,16 @@ public class SaveManager : MonoBehaviour
         SaveData newSave = new SaveData();
         newSave.currentAct = 0; // Tutorial
         newSave.currentPhase = 0; // PreCombat
-        newSave.playerMoney = 0;
-        newSave.deckCardIDs = new List<string>();
-        newSave.dialogueStates = new Dictionary<string, int>();
-        newSave.completedContracts = new List<string>();
-        newSave.failedContracts = new List<string>();
+        newSave.playerMoney = 200; // Cantidad inicial de dinero del jugador
+        newSave.familyMoney = 0;
+        newSave.gangMoney = 0;
+        /*         newSave.deckCardIDs = new List<string>();
+                newSave.dialogueStates = new Dictionary<string, int>();
+                newSave.completedContracts = new List<string>();
+                newSave.failedContracts = new List<string>(); */
         SaveGame(newSave);
         Debug.Log("Contenido del guardado tras NewGame: " + File.ReadAllText(savePath));
     }
+    
+
 }

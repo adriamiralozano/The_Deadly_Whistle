@@ -60,6 +60,15 @@ public class ActManager : MonoBehaviour
             AdvancePhase();
             Debug.Log("Fase cambiada manualmente. Nueva fase: " + CurrentPhase);
         }
+            if (Input.GetKeyDown(KeyCode.I))
+        {
+            if (GameStats.Instance != null)
+            {
+                GameStats.Instance.playerMoney += 50;
+                SaveManager.Instance.SaveCurrentGame();
+                Debug.Log($"Dinero añadido. Nuevo playerMoney: {GameStats.Instance.playerMoney}");
+            }
+        }
     }
 
     public void LoadFromSave(SaveData data)

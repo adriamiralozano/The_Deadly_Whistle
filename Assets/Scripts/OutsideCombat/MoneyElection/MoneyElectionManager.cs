@@ -18,6 +18,8 @@ public class MoneyElectionManager : MonoBehaviour
     private int dineroActualInicial;
     private int NuevaCantidadBanda;
     private int NuevaCantidadFamilia;
+    private int boteFamilia;
+    private int boteBanda;
 
 
     private int recompensa;
@@ -50,15 +52,15 @@ public class MoneyElectionManager : MonoBehaviour
 
         string titulo = acto == 0 ? "DAY 1" : $"DAY {dia}";
         tituloDiaText.text = titulo;
-        int recompensa = 80; // Recompensa fija de 80 de momento
+        //int recompensa = 200; // Recompensa fija de 200 de momento
         int dineroActual = SaveManager.Instance.LoadGame().playerMoney;
-        dineroActualPrueba = recompensa;
+        dineroActualPrueba = dineroActual; ;
         dineroActualText.text = $"Total money ....................... {dineroActualPrueba}";
 
 
         int dineroFamilia = moneyRequestsPorActo[acto].familia;
         int dineroBanda = moneyRequestsPorActo[acto].banda;
-        RecompensaText.text = $"Day rewards ....................... {recompensa}";
+        RecompensaText.text = $"Day rewards ...................... +{dineroActual}"; //CAMBIAR EN UN FUTURO A RECOMPENSA DEL COMBATE
         dineroFamiliaText.text = $"Family wastes .................... -{dineroFamilia}";
         dineroBandaText.text = $"Gang wastes ...................... -{dineroBanda}";
 
@@ -70,7 +72,7 @@ public class MoneyElectionManager : MonoBehaviour
         checkboxFamilia.onValueChanged.AddListener((isOn) => OnToggleFamilia(isOn, dineroFamilia));
         checkboxBanda.onValueChanged.AddListener((isOn) => OnToggleBanda(isOn, dineroBanda));
     }
-    
+
     void OnToggleFamilia(bool isOn, int cantidad)
     {
 
@@ -78,7 +80,7 @@ public class MoneyElectionManager : MonoBehaviour
         if (isOn)
         {
             NuevaCantidadFamilia = cantidad - dineroActualPrueba;
-            if (NuevaCantidadFamilia < 0)
+            if (NuevaCantidadFamilia <= 0)
             {
                 NuevaCantidadFamilia = 0;
                 dineroFamiliaText.text = $"Family wastes .................... {NuevaCantidadFamilia}";
@@ -89,15 +91,17 @@ public class MoneyElectionManager : MonoBehaviour
                 dineroFamiliaText.text = $"Family wastes .................... -{NuevaCantidadFamilia}";
                 Debug.Log($"DineroActual cuando On 2: {dineroActualPrueba}");
             }
-            Debug.Log($"lo que sumamos: {cantidad}");
             dineroActualPrueba = dineroActualPrueba - (cantidad - NuevaCantidadFamilia);
             Debug.Log($"DineroActual cuando On 3: {dineroActualPrueba}");
             dineroActualText.text = $"Total money ....................... {dineroActualPrueba}";
+
+            boteFamilia = cantidad - NuevaCantidadFamilia;
+            Debug.Log($"Bote familia: {boteFamilia}");
         }
         else
         {
             Debug.Log($"NuevaCantidad off: {NuevaCantidadFamilia}");
-            dineroActualPrueba = dineroActualPrueba + (cantidad - NuevaCantidadFamilia); 
+            dineroActualPrueba = dineroActualPrueba + (cantidad - NuevaCantidadFamilia);
             Debug.Log($"DineroTotal cuando Off familia: {dineroActualPrueba}");
             dineroFamiliaText.text = $"Family wastes .................... -{cantidad}";
             dineroActualText.text = $"Total money ....................... {dineroActualPrueba}";
@@ -107,13 +111,13 @@ public class MoneyElectionManager : MonoBehaviour
 
     void OnToggleBanda(bool isOn, int cantidad)
     {
-        
+
         Debug.Log($"DineroTotal al reiniciar banda: {dineroActualPrueba}");
         if (isOn)
         {
             NuevaCantidadBanda = cantidad - dineroActualPrueba;
 
-            if (NuevaCantidadBanda < 0)
+            if (NuevaCantidadBanda <= 0)
             {
                 NuevaCantidadBanda = 0;
                 dineroBandaText.text = $"Gang wastes ...................... {NuevaCantidadBanda}";
@@ -127,6 +131,10 @@ public class MoneyElectionManager : MonoBehaviour
             dineroActualPrueba = dineroActualPrueba - (cantidad - NuevaCantidadBanda);
             Debug.Log($"DineroActual cuando On 3: {dineroActualPrueba}");
             dineroActualText.text = $"Total money ....................... {dineroActualPrueba}";
+
+            boteBanda = cantidad - NuevaCantidadBanda;
+            Debug.Log($"Bote banda: {boteBanda}");
+
         }
         else
         {
@@ -135,6 +143,44 @@ public class MoneyElectionManager : MonoBehaviour
             Debug.Log($"DineroTotal cuando Off banda: {dineroActualPrueba}");
             dineroBandaText.text = $"Gang wastes ...................... -{cantidad}";
             dineroActualText.text = $"Total money ....................... {dineroActualPrueba}";
+        }
+    }
+
+    public void OnSleepButton()
+    {
+
+        if (checkboxFamilia.isOn && checkboxBanda.isOn)
+        {
+
+            if (GameStats.Instance != null)
+            {
+                GameStats.Instance.familyMoney += boteFamilia;
+                Debug.Log($"Dinero familia guardado: {GameStats.Instance.familyMoney}");
+                GameStats.Instance.gangMoney += boteBanda;
+                Debug.Log($"Dinero banda guardado: {GameStats.Instance.gangMoney}");
+                GameStats.Instance.playerMoney = dineroActualPrueba;
+                Debug.Log($"Dinero jugador guardado: {GameStats.Instance.playerMoney}");
+            }
+
+            if (SaveManager.Instance != null)
+                SaveManager.Instance.SaveCurrentGame();
+
+            UnityEngine.SceneManagement.SceneManager.LoadScene("Campamento");
+        }
+        else
+        {
+            Debug.Log("Debes seleccionar ambas opciones para continuar.");
+        }
+
+    }
+    public void SyncStatsToGameStats()
+    {
+        if (GameStats.Instance != null)
+        {
+            GameStats.Instance.familyMoney += boteFamilia;
+            GameStats.Instance.gangMoney += boteBanda;
+            GameStats.Instance.playerMoney = dineroActualPrueba;
+            Debug.Log($"GameStats sincronizado: familyMoney={boteFamilia}, gangMoney={boteBanda}, playerMoney={dineroActualPrueba}");
         }
     }
 }
