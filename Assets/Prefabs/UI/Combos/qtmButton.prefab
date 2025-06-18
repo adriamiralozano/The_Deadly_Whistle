@@ -67,7 +67,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
+  m_Sprite: {fileID: 21300000, guid: 1f6ffb43fb6b4c34a9f4b68ce390bb59, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -119,7 +119,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   image: {fileID: 7264698643138059907}
-  defaultColor: {r: 1, g: 1, b: 1, a: 1}
-  pressedColor: {r: 0, g: 1, b: 0, a: 1}
-  failColor: {r: 1, g: 0, b: 0, a: 1}
+  defaultSprite: {fileID: 21300000, guid: 1f6ffb43fb6b4c34a9f4b68ce390bb59, type: 3}
+  pressedSprite: {fileID: 21300000, guid: b05b9ac37046993478a64fa9d4350b84, type: 3}
+  failSprite: {fileID: 21300000, guid: bf168a556a8b3c645b927d20240e57d9, type: 3}
   index: 0

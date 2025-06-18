@@ -824,7 +824,7 @@ Transform:
   m_GameObject: {fileID: 232757672}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 6.5, y: 0.5, z: 0}
+  m_LocalPosition: {x: 7.3, y: 0.5, z: 0}
   m_LocalScale: {x: 0.5, y: 0.5, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1911,6 +1911,9 @@ MonoBehaviour:
   EnemyCardAppearSound: {fileID: 8300000, guid: acdaaa09f286742438bb106c183c4c65, type: 3}
   cardDropSound: {fileID: 8300000, guid: acdaaa09f286742438bb106c183c4c65, type: 3}
   BangSound: {fileID: 8300000, guid: e6f54aceda70f9341a633e846ed37171, type: 3}
+  BulletReloadSound: {fileID: 8300000, guid: 81e7070d886be1949822edd12ddc7f62, type: 3}
+  BulletFailSound: {fileID: 8300000, guid: 8e378958942bdf340b58a19f439d697f, type: 3}
+  ReloadCompleteSound: {fileID: 8300000, guid: bba18c87ad1628e40a8430bdb7e64198, type: 3}
 --- !u!4 &612900051
 Transform:
   m_ObjectHideFlags: 0
@@ -2615,7 +2618,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &765531215
 MonoBehaviour:
   m_ObjectHideFlags: 0

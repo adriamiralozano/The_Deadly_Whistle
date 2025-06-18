@@ -11,10 +11,12 @@ public class AudioManager : MonoBehaviour
     public AudioClip EnemyWeaponEquippedSound;
     public AudioClip EnemyCardAppearSound;
     public AudioClip cardDropSound;
-
     public AudioClip BangSound;
-
+    public AudioClip BulletReloadSound;
+    public AudioClip BulletFailSound;
+    public AudioClip ReloadCompleteSound;
     private AudioSource audioSource;
+
 
     void Awake()
     {
@@ -42,5 +44,8 @@ public class AudioManager : MonoBehaviour
     public void PlayEnemyCardAppear() => PlaySFX(EnemyCardAppearSound);
     public void PlayCardDrop() => PlaySFX(cardDropSound);
     public void PlayBangSound() => PlaySFX(BangSound);
+    public void PlayBulletReload() => PlaySFX(BulletReloadSound);
+    public void PlayBulletFail() => PlaySFX(BulletFailSound);
+    public void PlayReloadComplete() => PlaySFX(ReloadCompleteSound);
 
 }

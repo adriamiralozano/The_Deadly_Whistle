@@ -5,9 +5,9 @@ using UnityEngine.EventSystems;
 public class QTEPoint : MonoBehaviour, IPointerClickHandler
 {
     [SerializeField] public Image image;
-    [SerializeField] public Color defaultColor = Color.white;
-    [SerializeField] public Color pressedColor = Color.green;
-    [SerializeField] public Color failColor = Color.red;
+    [SerializeField] public Sprite defaultSprite;
+    [SerializeField] public Sprite pressedSprite;
+    [SerializeField] public Sprite failSprite; // Nuevo sprite para el estado fail
 
     public int index;
     private CombosManager manager;
@@ -25,16 +25,16 @@ public class QTEPoint : MonoBehaviour, IPointerClickHandler
             return;
         }
 
-        image.color = defaultColor;
+        image.sprite = defaultSprite;
+        image.color = Color.white; // Asegura que el color no afecte la sprite
         Debug.Log($"[QTEPoint] Punto {idx} inicializado como elemento UI puro");
     }
 
-    // AÑADIR ESTOS MÉTODOS AQUÍ:
     public void SetInactive()
     {
         if (image != null)
         {
-            var color = defaultColor;
+            var color = image.color;
             color.a = 0.3f; // Semi-transparente
             image.color = color;
         }
@@ -44,7 +44,8 @@ public class QTEPoint : MonoBehaviour, IPointerClickHandler
     {
         if (image != null)
         {
-            image.color = defaultColor; // Color normal
+            image.sprite = defaultSprite;
+            image.color = Color.white;
         }
     }
 
@@ -65,16 +66,28 @@ public class QTEPoint : MonoBehaviour, IPointerClickHandler
     public void SetCorrect()
     {
         if (image != null)
-            image.color = pressedColor;
+        {
+            image.sprite = pressedSprite;
+            image.color = Color.white;
+        }
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayBulletReload();
+        }
     }
 
     public void SetFail(float alpha = 1f)
     {
         if (image != null)
         {
-            var color = failColor;
+            image.sprite = failSprite;
+            var color = image.color;
             color.a = alpha;
             image.color = color;
+        }
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayBulletFail();
         }
     }
 }
