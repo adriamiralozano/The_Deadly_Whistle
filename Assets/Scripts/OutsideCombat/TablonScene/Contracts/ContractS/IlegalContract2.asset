@@ -19,3 +19,4 @@ MonoBehaviour:
     non laoreet ligula luctus vel.
   Price: 70
   PreviewSprite: {fileID: 21300000, guid: 56c687326adf56942875a4784540ba6d, type: 3}
+  isIllegal: 1

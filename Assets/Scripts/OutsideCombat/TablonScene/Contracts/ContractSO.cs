@@ -7,4 +7,5 @@ public class ContractSO : ScriptableObject
     [TextArea] public string Description;
     public int Price;
     public Sprite PreviewSprite;
+    public bool isIllegal;
 }

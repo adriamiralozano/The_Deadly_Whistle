@@ -34,10 +34,10 @@ public class MoneyElectionManager : MonoBehaviour
     // Lista inicializada con los valores para cada acto
     public List<MoneyRequest> moneyRequestsPorActo = new List<MoneyRequest>()
     {
-        new MoneyRequest() { familia = 40, banda = 10 },   // Tutorial
+        //new MoneyRequest() { familia = 40, banda = 10 },   // Tutorial
         new MoneyRequest() { familia = 50, banda = 20 },   // Acto 1
         new MoneyRequest() { familia = 65, banda = 35 },   // Acto 2
-        new MoneyRequest() { familia = 100, banda = -50 }   // Acto 3
+        new MoneyRequest() { familia = 100, banda = 50 }   // Acto 3
     };
 
     void Start()
@@ -169,7 +169,18 @@ public class MoneyElectionManager : MonoBehaviour
             if (SaveManager.Instance != null)
                 SaveManager.Instance.SaveCurrentGame();
 
-            UnityEngine.SceneManagement.SceneManager.LoadScene("Campamento");
+            if (ActManager.Instance.CurrentAct == GameAct.Act3)
+            {
+                ActManager.Instance.AdvanceAct();
+                GameEndingManager.Instance.DecideEnding();
+                UnityEngine.SceneManagement.SceneManager.LoadScene("GameEnding");
+            }
+            else
+            {
+                ActManager.Instance.AdvanceAct();
+                UnityEngine.SceneManagement.SceneManager.LoadScene("Campamento");
+            }
+            
         }
         else
         {

@@ -59,7 +59,7 @@ public class TurnManager : MonoBehaviour
     // Para optimizar actualizaciones de UI
     private string lastTurnPhaseText = "";
     private string lastHandCountText = "";
-
+    
     // --- Eventos de Turno ---
     public static event Action<int> OnTurnStart;        // Se dispara al inicio de un nuevo turno
     public static event Action<TurnPhase> OnPhaseChange; // Se dispara cada vez que la fase de turno cambia
@@ -470,6 +470,15 @@ public class TurnManager : MonoBehaviour
         StartPlayerTurn(); // Ahora sí, inicia el primer turno normalmente
     }
 
+
+    void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.H))
+        {
+                Debug.Log("[DEBUG] Tecla H pulsada: Haciendo 1 de daño al enemigo.");
+                activeEnemy.TakeDamage(1);
+        }
+    }
     private void HandleShotPhase()
     {
         Debug.Log("Iniciando Fase de Disparo (ShotPhase). Mostrando panel QTE...");
@@ -481,6 +490,8 @@ public class TurnManager : MonoBehaviour
             combosManager.ShowQTEPanel();
         }
     }
+
+
 
     public IEnumerator ShotFeedback()
     {

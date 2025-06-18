@@ -12,6 +12,8 @@ public class GameStats : MonoBehaviour
     
     // Lista de contratos completados
     public List<string> completedContracts = new List<string>();
+    public GameEnding currentEnding = GameEnding.None;
+    
 
     private void Awake()
     {
@@ -48,7 +50,7 @@ public class GameStats : MonoBehaviour
             familyMoney = data.familyMoney;
             gangMoney = data.gangMoney;
             playerMoney = data.playerMoney;
-            //completedContracts = data.completedContracts ?? new List<string>();
+            completedContracts = data.completedContracts ?? new List<string>();
         }
     }
 

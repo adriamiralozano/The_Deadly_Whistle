@@ -26,4 +26,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/MoneyElection.unity
     guid: 2e84556ee5814b047af76658873e8d0d
+  - enabled: 1
+    path: Assets/Scenes/GameEnding.unity
+    guid: 281efbb14d5ab4f42a61686d0bbde0eb
   m_configObjects: {}

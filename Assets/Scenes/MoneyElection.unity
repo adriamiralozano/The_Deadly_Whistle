@@ -249,14 +249,14 @@ MonoBehaviour:
   checkboxFamilia: {fileID: 645196150}
   checkboxBanda: {fileID: 1597630023}
   moneyRequestsPorActo:
-  - familia: 40
-    banda: 10
   - familia: 50
     banda: 20
   - familia: 65
     banda: 35
   - familia: 100
     banda: 50
+  - familia: 40
+    banda: 10
 --- !u!1 &478172720
 GameObject:
   m_ObjectHideFlags: 0

@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aa3a30e5efb837f4682e9ba04c6757d6, type: 3}
   m_Name: legalContract1
   m_EditorClassIdentifier: 
-  Title: TownSnoop
+  Title: Fraudster
   Description: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer eleifend
     fringilla est, id commodo arcu suscipit faucibus. Ut sed malesuada lacus. Nunc
     semper augue magna, ut suscipit risus aliquam vel. Curabitur tempus cursus diam,
