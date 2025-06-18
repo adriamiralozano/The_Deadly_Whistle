@@ -67,6 +67,12 @@ public class DropTarget : MonoBehaviour, IDropHandler, IPointerEnterHandler, IPo
     public void OnDrop(PointerEventData eventData)
     {
 
+        if (TurnManager.Instance.CurrentPhase != TurnManager.TurnPhase.ActionPhase &&
+            TurnManager.Instance.CurrentPhase != TurnManager.TurnPhase.DiscardPostShot)
+        {
+            return;
+        }
+        
         if (AudioManager.Instance != null)
         {
             AudioManager.Instance.PlayCardDrop();

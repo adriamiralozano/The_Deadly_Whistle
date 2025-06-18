@@ -50,9 +50,15 @@ TagManager:
   - name: BG3
     uniqueID: 726462373
     locked: 0
+  - name: Sprites
+    uniqueID: 2779954133
+    locked: 0
   - name: UI
     uniqueID: 2254840379
     locked: 0
   - name: DraggingCard
     uniqueID: 1803759179
+    locked: 0
+  - name: Previews
+    uniqueID: 901060201
     locked: 0

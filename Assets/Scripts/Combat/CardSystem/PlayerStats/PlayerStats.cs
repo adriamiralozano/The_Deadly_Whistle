@@ -10,7 +10,10 @@ public class PlayerStats : MonoBehaviour
 {
     public static PlayerStats Instance { get; private set; }
     public static event Action<bool> OnWeaponEquippedStatusChanged;
+    public static event Action OnPlayerDeath;
     public bool HasFiredRevolverThisTurn { get; private set; }
+    
+
 
 
     // --- Indicador de Arma Equipada ---
@@ -208,7 +211,10 @@ public class PlayerStats : MonoBehaviour
 
         CurrentHealth = 0;
         Debug.LogWarning("[PlayerStats] ¡El jugador ha muerto!");
+
+        OnPlayerDeath?.Invoke();
     }
+    
 
     private void InitializeHeartUI()
     {

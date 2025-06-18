@@ -5,25 +5,28 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
-  - enabled: 0
-    path: Assets/Scenes/EscenaPrueba.unity
-    guid: 2cda990e2423bbf4892e6590ba056729
-  - enabled: 0
-    path: Assets/Scenes/Campamento.unity
-    guid: dc2f7fa61dadeda4693605a4bf79c6f0
-  - enabled: 0
+  - enabled: 1
     path: Assets/Scenes/MainMenu.unity
     guid: afcee3826a2564d4bb7b3e8d8e496756
-  - enabled: 0
+  - enabled: 1
+    path: Assets/Scenes/Campamento.unity
+    guid: dc2f7fa61dadeda4693605a4bf79c6f0
+  - enabled: 1
     path: Assets/Scenes/Tablon.unity
     guid: 6b6d7cf9efe8a544099cad41a914b1ed
-  - enabled: 0
+  - enabled: 1
     path: Assets/Scenes/Tienda.unity
     guid: 45f9390d0b9e5ce4b977822875a472a5
-  - enabled: 0
+  - enabled: 1
     path: Assets/Scenes/Hoguera.unity
     guid: ca25a8f44c5df5b4691019cf69c6c865
   - enabled: 1
     path: Assets/Scenes/Combat_Test_Scene.unity
     guid: 1275755930a71a946a29d60cf523a244
+  - enabled: 1
+    path: Assets/Scenes/MoneyElection.unity
+    guid: 2e84556ee5814b047af76658873e8d0d
+  - enabled: 1
+    path: Assets/Scenes/GameEnding.unity
+    guid: 281efbb14d5ab4f42a61686d0bbde0eb
   m_configObjects: {}

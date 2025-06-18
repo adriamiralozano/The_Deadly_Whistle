@@ -59,7 +59,7 @@ public class TurnManager : MonoBehaviour
     // Para optimizar actualizaciones de UI
     private string lastTurnPhaseText = "";
     private string lastHandCountText = "";
-
+    
     // --- Eventos de Turno ---
     public static event Action<int> OnTurnStart;        // Se dispara al inicio de un nuevo turno
     public static event Action<TurnPhase> OnPhaseChange; // Se dispara cada vez que la fase de turno cambia
@@ -181,6 +181,12 @@ public class TurnManager : MonoBehaviour
     /// Avanza a la siguiente fase del turno del jugador, basada en la fase actual.
     public void AdvancePhase()
     {
+
+        if ((playerStats != null && !playerStats.IsAlive) || (activeEnemy != null && !activeEnemy.IsAlive))
+        {
+            Debug.LogWarning("[TurnManager] No se avanza de fase porque el jugador o el enemigo han muerto.");
+            return;
+        }
         switch (currentTurnPhase)
         {
             case TurnPhase.None:
@@ -383,7 +389,14 @@ public class TurnManager : MonoBehaviour
         if (enemyTurnBanner != null)
             enemyTurnBanner.SetActive(false);
 
-        StartPlayerTurn();
+        if (playerStats != null && playerStats.IsAlive && activeEnemy != null && activeEnemy.IsAlive)
+        {
+            StartPlayerTurn();
+        }
+        else
+        {
+            Debug.LogWarning("[TurnManager] No se inicia el turno del jugador porque el jugador o el enemigo han muerto.");
+        }
     }
 
     private IEnumerator DrawCardsAndLogRevolverRoutine()
@@ -457,6 +470,15 @@ public class TurnManager : MonoBehaviour
         StartPlayerTurn(); // Ahora sí, inicia el primer turno normalmente
     }
 
+
+    void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.H))
+        {
+                Debug.Log("[DEBUG] Tecla H pulsada: Haciendo 1 de daño al enemigo.");
+                activeEnemy.TakeDamage(1);
+        }
+    }
     private void HandleShotPhase()
     {
         Debug.Log("Iniciando Fase de Disparo (ShotPhase). Mostrando panel QTE...");
@@ -468,6 +490,8 @@ public class TurnManager : MonoBehaviour
             combosManager.ShowQTEPanel();
         }
     }
+
+
 
     public IEnumerator ShotFeedback()
     {
@@ -641,7 +665,7 @@ public class TurnManager : MonoBehaviour
                 shotsActivated++;
                 nextShotTime += shotInterval;
                 targetEnemy.TakeDamage(1);
-                
+
                 ShakeTransformsDOTween(new Transform[] { bgTransform, zoomBgTransform, playerTransform, enemyTransform }, 0.15f, 0.8f);
                 yield return new WaitForSeconds(0.15f);
             }
@@ -888,7 +912,7 @@ public class TurnManager : MonoBehaviour
 
                 ShakeTransformsDOTween(new Transform[] { bgTransform, zoomBgTransform, playerTransform, enemyTransform }, 0.15f, 0.8f);
                 yield return new WaitForSeconds(0.15f);
-                
+
             }
 
             if (playerTransform != null)
@@ -983,7 +1007,7 @@ public class TurnManager : MonoBehaviour
 
         zoomBackgroundGO.SetActive(false);
     }
-    
+
     private void ShakeTransformsDOTween(Transform[] targets, float duration = 0.15f, float strength = 0.5f)
     {
         foreach (var t in targets)
@@ -992,4 +1016,5 @@ public class TurnManager : MonoBehaviour
                 t.DOShakePosition(duration, strength, vibrato: 20, randomness: 90, snapping: false, fadeOut: true);
         }
     }
+
 }

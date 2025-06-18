@@ -287,6 +287,13 @@ public class CardBehaviour2 : MonoBehaviour,
     {
         Debug.Log("BEGIN DRAG");
         wasDragged = false;
+
+        if (TurnManager.Instance.CurrentPhase != TurnManager.TurnPhase.ActionPhase &&
+            TurnManager.Instance.CurrentPhase != TurnManager.TurnPhase.DiscardPostShot)
+        {
+            eventData.pointerDrag = null; // Cancela el drag
+            return;
+        }
         if (TurnManager.Instance.CurrentPhase != TurnManager.TurnPhase.ActionPhase)
         {
             if (TurnManager.Instance.CurrentPhase == TurnManager.TurnPhase.DiscardPostShot)
