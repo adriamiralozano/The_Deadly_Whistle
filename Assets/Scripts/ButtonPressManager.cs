@@ -1,8 +1,9 @@
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 using DG.Tweening;
 
-public class ButtonPressManager : MonoBehaviour
+public class ButtonPressManager : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
 {
     public Button button;
     public RectTransform target;
@@ -22,7 +23,19 @@ public class ButtonPressManager : MonoBehaviour
 
     void ShakeButton()
     {
-        target.DOShakeAnchorPos(0.1f, 3f, 20, 0, false, false)
+        target.DOShakeAnchorPos(0.1f, 10f, 20, 0, false, false)
             .OnComplete(() => target.anchoredPosition = originalPos);
+    }
+
+    public void OnPointerDown(PointerEventData eventData)
+    {
+        if (AudioManager.Instance != null)
+            AudioManager.Instance.PlayButtonPress();
+    }
+
+    public void OnPointerUp(PointerEventData eventData)
+    {
+        if (AudioManager.Instance != null)
+            AudioManager.Instance.PlayButtonRelease();
     }
 }

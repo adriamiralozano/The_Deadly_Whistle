@@ -15,6 +15,8 @@ public class AudioManager : MonoBehaviour
     public AudioClip BulletReloadSound;
     public AudioClip BulletFailSound;
     public AudioClip ReloadCompleteSound;
+    public AudioClip ButtonPressSound;
+    public AudioClip ButtonReleaseSound;
     private AudioSource audioSource;
 
 
@@ -47,5 +49,7 @@ public class AudioManager : MonoBehaviour
     public void PlayBulletReload() => PlaySFX(BulletReloadSound);
     public void PlayBulletFail() => PlaySFX(BulletFailSound);
     public void PlayReloadComplete() => PlaySFX(ReloadCompleteSound);
+    public void PlayButtonPress() => PlaySFX(ButtonPressSound);
+    public void PlayButtonRelease() => PlaySFX(ButtonReleaseSound);
 
 }
