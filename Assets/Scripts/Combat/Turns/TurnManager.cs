@@ -722,8 +722,8 @@ public class TurnManager : MonoBehaviour
             bgTransform.rotation = Quaternion.Lerp(bgTargetRot, bgOriginalRot, t);
             zoomBgTransform.rotation = Quaternion.Lerp(zoomBgTargetRot, zoomBgOriginalRot, t);
 
-            // Crossfade y personajes (igual que antes)
-            zoomBgRenderer.color = new Color(1f, 1f, 1f, 1f - t);
+            // NO hagas crossfade: el fondo de zoom siempre opaco
+            zoomBgRenderer.color = new Color(1f, 1f, 1f, 1f);
 
             if (playerTransform != null)
             {
@@ -758,9 +758,7 @@ public class TurnManager : MonoBehaviour
         }
 
         // Restaurar sorting order original
-        zoomBgRenderer.sortingOrder = zoomOrder;
 
-        zoomBgRenderer.color = new Color(1f, 1f, 1f, 1f);
 
         yield return new WaitForSeconds(0.2f);
 
@@ -771,7 +769,9 @@ public class TurnManager : MonoBehaviour
         if (playerSpriteRenderer != null && playerOriginalSprite != null)
             playerSpriteRenderer.sprite = playerOriginalSprite;
 
+        zoomBgRenderer.color = new Color(1f, 1f, 1f, 1f);
         zoomBackgroundGO.SetActive(false);
+        zoomBgRenderer.sortingOrder = zoomOrder;
     }
 
     public IEnumerator EnemyShotFeedback(int shots = 1)
@@ -954,13 +954,15 @@ public class TurnManager : MonoBehaviour
             elapsed += Time.deltaTime;
             float t = Mathf.Clamp01(elapsed / returnDuration);
 
+            // Ambos fondos hacen zoom out juntos y regresan la rotación
             bgTransform.localScale = Vector3.Lerp(bgTarget, bgOriginal, t);
             zoomBgTransform.localScale = Vector3.Lerp(bgTarget, bgOriginal, t);
 
             bgTransform.rotation = Quaternion.Lerp(bgTargetRot, bgOriginalRot, t);
             zoomBgTransform.rotation = Quaternion.Lerp(zoomBgTargetRot, zoomBgOriginalRot, t);
 
-            zoomBgRenderer.color = new Color(1f, 1f, 1f, 1f - t);
+            // NO hagas crossfade: el fondo de zoom siempre opaco
+            zoomBgRenderer.color = new Color(1f, 1f, 1f, 1f);
 
             if (playerTransform != null)
             {
@@ -994,8 +996,7 @@ public class TurnManager : MonoBehaviour
         }
 
         // Restaurar sorting order original
-        zoomBgRenderer.sortingOrder = zoomOrder;
-        zoomBgRenderer.color = new Color(1f, 1f, 1f, 1f);
+
 
         yield return new WaitForSeconds(0.2f);
 
@@ -1005,7 +1006,9 @@ public class TurnManager : MonoBehaviour
         if (playerSpriteRenderer != null && playerOriginalSprite != null)
             playerSpriteRenderer.sprite = playerOriginalSprite;
 
+        zoomBgRenderer.color = new Color(1f, 1f, 1f, 1f);
         zoomBackgroundGO.SetActive(false);
+        zoomBgRenderer.sortingOrder = zoomOrder;
     }
 
     private void ShakeTransformsDOTween(Transform[] targets, float duration = 0.15f, float strength = 0.5f)
