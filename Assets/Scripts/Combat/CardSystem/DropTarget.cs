@@ -55,7 +55,7 @@ public class DropTarget : MonoBehaviour, IDropHandler, IPointerEnterHandler, IPo
                     {
                         rect.DOComplete(); // Detén shakes previos si los hay
                         Vector2 originalPos = rect.anchoredPosition;
-                        rect.DOShakeAnchorPos(0.15f, 20f, 30, 0, false, false)
+                        rect.DOShakeAnchorPos(0.15f, 15f, 25, 0, false, false)
                             .OnComplete(() => rect.anchoredPosition = originalPos);
                     }
                 }
