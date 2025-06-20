@@ -22,7 +22,14 @@ public class TurnManager : MonoBehaviour
 
     private PlayerStats playerStats;
     private CardManager cardManager;
+    private Vector3 playerGOOriginalScale;
+    private Vector3 enemyGOOriginalScale;
 
+
+    [SerializeField] private GameObject TurnIndicatorGO; // Asigna el prefab del indicador de turno en el Inspector
+    [SerializeField] private GameObject EnemyGO; // Asigna el prefab del enemigo en el Inspector
+    [SerializeField] private GameObject playerGO; // Asigna el prefab del jugador en el Inspector
+    [SerializeField] private GameObject groupedSpritesGO;
     [SerializeField] public Enemy activeEnemy; // Referencia al enemigo actual en la escena. ¡Asigna esto en el Inspector!
     [SerializeField] private GameObject backgroundGO;
     [SerializeField] private GameObject zoomBackgroundGO; // Asigna el sprite para el zoom en el inspector
@@ -59,7 +66,7 @@ public class TurnManager : MonoBehaviour
     // Para optimizar actualizaciones de UI
     private string lastTurnPhaseText = "";
     private string lastHandCountText = "";
-    
+
     // --- Eventos de Turno ---
     public static event Action<int> OnTurnStart;        // Se dispara al inicio de un nuevo turno
     public static event Action<TurnPhase> OnPhaseChange; // Se dispara cada vez que la fase de turno cambia
@@ -112,6 +119,10 @@ public class TurnManager : MonoBehaviour
     // --- Métodos de Inicio ---
     void Start()
     {
+        if (playerGO != null)
+            playerGOOriginalScale = playerGO.transform.localScale;
+        if (EnemyGO != null)
+            enemyGOOriginalScale = EnemyGO.transform.localScale;
         StartGame();
     }
 
@@ -152,12 +163,18 @@ public class TurnManager : MonoBehaviour
         switch (currentTurnPhase)
         {
             case TurnPhase.Preparation:
+                RotateGroupedSprites(0f);
+                ScalePlayerGO(1f);
+                ScaleEnemyGO(1f);
                 StartCoroutine(HandlePreparationPhaseRoutine());
                 break;
             case TurnPhase.DrawPhase:
                 HandleDrawPhase();
                 break;
             case TurnPhase.ActionPhase:
+                RotateGroupedSprites(9f);
+                ScalePlayerGO(1.08f);
+                ScaleEnemyGO(0.92f);
                 HandleActionPhase();
                 break;
             case TurnPhase.ShotPhase:
@@ -167,9 +184,15 @@ public class TurnManager : MonoBehaviour
                 Debug.Log("Fase de descarte después del disparo (ShotPhase). Aquí puedes implementar la lógica de descarte.");
                 break;
             case TurnPhase.EndTurn:
+                RotateGroupedSprites(0f);
+                ScalePlayerGO(1f);
+                ScaleEnemyGO(1f);
                 StartCoroutine(HandleEndTurnPhaseRoutine());
                 break;
             case TurnPhase.EnemyTurn:
+                RotateGroupedSprites(-9f);
+                ScalePlayerGO(0.92f);
+                ScaleEnemyGO(1.08f);
                 Debug.Log("[TurnManager] ---¡ENTRANDO EN EL TURNO DEL ENEMIGO!---");
                 StartCoroutine(HandleEnemyTurnPhaseRoutine());
                 break;
@@ -475,8 +498,8 @@ public class TurnManager : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.H))
         {
-                Debug.Log("[DEBUG] Tecla H pulsada: Haciendo 1 de daño al enemigo.");
-                activeEnemy.TakeDamage(1);
+            Debug.Log("[DEBUG] Tecla H pulsada: Haciendo 1 de daño al enemigo.");
+            activeEnemy.TakeDamage(1);
         }
     }
     private void HandleShotPhase()
@@ -1019,5 +1042,31 @@ public class TurnManager : MonoBehaviour
                 t.DOShakePosition(duration, strength, vibrato: 20, randomness: 90, snapping: false, fadeOut: true);
         }
     }
+    private void RotateGroupedSprites(float yRotation)
+    {
+        if (groupedSpritesGO != null)
+        {
+            groupedSpritesGO.transform.DOLocalRotate(
+                new Vector3(0, yRotation, 0),
+                0.5f, // duración de la animación
+                RotateMode.Fast
+            ).SetEase(Ease.InOutSine);
+        }
+    }
+    
+    private void ScalePlayerGO(float scaleMultiplier, float duration = 0.5f)
+    {
+        if (playerGO != null)
+        {
+            playerGO.transform.DOScale(playerGOOriginalScale * scaleMultiplier, duration).SetEase(Ease.InOutSine);
+        }
+    }
 
+    private void ScaleEnemyGO(float scaleMultiplier, float duration = 0.5f)
+    {
+        if (EnemyGO != null)
+        {
+            EnemyGO.transform.DOScale(enemyGOOriginalScale * scaleMultiplier, duration).SetEase(Ease.InOutSine);
+        }
+    }
 }
