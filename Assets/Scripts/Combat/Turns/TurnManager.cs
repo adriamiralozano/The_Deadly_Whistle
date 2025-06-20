@@ -24,7 +24,7 @@ public class TurnManager : MonoBehaviour
     private CardManager cardManager;
     private Vector3 playerGOOriginalScale;
     private Vector3 enemyGOOriginalScale;
-
+    private Vector2 turnIndicatorOriginalPos;
 
     [SerializeField] private GameObject TurnIndicatorGO; // Asigna el prefab del indicador de turno en el Inspector
     [SerializeField] private GameObject EnemyGO; // Asigna el prefab del enemigo en el Inspector
@@ -119,6 +119,12 @@ public class TurnManager : MonoBehaviour
     // --- Métodos de Inicio ---
     void Start()
     {
+        if (TurnIndicatorGO != null)
+        {
+            RectTransform rect = TurnIndicatorGO.GetComponent<RectTransform>();
+            if (rect != null)
+                turnIndicatorOriginalPos = rect.anchoredPosition;
+        }
         if (playerGO != null)
             playerGOOriginalScale = playerGO.transform.localScale;
         if (EnemyGO != null)
@@ -163,15 +169,24 @@ public class TurnManager : MonoBehaviour
         switch (currentTurnPhase)
         {
             case TurnPhase.Preparation:
+                ChangeTurnIndicatorColor(Color.white, 0.5f); 
+                AnimateTurnIndicatorX(1f);
                 RotateGroupedSprites(0f);
                 ScalePlayerGO(1f);
                 ScaleEnemyGO(1f);
                 StartCoroutine(HandlePreparationPhaseRoutine());
                 break;
             case TurnPhase.DrawPhase:
+                ChangeTurnIndicatorColor(Color.white, 0.5f); 
+                AnimateTurnIndicatorX(1f);
+                RotateGroupedSprites(9f);
+                ScalePlayerGO(1.08f);
+                ScaleEnemyGO(0.92f);
                 HandleDrawPhase();
                 break;
             case TurnPhase.ActionPhase:
+                ChangeTurnIndicatorColor(Color.white, 0.5f); 
+                AnimateTurnIndicatorX(1f);
                 RotateGroupedSprites(9f);
                 ScalePlayerGO(1.08f);
                 ScaleEnemyGO(0.92f);
@@ -184,12 +199,16 @@ public class TurnManager : MonoBehaviour
                 Debug.Log("Fase de descarte después del disparo (ShotPhase). Aquí puedes implementar la lógica de descarte.");
                 break;
             case TurnPhase.EndTurn:
+                ChangeTurnIndicatorColor(Color.white, 0.5f); 
+                AnimateTurnIndicatorX(1f);
                 RotateGroupedSprites(0f);
                 ScalePlayerGO(1f);
                 ScaleEnemyGO(1f);
                 StartCoroutine(HandleEndTurnPhaseRoutine());
                 break;
             case TurnPhase.EnemyTurn:
+                ChangeTurnIndicatorColor(Color.red, 0.5f); 
+                AnimateTurnIndicatorX(-1.13f);
                 RotateGroupedSprites(-9f);
                 ScalePlayerGO(0.92f);
                 ScaleEnemyGO(1.08f);
@@ -518,6 +537,9 @@ public class TurnManager : MonoBehaviour
 
     public IEnumerator ShotFeedback()
     {
+
+        HideTurnIndicator();
+
         var playerVisual = FindObjectOfType<PlayerVisualManager>();
         var enemyVisual = FindObjectOfType<EnemyVisualManager>();
         Enemy targetEnemy = activeEnemy;
@@ -795,10 +817,15 @@ public class TurnManager : MonoBehaviour
         zoomBgRenderer.color = new Color(1f, 1f, 1f, 1f);
         zoomBackgroundGO.SetActive(false);
         zoomBgRenderer.sortingOrder = zoomOrder;
+
+        ShowTurnIndicator();
     }
 
     public IEnumerator EnemyShotFeedback(int shots = 1)
     {
+
+        HideTurnIndicator();
+
         var playerVisual = FindObjectOfType<PlayerVisualManager>();
         var enemyVisual = FindObjectOfType<EnemyVisualManager>();
         Enemy targetPlayer = playerStats != null ? playerStats.GetComponent<Enemy>() : null; // Si tienes un método específico para dañar al jugador, úsalo
@@ -1032,6 +1059,8 @@ public class TurnManager : MonoBehaviour
         zoomBgRenderer.color = new Color(1f, 1f, 1f, 1f);
         zoomBackgroundGO.SetActive(false);
         zoomBgRenderer.sortingOrder = zoomOrder;
+
+        ShowTurnIndicator();
     }
 
     private void ShakeTransformsDOTween(Transform[] targets, float duration = 0.15f, float strength = 0.5f)
@@ -1053,7 +1082,7 @@ public class TurnManager : MonoBehaviour
             ).SetEase(Ease.InOutSine);
         }
     }
-    
+
     private void ScalePlayerGO(float scaleMultiplier, float duration = 0.5f)
     {
         if (playerGO != null)
@@ -1067,6 +1096,52 @@ public class TurnManager : MonoBehaviour
         if (EnemyGO != null)
         {
             EnemyGO.transform.DOScale(enemyGOOriginalScale * scaleMultiplier, duration).SetEase(Ease.InOutSine);
+        }
+    }
+
+    private void AnimateTurnIndicatorX(float xMultiplier)
+    {
+        if (TurnIndicatorGO != null)
+        {
+            RectTransform rect = TurnIndicatorGO.GetComponent<RectTransform>();
+            if (rect != null)
+            {
+                Vector2 targetPos = new Vector2(turnIndicatorOriginalPos.x * xMultiplier, turnIndicatorOriginalPos.y);
+                rect.DOAnchorPos(targetPos, 0.5f).SetEase(Ease.OutBounce);
+            }
+        }
+    }
+
+    public void HideTurnIndicator()
+    {
+        if (TurnIndicatorGO != null)
+        {
+            var cg = TurnIndicatorGO.GetComponent<CanvasGroup>();
+            if (cg == null) cg = TurnIndicatorGO.AddComponent<CanvasGroup>();
+            cg.DOFade(0f, 0.15f).OnComplete(() => TurnIndicatorGO.SetActive(false));
+        }
+    }
+
+    public void ShowTurnIndicator()
+    {
+        if (TurnIndicatorGO != null)
+        {
+            var cg = TurnIndicatorGO.GetComponent<CanvasGroup>();
+            if (cg == null) cg = TurnIndicatorGO.AddComponent<CanvasGroup>();
+            TurnIndicatorGO.SetActive(true);
+            cg.alpha = 0f;
+            cg.DOFade(1f, 0.15f);
+        }
+    }
+    public void ChangeTurnIndicatorColor(Color targetColor, float duration = 0.3f)
+    {
+        if (TurnIndicatorGO != null)
+        {
+            var img = TurnIndicatorGO.GetComponent<UnityEngine.UI.Image>();
+            if (img != null)
+            {
+                img.DOColor(targetColor, duration);
+            }
         }
     }
 }
