@@ -13,6 +13,7 @@ public class QTEPanelAnimator : MonoBehaviour
     [Header("Panel Settings")]
     [SerializeField] private RectTransform panelRect;
     [SerializeField] private CanvasGroup canvasGroup;
+    [SerializeField] private GameObject blockerOverlay;
     
     private Vector2 targetPosition;
     private Vector2 startPosition;
@@ -54,9 +55,11 @@ public class QTEPanelAnimator : MonoBehaviour
     public void ShowPanel()
     {
         if (isAnimating) return;
-        
+
+        if (blockerOverlay != null)
+            blockerOverlay.SetActive(true);
+
         gameObject.SetActive(true);
-        
         StartCoroutine(ShowPanelCoroutine());
     }
     
@@ -82,10 +85,6 @@ public class QTEPanelAnimator : MonoBehaviour
         }
         
         // Reproducir sonido de aparición
-        if (AudioManager.Instance != null)
-        {
-            AudioManager.Instance.PlayEnemyCardAppear(); // O crea un sonido específico para QTE
-        }
         
         // Animación de caída con rebote
         panelRect.DOAnchorPos(targetPosition, fallDuration)
@@ -99,31 +98,35 @@ public class QTEPanelAnimator : MonoBehaviour
         yield return new WaitForSeconds(fallDuration + 0.3f); // Esperar a que termine la animación
         isAnimating = false;
     }
-    
-    
+
+
     private IEnumerator HidePanelCoroutine()
     {
         isAnimating = true;
-        
+
         // Animación de salida hacia arriba
         Vector2 exitPosition = new Vector2(targetPosition.x, Screen.height + panelRect.rect.height);
-        
+
         // Fade out
         if (canvasGroup != null)
         {
             canvasGroup.DOFade(0f, 0.3f);
         }
-        
+
         // Mover hacia arriba
         panelRect.DOAnchorPos(exitPosition, 0.5f)
             .SetEase(Ease.InBack)
-            .OnComplete(() => 
+            .OnComplete(() =>
             {
                 gameObject.SetActive(false);
                 isAnimating = false;
             });
-        
+        if (blockerOverlay != null)
+            blockerOverlay.SetActive(false);
         yield return new WaitForSeconds(0.5f);
+        
+
+        
     }
     
     // Método para resetear la posición sin animación

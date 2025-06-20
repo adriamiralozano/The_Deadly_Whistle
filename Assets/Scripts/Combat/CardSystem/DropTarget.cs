@@ -2,6 +2,7 @@
 using UnityEngine;
 using UnityEngine.EventSystems; // Necesario para las interfaces IDropHandler, IPointerEnterHandler, IPointerExitHandler
 using UnityEngine.UI; // Necesario para el componente Image
+using DG.Tweening;
 
 public class DropTarget : MonoBehaviour, IDropHandler, IPointerEnterHandler, IPointerExitHandler
 {
@@ -35,7 +36,6 @@ public class DropTarget : MonoBehaviour, IDropHandler, IPointerEnterHandler, IPo
             {
                 return;
             }
-
         }
 
         if (eventData.pointerDrag != null && targetImage != null)
@@ -46,6 +46,19 @@ public class DropTarget : MonoBehaviour, IDropHandler, IPointerEnterHandler, IPo
             {
                 targetImage.color = highlightColor;
                 cardBehaviour.SetDragOverTargetScale(true);
+
+                // Si este DropTarget es de tipo Discard, haz un shake
+                if (myTargetType == TargetType.Discard)
+                {
+                    RectTransform rect = GetComponent<RectTransform>();
+                    if (rect != null)
+                    {
+                        rect.DOComplete(); // Detén shakes previos si los hay
+                        Vector2 originalPos = rect.anchoredPosition;
+                        rect.DOShakeAnchorPos(0.15f, 20f, 30, 0, false, false)
+                            .OnComplete(() => rect.anchoredPosition = originalPos);
+                    }
+                }
             }
         }
     }
