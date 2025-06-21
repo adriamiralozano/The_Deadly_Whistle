@@ -11,6 +11,9 @@ public class DropTarget : MonoBehaviour, IDropHandler, IPointerEnterHandler, IPo
     private Color normalColor; // Color original del Image del DropTarget
     private Image targetImage; // Referencia al componente Image de este GameObject
 
+    [Header("Outline")]
+    [SerializeField] private GameObject outlineTargetGO;
+
     public enum TargetType { Player, Enemy, Discard, Hand } // Tipos de objetivos a los que se puede dropear una carta
     public TargetType myTargetType; // El tipo de este DropTarget específico (asignar en el Inspector)
 
@@ -47,6 +50,16 @@ public class DropTarget : MonoBehaviour, IDropHandler, IPointerEnterHandler, IPo
                 targetImage.color = highlightColor;
                 cardBehaviour.SetDragOverTargetScale(true);
 
+
+                if (outlineTargetGO != null)
+                {
+                    var renderer = outlineTargetGO.GetComponent<Renderer>();
+                    if (renderer != null && renderer.material.HasProperty("_OutlineEnabled"))
+                    {
+                        renderer.material.SetFloat("_OutlineEnabled", 1f); // Activa el outline
+                    }
+                }
+
                 // Si este DropTarget es de tipo Discard, haz un shake
                 if (myTargetType == TargetType.Discard)
                 {
@@ -69,6 +82,15 @@ public class DropTarget : MonoBehaviour, IDropHandler, IPointerEnterHandler, IPo
         if (targetImage != null)
             targetImage.color = normalColor;
 
+        if (outlineTargetGO != null)
+        {
+            var renderer = outlineTargetGO.GetComponent<Renderer>();
+            if (renderer != null && renderer.material.HasProperty("_OutlineEnabled"))
+            {
+                renderer.material.SetFloat("_OutlineEnabled", 0f); // Desactiva el outline
+            }
+        }
+
         if (eventData.pointerDrag != null)
         {
             var cardBehaviour = eventData.pointerDrag.GetComponent<CardBehaviour2>();
@@ -79,6 +101,15 @@ public class DropTarget : MonoBehaviour, IDropHandler, IPointerEnterHandler, IPo
     // Se llama cuando un objeto dragueable se suelta en el área de este DropTarget
     public void OnDrop(PointerEventData eventData)
     {
+
+        if (outlineTargetGO != null)
+        {
+            var renderer = outlineTargetGO.GetComponent<Renderer>();
+            if (renderer != null && renderer.material.HasProperty("_OutlineEnabled"))
+            {
+                renderer.material.SetFloat("_OutlineEnabled", 0f); // Desactiva el outline
+            }
+        }
 
         if (TurnManager.Instance.CurrentPhase != TurnManager.TurnPhase.ActionPhase &&
             TurnManager.Instance.CurrentPhase != TurnManager.TurnPhase.DiscardPostShot)
