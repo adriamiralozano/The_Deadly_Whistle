@@ -180,16 +180,16 @@ public class TurnManager : MonoBehaviour
                 ChangeTurnIndicatorColor(Color.white, 0.5f); 
                 AnimateTurnIndicatorX(1f);
                 RotateGroupedSprites(9f);
-                ScalePlayerGO(1.08f);
-                ScaleEnemyGO(0.92f);
+                ScalePlayerGO(1.04f);
+                ScaleEnemyGO(0.94f);
                 HandleDrawPhase();
                 break;
             case TurnPhase.ActionPhase:
                 ChangeTurnIndicatorColor(Color.white, 0.5f); 
                 AnimateTurnIndicatorX(1f);
                 RotateGroupedSprites(9f);
-                ScalePlayerGO(1.08f);
-                ScaleEnemyGO(0.92f);
+                ScalePlayerGO(1.04f);
+                ScaleEnemyGO(0.94f);
                 HandleActionPhase();
                 break;
             case TurnPhase.ShotPhase:
@@ -210,8 +210,8 @@ public class TurnManager : MonoBehaviour
                 ChangeTurnIndicatorColor(Color.red, 0.5f); 
                 AnimateTurnIndicatorX(-1.13f);
                 RotateGroupedSprites(-9f);
-                ScalePlayerGO(0.92f);
-                ScaleEnemyGO(1.08f);
+                ScalePlayerGO(0.94f);
+                ScaleEnemyGO(1.04f);
                 Debug.Log("[TurnManager] ---¡ENTRANDO EN EL TURNO DEL ENEMIGO!---");
                 StartCoroutine(HandleEnemyTurnPhaseRoutine());
                 break;
@@ -592,24 +592,27 @@ public class TurnManager : MonoBehaviour
         // Transforms
         Transform bgTransform = backgroundGO.transform;
         Transform zoomBgTransform = zoomBackgroundGO.transform;
-        Transform playerTransform = playerVisual != null ? playerVisual.transform : null;
-        Transform enemyTransform = enemyVisual != null ? enemyVisual.transform : null;
+        Transform playerTransform = playerGO != null ? playerGO.transform : null;
+        Transform enemyTransform = EnemyGO != null ? EnemyGO.transform : null;
 
         Vector3 bgOriginal = bgTransform.localScale;
         Vector3 bgTarget = bgOriginal * 1.2f;
 
         Vector3 playerOriginal = playerTransform != null ? playerTransform.localScale : Vector3.one;
-        Vector3 playerTarget = playerOriginal * 1.2f;
+        Vector3 playerTarget = playerOriginal * 1.3f;
 
         Vector3 enemyOriginal = enemyTransform != null ? enemyTransform.localScale : Vector3.one;
-        Vector3 enemyTarget = enemyOriginal * 1.2f;
+        Vector3 enemyTarget = enemyOriginal * 1.3f;
 
         Vector3 playerPosOriginal = playerTransform != null ? playerTransform.position : Vector3.zero;
         Vector3 enemyPosOriginal = enemyTransform != null ? enemyTransform.position : Vector3.zero;
 
+        float playerSpriteHeight = playerSpriteRenderer != null ? playerSpriteRenderer.bounds.size.y : 0f;
+        float enemySpriteHeight = enemySpriteRenderer != null ? enemySpriteRenderer.bounds.size.y : 0f;
+
         Vector3 centerWorld = Camera.main.ScreenToWorldPoint(new Vector3(Screen.width / 2f, Screen.height / 2f, playerPosOriginal.z - Camera.main.transform.position.z));
-        Vector3 playerTargetPos = centerWorld + Vector3.left * 3f;
-        Vector3 enemyTargetPos = centerWorld + Vector3.right * 3f;
+        Vector3 playerTargetPos = centerWorld + Vector3.left * 4.5f - new Vector3(0, playerSpriteHeight / 2f, 0);
+        Vector3 enemyTargetPos = centerWorld + Vector3.right * 4.5f - new Vector3(0, enemySpriteHeight / 2f, 0);
 
         float approachDuration = 0.2f;
         float lateralDuration = 1.2f;
@@ -864,24 +867,27 @@ public class TurnManager : MonoBehaviour
 
         Transform bgTransform = backgroundGO.transform;
         Transform zoomBgTransform = zoomBackgroundGO.transform;
-        Transform playerTransform = playerVisual != null ? playerVisual.transform : null;
-        Transform enemyTransform = enemyVisual != null ? enemyVisual.transform : null;
+        Transform playerTransform = playerGO != null ? playerGO.transform : null;
+        Transform enemyTransform = EnemyGO != null ? EnemyGO.transform : null;
 
         Vector3 bgOriginal = bgTransform.localScale;
         Vector3 bgTarget = bgOriginal * 1.2f;
 
         Vector3 playerOriginal = playerTransform != null ? playerTransform.localScale : Vector3.one;
-        Vector3 playerTarget = playerOriginal * 1.2f;
+        Vector3 playerTarget = playerOriginal * 1.3f;
 
         Vector3 enemyOriginal = enemyTransform != null ? enemyTransform.localScale : Vector3.one;
-        Vector3 enemyTarget = enemyOriginal * 1.2f;
+        Vector3 enemyTarget = enemyOriginal * 1.3f;
 
         Vector3 playerPosOriginal = playerTransform != null ? playerTransform.position : Vector3.zero;
         Vector3 enemyPosOriginal = enemyTransform != null ? enemyTransform.position : Vector3.zero;
 
+        float playerSpriteHeight = playerSpriteRenderer != null ? playerSpriteRenderer.bounds.size.y : 0f;
+        float enemySpriteHeight = enemySpriteRenderer != null ? enemySpriteRenderer.bounds.size.y : 0f;
+
         Vector3 centerWorld = Camera.main.ScreenToWorldPoint(new Vector3(Screen.width / 2f, Screen.height / 2f, playerPosOriginal.z - Camera.main.transform.position.z));
-        Vector3 playerTargetPos = centerWorld + Vector3.left * 3f;
-        Vector3 enemyTargetPos = centerWorld + Vector3.right * 3f;
+        Vector3 playerTargetPos = centerWorld + Vector3.left * 4.5f - new Vector3(0, playerSpriteHeight / 2f, 0);
+        Vector3 enemyTargetPos = centerWorld + Vector3.right * 4.5f - new Vector3(0, enemySpriteHeight / 2f, 0);
 
         float approachDuration = 0.2f;
         float lateralDuration = shots == 1 ? 1.2f : shots == 2 ? 1.8f : 2.4f;
