@@ -2879,7 +2879,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -959.9688, y: -539.98535}
+  m_AnchoredPosition: {x: -959.96875, y: -539.98535}
   m_SizeDelta: {x: -1901.9812, y: -1069.8004}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &645468217
@@ -3930,7 +3930,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4294967295
   stopNaNPropagation: 1
-  finalBlitToCameraTarget: 0
+  finalBlitToCameraTarget: 1
   antialiasingMode: 0
   temporalAntialiasing:
     jitterSpread: 0.75
