@@ -20,6 +20,7 @@ public class TurnManager : MonoBehaviour
 
     [Header("Game References")]
 
+    [SerializeField] private GameObject miObjetoUI;
     private PlayerStats playerStats;
     private CardManager cardManager;
     private Vector3 playerGOOriginalScale;
@@ -169,7 +170,7 @@ public class TurnManager : MonoBehaviour
         switch (currentTurnPhase)
         {
             case TurnPhase.Preparation:
-                ChangeTurnIndicatorColor(Color.white, 0.5f); 
+                ChangeTurnIndicatorColor(Color.white, 0.5f);
                 AnimateTurnIndicatorX(1f);
                 RotateGroupedSprites(0f);
                 ScalePlayerGO(1f);
@@ -177,7 +178,7 @@ public class TurnManager : MonoBehaviour
                 StartCoroutine(HandlePreparationPhaseRoutine());
                 break;
             case TurnPhase.DrawPhase:
-                ChangeTurnIndicatorColor(Color.white, 0.5f); 
+                ChangeTurnIndicatorColor(Color.white, 0.5f);
                 AnimateTurnIndicatorX(1f);
                 RotateGroupedSprites(9f);
                 ScalePlayerGO(1.04f);
@@ -185,7 +186,7 @@ public class TurnManager : MonoBehaviour
                 HandleDrawPhase();
                 break;
             case TurnPhase.ActionPhase:
-                ChangeTurnIndicatorColor(Color.white, 0.5f); 
+                ChangeTurnIndicatorColor(Color.white, 0.5f);
                 AnimateTurnIndicatorX(1f);
                 RotateGroupedSprites(9f);
                 ScalePlayerGO(1.04f);
@@ -199,7 +200,7 @@ public class TurnManager : MonoBehaviour
                 Debug.Log("Fase de descarte después del disparo (ShotPhase). Aquí puedes implementar la lógica de descarte.");
                 break;
             case TurnPhase.EndTurn:
-                ChangeTurnIndicatorColor(Color.white, 0.5f); 
+                ChangeTurnIndicatorColor(Color.white, 0.5f);
                 AnimateTurnIndicatorX(1f);
                 RotateGroupedSprites(0f);
                 ScalePlayerGO(1f);
@@ -207,7 +208,7 @@ public class TurnManager : MonoBehaviour
                 StartCoroutine(HandleEndTurnPhaseRoutine());
                 break;
             case TurnPhase.EnemyTurn:
-                ChangeTurnIndicatorColor(Color.red, 0.5f); 
+                ChangeTurnIndicatorColor(Color.red, 0.5f);
                 AnimateTurnIndicatorX(-1.13f);
                 RotateGroupedSprites(-9f);
                 ScalePlayerGO(0.94f);
@@ -539,7 +540,7 @@ public class TurnManager : MonoBehaviour
     {
 
         HideTurnIndicator();
-
+        FadeOut(miObjetoUI, 0.0f);
         var playerVisual = FindObjectOfType<PlayerVisualManager>();
         var enemyVisual = FindObjectOfType<EnemyVisualManager>();
         Enemy targetEnemy = activeEnemy;
@@ -637,6 +638,7 @@ public class TurnManager : MonoBehaviour
         float lateralOffset = 1.5f;
 
         // --- FASE 1: Zoom y acercamiento al centro (ambos fondos y personajes) ---
+        
         float elapsed = 0f;
         while (elapsed < approachDuration)
         {
@@ -675,6 +677,7 @@ public class TurnManager : MonoBehaviour
         }
 
         // --- FASE 2: Alejamiento lateral de personajes (fondos estáticos) ---
+
         elapsed = 0f;
         Vector3 playerLateralTarget = playerTargetPos + Vector3.left * lateralOffset;
         Vector3 enemyLateralTarget = enemyTargetPos + Vector3.right * lateralOffset;
@@ -783,7 +786,7 @@ public class TurnManager : MonoBehaviour
                 enemyTransform.localScale = Vector3.Lerp(enemyTarget, enemyOriginal, t);
                 enemyTransform.position = Vector3.Lerp(enemyStartPos, enemyPosOriginal, t);
             }
-
+            FadeIn(miObjetoUI, 0.4f);
             yield return null;
         }
         // Asegura valores finales
@@ -817,7 +820,7 @@ public class TurnManager : MonoBehaviour
         if (playerSpriteRenderer != null && playerOriginalSprite != null)
             playerSpriteRenderer.sprite = playerOriginalSprite;
 
-        zoomBgRenderer.color = new Color(1f, 1f, 1f, 1f);
+        zoomBgRenderer.color = new Color(1f, 1f, 1f, 1f);   
         zoomBackgroundGO.SetActive(false);
         zoomBgRenderer.sortingOrder = zoomOrder;
 
@@ -828,7 +831,7 @@ public class TurnManager : MonoBehaviour
     {
 
         HideTurnIndicator();
-
+        FadeOut(miObjetoUI, 0.0f);
         var playerVisual = FindObjectOfType<PlayerVisualManager>();
         var enemyVisual = FindObjectOfType<EnemyVisualManager>();
         Enemy targetPlayer = playerStats != null ? playerStats.GetComponent<Enemy>() : null; // Si tienes un método específico para dañar al jugador, úsalo
@@ -1030,7 +1033,7 @@ public class TurnManager : MonoBehaviour
                 enemyTransform.localScale = Vector3.Lerp(enemyTarget, enemyOriginal, t);
                 enemyTransform.position = Vector3.Lerp(enemyStartPos, enemyPosOriginal, t);
             }
-
+            FadeIn(miObjetoUI, 0.2f);
             yield return null;
         }
         bgTransform.localScale = bgOriginal;
@@ -1065,7 +1068,7 @@ public class TurnManager : MonoBehaviour
         zoomBgRenderer.color = new Color(1f, 1f, 1f, 1f);
         zoomBackgroundGO.SetActive(false);
         zoomBgRenderer.sortingOrder = zoomOrder;
-
+        
         ShowTurnIndicator();
     }
 
@@ -1149,5 +1152,36 @@ public class TurnManager : MonoBehaviour
                 img.DOColor(targetColor, duration);
             }
         }
+    }
+
+    public void FadeOut(GameObject target, float duration)
+    {
+        if (target == null) return;
+
+        CanvasGroup canvasGroup = target.GetComponent<CanvasGroup>();
+        if (canvasGroup == null)
+        {
+            canvasGroup = target.AddComponent<CanvasGroup>();
+        }
+
+        canvasGroup.DOFade(0f, duration).OnComplete(() =>
+        {
+            target.SetActive(false);
+        });
+    }
+    
+    public void FadeIn(GameObject target, float duration)
+    {
+        if (target == null) return;
+
+        CanvasGroup canvasGroup = target.GetComponent<CanvasGroup>();
+        if (canvasGroup == null)
+        {
+            canvasGroup = target.AddComponent<CanvasGroup>();
+        }
+
+        target.SetActive(true);
+        canvasGroup.alpha = 0f; // Asegura que empieza transparente
+        canvasGroup.DOFade(1f, duration);
     }
 }
