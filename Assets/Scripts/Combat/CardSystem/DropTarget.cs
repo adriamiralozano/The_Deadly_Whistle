@@ -199,6 +199,7 @@ public class DropTarget : MonoBehaviour, IDropHandler, IPointerEnterHandler, IPo
                         {
                             if (droppedCardData.type == CardType.Effect && PlayerStats.Instance.HasPlayedEffectCardThisTurn())
                             {
+                                AdviceMessageManager.Instance.ShowAdvice($"You have already played an effect card this turn.");
                                 Debug.LogWarning($"[DropTarget] Ya has jugado una carta de efecto este turno. No puedes dropear '{droppedCardData.cardID}'.");
                                 return; // Cancela el drop, la carta regresa a la mano.
                             }
@@ -220,6 +221,7 @@ public class DropTarget : MonoBehaviour, IDropHandler, IPointerEnterHandler, IPo
                                 {
                                     if (PlayerStats.Instance.HasWeaponEquipped)
                                     {
+                                        AdviceMessageManager.Instance.ShowAdvice($"You already have a weapon equipped.");
                                         Debug.LogWarning($"[DropTarget] No se puede equipar '{revolverCard.cardID}'. El jugador ya tiene un arma equipada. La carta volverá a la mano.");
                                         return;
                                     }

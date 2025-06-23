@@ -271,6 +271,7 @@ public class CardManager : MonoBehaviour
         // 3. Comprobar que la mano supere el límite de cartas
         if (playerHand.Count <= MAX_HAND_SIZE)
         {
+            AdviceMessageManager.Instance.ShowAdvice("You cannot discard, your card hand does not exceed the limit.");
             Debug.LogWarning($"[CardManager] Falló el descarte: La mano ({playerHand.Count} cartas) no supera el límite de {MAX_HAND_SIZE} cartas.");
             return false;
         }
@@ -521,12 +522,14 @@ public class CardManager : MonoBehaviour
 
         if (PlayerStats.Instance.HasFiredRevolverThisTurn)
         {
+            
             Debug.LogWarning("[CardManager] Ya has disparado el revólver este turno.");
             return false;
         }
 
         if (!PlayerStats.Instance.HasWeaponEquipped || !(PlayerStats.Instance.CurrentEquippedWeapon is RevolverCardData))
         {
+            AdviceMessageManager.Instance.ShowAdvice("You cannot shoot, the weapon is not equipped.");
             Debug.LogWarning("[CardManager] No se puede disparar: El Revolver no está equipado.");
             return false;
         }
@@ -558,6 +561,7 @@ public class CardManager : MonoBehaviour
         }
         else
         {
+            AdviceMessageManager.Instance.ShowAdvice("You don't have any bullet in yout card hand.");
             Debug.LogWarning("[CardManager] No tienes balas Caliber .45 en la mano para disparar el Revolver.");
             return false;
         }

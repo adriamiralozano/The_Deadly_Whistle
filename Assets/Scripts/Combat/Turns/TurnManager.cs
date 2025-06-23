@@ -311,6 +311,7 @@ public class TurnManager : MonoBehaviour
         // Si estamos en la fase de acción y la mano aún excede el límite, no se permite terminar el turno.
         if (currentTurnPhase == TurnPhase.ActionPhase && CheckIfHandExceedsLimit())
         {
+            AdviceMessageManager.Instance.ShowAdvice("To pass the turn you must discard.");    
             Debug.LogWarning("No puedes terminar el turno. Debes descartar cartas para reducir tu mano al límite.");
             return; // Sale del método sin avanzar la fase.
         }
@@ -483,6 +484,7 @@ public class TurnManager : MonoBehaviour
         // 1. Verificar la fase actual del turno
         if (CurrentPhase != TurnPhase.ActionPhase)
         {
+            AdviceMessageManager.Instance.ShowAdvice("You cannot fire right now.");
             Debug.LogWarning("[TurnManager] No puedes disparar el Revolver fuera de la Fase de Acción.");
             return;
         }

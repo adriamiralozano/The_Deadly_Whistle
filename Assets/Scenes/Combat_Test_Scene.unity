@@ -1102,7 +1102,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 960.2128, y: 540.6462}
+  m_AnchoredPosition: {x: 960.27, y: 540.6462}
   m_SizeDelta: {x: 1920, y: 1080}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &251536494
@@ -1361,7 +1361,7 @@ SortingGroup:
   m_GameObject: {fileID: 370553564}
   m_Enabled: 1
   m_SortingLayerID: -1310761205
-  m_SortingLayer: 8
+  m_SortingLayer: 9
   m_SortingOrder: 0
   m_SortAtRoot: 0
 --- !u!1 &388135128
@@ -4069,7 +4069,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4294967295
   stopNaNPropagation: 1
-  finalBlitToCameraTarget: 1
+  finalBlitToCameraTarget: 0
   antialiasingMode: 0
   temporalAntialiasing:
     jitterSpread: 0.75
@@ -5876,6 +5876,7 @@ GameObject:
   - component: {fileID: 1546688002}
   - component: {fileID: 1546688003}
   - component: {fileID: 1546688004}
+  - component: {fileID: 1546688005}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -5982,6 +5983,23 @@ MonoBehaviour:
   contratoCompletadoPanel: {fileID: 1579067060}
   postProcessVolume: {fileID: 864882191}
   blockerOverlay: {fileID: 388135128}
+--- !u!114 &1546688005
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1546687998}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e659909ddc3f70545ad6f5dead9a0581, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  advicePrefab: {fileID: 411015903170324413, guid: 9339cd063a5a2d94c9f85f3b6e8236db, type: 3}
+  parentCanvas: {fileID: 0}
+  fadeInDuration: 0.2
+  displayDuration: 1.5
+  fadeOutDuration: 0.7
 --- !u!1 &1579067060
 GameObject:
   m_ObjectHideFlags: 0
