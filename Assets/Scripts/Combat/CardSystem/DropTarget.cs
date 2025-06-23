@@ -208,6 +208,7 @@ public class DropTarget : MonoBehaviour, IDropHandler, IPointerEnterHandler, IPo
                                 // La carta DisarmCardData solo se puede jugar si hay un enemigo Y tiene un arma equipada.
                                 if (currentEnemyAI == null || !currentEnemyAI.HasWeaponEquipped)
                                 {
+                                    AdviceMessageManager.Instance.ShowAdvice($"The enemy is already disarmed.");
                                     Debug.LogWarning($"[DropTarget] No se puede usar la carta 'Desarmar'. El enemigo ya está desarmado o no hay enemigo activo.");
                                     return; // Cancela el drop si el enemigo ya está desarmado
                                 }

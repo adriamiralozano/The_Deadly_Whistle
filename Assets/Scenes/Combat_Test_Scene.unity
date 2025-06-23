@@ -4069,7 +4069,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4294967295
   stopNaNPropagation: 1
-  finalBlitToCameraTarget: 0
+  finalBlitToCameraTarget: 1
   antialiasingMode: 0
   temporalAntialiasing:
     jitterSpread: 0.75
@@ -5998,7 +5998,7 @@ MonoBehaviour:
   advicePrefab: {fileID: 411015903170324413, guid: 9339cd063a5a2d94c9f85f3b6e8236db, type: 3}
   parentCanvas: {fileID: 0}
   fadeInDuration: 0.2
-  displayDuration: 1.5
+  displayDuration: 1.8
   fadeOutDuration: 0.7
 --- !u!1 &1579067060
 GameObject:
