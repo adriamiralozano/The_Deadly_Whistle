@@ -83,18 +83,17 @@ public class QTEPanelAnimator : MonoBehaviour
             canvasGroup.alpha = 0f;
             canvasGroup.DOFade(1f, 0.2f);
         }
-        
-        // Reproducir sonido de aparición
-        
+
+
+
         // Animación de caída con rebote
         panelRect.DOAnchorPos(targetPosition, fallDuration)
-            .SetEase(fallEase)
-            .OnComplete(() => 
-            {
-                // Pequeño rebote adicional cuando llega al centro
-                //StartCoroutine(ExtraBounceEffect());
-            });
-        
+            .SetEase(fallEase);
+            
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayQTEPanelIn();
+        }
         yield return new WaitForSeconds(fallDuration + 0.3f); // Esperar a que termine la animación
         isAnimating = false;
     }

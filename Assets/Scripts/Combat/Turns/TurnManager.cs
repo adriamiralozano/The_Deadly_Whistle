@@ -178,6 +178,7 @@ public class TurnManager : MonoBehaviour
                 StartCoroutine(HandlePreparationPhaseRoutine());
                 break;
             case TurnPhase.DrawPhase:
+                TurnIndicatorSound();
                 ChangeTurnIndicatorColor(Color.white, 0.5f);
                 AnimateTurnIndicatorX(1f);
                 RotateGroupedSprites(9f);
@@ -209,6 +210,7 @@ public class TurnManager : MonoBehaviour
                 break;
             case TurnPhase.EnemyTurn:
                 ChangeTurnIndicatorColor(Color.red, 0.5f);
+                TurnIndicatorSound();
                 AnimateTurnIndicatorX(-1.13f);
                 RotateGroupedSprites(-9f);
                 ScalePlayerGO(0.94f);
@@ -638,7 +640,7 @@ public class TurnManager : MonoBehaviour
         float lateralOffset = 1.5f;
 
         // --- FASE 1: Zoom y acercamiento al centro (ambos fondos y personajes) ---
-        
+
         float elapsed = 0f;
         while (elapsed < approachDuration)
         {
@@ -820,7 +822,7 @@ public class TurnManager : MonoBehaviour
         if (playerSpriteRenderer != null && playerOriginalSprite != null)
             playerSpriteRenderer.sprite = playerOriginalSprite;
 
-        zoomBgRenderer.color = new Color(1f, 1f, 1f, 1f);   
+        zoomBgRenderer.color = new Color(1f, 1f, 1f, 1f);
         zoomBackgroundGO.SetActive(false);
         zoomBgRenderer.sortingOrder = zoomOrder;
 
@@ -1068,7 +1070,7 @@ public class TurnManager : MonoBehaviour
         zoomBgRenderer.color = new Color(1f, 1f, 1f, 1f);
         zoomBackgroundGO.SetActive(false);
         zoomBgRenderer.sortingOrder = zoomOrder;
-        
+
         ShowTurnIndicator();
     }
 
@@ -1112,6 +1114,8 @@ public class TurnManager : MonoBehaviour
     {
         if (TurnIndicatorGO != null)
         {
+
+
             RectTransform rect = TurnIndicatorGO.GetComponent<RectTransform>();
             if (rect != null)
             {
@@ -1169,7 +1173,7 @@ public class TurnManager : MonoBehaviour
             target.SetActive(false);
         });
     }
-    
+
     public void FadeIn(GameObject target, float duration)
     {
         if (target == null) return;
@@ -1183,5 +1187,13 @@ public class TurnManager : MonoBehaviour
         target.SetActive(true);
         canvasGroup.alpha = 0f; // Asegura que empieza transparente
         canvasGroup.DOFade(1f, duration);
+    }
+
+    public void TurnIndicatorSound()
+    {
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayIndicatorTurn();
+        }
     }
 }
