@@ -2833,66 +2833,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 593512193}
   m_CullTransparentMesh: 1
---- !u!1 &612900049
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 612900051}
-  - component: {fileID: 612900050}
-  m_Layer: 0
-  m_Name: AudioManager
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &612900050
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 612900049}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 538fa37f0f483ad47a2fa19e7e064f8a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  backgroundMusic: {fileID: 8300000, guid: c1f58e73e138fcc4ba063dae1184023e, type: 3}
-  backgroundWind: {fileID: 8300000, guid: 7b6ad35eda03f0443a4bf347f33d5508, type: 3}
-  cardDrawClip: {fileID: 8300000, guid: 7d75be656566ef941b300f0b29db8c96, type: 3}
-  cardHoverClip: {fileID: 8300000, guid: 8a607351aebba274298816b4b363e8a1, type: 3}
-  WeaponEquippedSound: {fileID: 8300000, guid: c648a65194a0d634e9edde8790bb60ca, type: 3}
-  EnemyWeaponEquippedSound: {fileID: 8300000, guid: c648a65194a0d634e9edde8790bb60ca, type: 3}
-  EnemyCardAppearSound: {fileID: 8300000, guid: acdaaa09f286742438bb106c183c4c65, type: 3}
-  cardDropSound: {fileID: 8300000, guid: acdaaa09f286742438bb106c183c4c65, type: 3}
-  BangSound: {fileID: 8300000, guid: e6f54aceda70f9341a633e846ed37171, type: 3}
-  BulletReloadSound: {fileID: 8300000, guid: 81e7070d886be1949822edd12ddc7f62, type: 3}
-  BulletFailSound: {fileID: 8300000, guid: 8e378958942bdf340b58a19f439d697f, type: 3}
-  ReloadCompleteSound: {fileID: 8300000, guid: bba18c87ad1628e40a8430bdb7e64198, type: 3}
-  ButtonPressSound: {fileID: 8300000, guid: 36194eb4decf38242a093f01e895f9aa, type: 3}
-  ButtonReleaseSound: {fileID: 8300000, guid: 70befa8d44c871f46adb118c421eb744, type: 3}
-  IndicatorTurnSound: {fileID: 8300000, guid: 04838448272f3e14fb7e092d537b6631, type: 3}
-  QTEPanelInSound: {fileID: 8300000, guid: 9c9ea71873166d34ea0bff2e49323ecc, type: 3}
---- !u!4 &612900051
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 612900049}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 1060.937, y: 775.3561, z: -134.20981}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 841835396}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &623687468
 GameObject:
   m_ObjectHideFlags: 0
@@ -4215,7 +4155,6 @@ Transform:
   - {fileID: 592158467}
   - {fileID: 1546688000}
   - {fileID: 755011530}
-  - {fileID: 612900051}
   - {fileID: 370553565}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

@@ -40,23 +40,41 @@ public class AudioManager : MonoBehaviour
         }
 
         Instance = this;
-        DontDestroyOnLoad(gameObject); 
+        DontDestroyOnLoad(gameObject);
 
 
         musicSource = gameObject.AddComponent<AudioSource>();
         musicSource.playOnAwake = false;
-        
+
         windSource = gameObject.AddComponent<AudioSource>();
         windSource.playOnAwake = false;
+        
+        SceneManager.activeSceneChanged += OnSceneChanged;
     }
 
     void Start()
     {
+        
+        PlayWind(backgroundWind);
+
+        
         if (SceneManager.GetActiveScene().name == "Combat_Test_Scene")
         {
             PlayMusic(backgroundMusic);
         }
-        PlayWind(backgroundWind);
+    }
+
+    private void OnSceneChanged(Scene previous, Scene next)
+    {
+        if (next.name == "Combat_Test_Scene")
+        {
+            PlayMusic(backgroundMusic);
+        }
+        else
+        {
+            // Si quieres que la música se detenga al salir de la escena de combate:
+            musicSource.Stop();
+        }
     }
 
 
@@ -65,7 +83,7 @@ public class AudioManager : MonoBehaviour
         if (clip == null || musicSource == null) return;
 
         musicSource.clip = clip;
-        musicSource.loop = true; 
+        musicSource.loop = true;
         musicSource.Play();
     }
 
