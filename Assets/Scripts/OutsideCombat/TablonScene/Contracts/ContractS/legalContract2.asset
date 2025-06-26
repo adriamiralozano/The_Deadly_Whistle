@@ -13,10 +13,11 @@ MonoBehaviour:
   m_Name: legalContract2
   m_EditorClassIdentifier: 
   Title: Horse Thief
-  Description: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer eleifend
-    fringilla est, id commodo arcu suscipit faucibus. Ut sed malesuada lacus. Nunc
-    semper augue magna, ut suscipit risus aliquam vel. Curabitur tempus cursus diam,
-    non laoreet ligula luctus vel.
+  Description: 'Description: Wanted for grand larceny and disrupting livelihoods
+    across several counties. This elusive criminal specializes in rustling the finest
+    mounts, crippling travel and trade for honest folk. The Horse Thief is cunning
+    and quick, known for their exceptional riding skills and ability to disappear
+    into the vast wilderness with their stolen prize. They often work alone.'
   Price: 50
   PreviewSprite: {fileID: 21300000, guid: 8796532d521109643af517896e371db1, type: 3}
   isIllegal: 0
