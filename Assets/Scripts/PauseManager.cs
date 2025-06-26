@@ -105,12 +105,31 @@ public class PauseManager : MonoBehaviour
         Debug.Log("Quitting game...");
         Application.Quit();
     }
-    
+
     public void LoadTablonScene()
     {
         // Restaura el tiempo antes de cambiar de escena para evitar problemas.
         Time.timeScale = 1f;
         SceneManager.LoadScene("Tablon");
         Debug.Log("Loading Tablon scene...");
+    }
+
+    public void ReturnToMainMenu()
+    {
+
+        if (SaveManager.Instance != null)
+        {
+            SaveManager.Instance.SaveCurrentGame();
+            Debug.Log("Partida guardada antes de volver al menú principal.");
+        }
+        // Asegúrate de que el tiempo se reanude antes de cambiar de escena.
+        Time.timeScale = 1f;
+        SceneManager.LoadScene("MainMenu");
+        Debug.Log("Returning to Main Menu...");
+        
+        if (postProcessVolume != null)
+        {
+            postProcessVolume.enabled = false;
+        }
     }
 }
