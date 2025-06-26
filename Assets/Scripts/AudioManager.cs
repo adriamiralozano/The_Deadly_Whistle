@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class AudioManager : MonoBehaviour
 {
@@ -51,7 +52,10 @@ public class AudioManager : MonoBehaviour
 
     void Start()
     {
-        PlayMusic(backgroundMusic);
+        if (SceneManager.GetActiveScene().name == "Combat_Test_Scene")
+        {
+            PlayMusic(backgroundMusic);
+        }
         PlayWind(backgroundWind);
     }
 
