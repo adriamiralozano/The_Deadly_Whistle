@@ -1768,6 +1768,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: ButtonBackCampamento
       objectReference: {fileID: 0}
+    - target: {fileID: 4120024812919082183, guid: 400c15c9c2c24f14aac8279064f3eea8, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8460588647059610649, guid: 400c15c9c2c24f14aac8279064f3eea8, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
