@@ -154,13 +154,13 @@ public class Enemy : MonoBehaviour
                 SpriteRenderer sr = activeHearts[i].GetComponent<SpriteRenderer>();
                 if (sr != null)
                 {
-                    sr.color = isFull ? Color.red : Color.gray;
+                    sr.color = isFull ? Color.white : Color.gray;
                 }
 
                 UnityEngine.UI.Image img = activeHearts[i].GetComponent<UnityEngine.UI.Image>();
                 if (img != null)
                 {
-                    img.color = isFull ? Color.red : Color.gray;
+                    img.color = isFull ? Color.white : Color.gray;
                 }
             }
         }

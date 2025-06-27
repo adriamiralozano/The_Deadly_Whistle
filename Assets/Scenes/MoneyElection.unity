@@ -458,7 +458,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 477.54858, y: 0.09399414}
+  m_AnchoredPosition: {x: 418, y: 0.09399414}
   m_SizeDelta: {x: 19.6991, y: 20}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &645196150
@@ -569,8 +569,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: 'Gang wastes ...................... -10 '
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 5302535af1044152a457ed104f1f4b91, type: 2}
-  m_sharedMaterial: {fileID: 2164040, guid: 5302535af1044152a457ed104f1f4b91, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: b57a6b046afad8349bcaa8a997b1c34c, type: 2}
+  m_sharedMaterial: {fileID: -3249356068978035144, guid: b57a6b046afad8349bcaa8a997b1c34c, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -780,8 +780,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: 'Family wastes .................... -40 '
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 5302535af1044152a457ed104f1f4b91, type: 2}
-  m_sharedMaterial: {fileID: 2164040, guid: 5302535af1044152a457ed104f1f4b91, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: b57a6b046afad8349bcaa8a997b1c34c, type: 2}
+  m_sharedMaterial: {fileID: -3249356068978035144, guid: b57a6b046afad8349bcaa8a997b1c34c, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -982,8 +982,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: DAY X
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 0161d805a3764c089bef00bfe00793f5, type: 2}
-  m_sharedMaterial: {fileID: 2147374, guid: 0161d805a3764c089bef00bfe00793f5, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: b57a6b046afad8349bcaa8a997b1c34c, type: 2}
+  m_sharedMaterial: {fileID: -3249356068978035144, guid: b57a6b046afad8349bcaa8a997b1c34c, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -1249,8 +1249,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: 'Total money ....................... 50  '
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 5302535af1044152a457ed104f1f4b91, type: 2}
-  m_sharedMaterial: {fileID: 2164040, guid: 5302535af1044152a457ed104f1f4b91, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: b57a6b046afad8349bcaa8a997b1c34c, type: 2}
+  m_sharedMaterial: {fileID: -3249356068978035144, guid: b57a6b046afad8349bcaa8a997b1c34c, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -1509,7 +1509,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 477.5487, y: 0}
+  m_AnchoredPosition: {x: 418.00015, y: 0}
   m_SizeDelta: {x: 19.6991, y: 20}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1597630023
@@ -1962,8 +1962,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: Day rewards ....................... 50
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 5302535af1044152a457ed104f1f4b91, type: 2}
-  m_sharedMaterial: {fileID: 2164040, guid: 5302535af1044152a457ed104f1f4b91, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: b57a6b046afad8349bcaa8a997b1c34c, type: 2}
+  m_sharedMaterial: {fileID: -3249356068978035144, guid: b57a6b046afad8349bcaa8a997b1c34c, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []

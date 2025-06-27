@@ -62,3 +62,9 @@ TagManager:
   - name: Previews
     uniqueID: 901060201
     locked: 0
+  - name: Mensajes
+    uniqueID: 915858455
+    locked: 0
+  - name: VisualEffects
+    uniqueID: 2984206091
+    locked: 0

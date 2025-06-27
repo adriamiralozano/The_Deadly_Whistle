@@ -2,6 +2,7 @@
 using UnityEngine;
 using UnityEngine.EventSystems; // Necesario para las interfaces IDropHandler, IPointerEnterHandler, IPointerExitHandler
 using UnityEngine.UI; // Necesario para el componente Image
+using DG.Tweening;
 
 public class DropTarget : MonoBehaviour, IDropHandler, IPointerEnterHandler, IPointerExitHandler
 {
@@ -9,6 +10,9 @@ public class DropTarget : MonoBehaviour, IDropHandler, IPointerEnterHandler, IPo
     [SerializeField] private Color highlightColor = new Color(0.8f, 1f, 0.8f, 1f); // Color verde claro para resaltar el objetivo
     private Color normalColor; // Color original del Image del DropTarget
     private Image targetImage; // Referencia al componente Image de este GameObject
+
+    [Header("Outline")]
+    [SerializeField] private GameObject outlineTargetGO;
 
     public enum TargetType { Player, Enemy, Discard, Hand } // Tipos de objetivos a los que se puede dropear una carta
     public TargetType myTargetType; // El tipo de este DropTarget específico (asignar en el Inspector)
@@ -35,7 +39,6 @@ public class DropTarget : MonoBehaviour, IDropHandler, IPointerEnterHandler, IPo
             {
                 return;
             }
-
         }
 
         if (eventData.pointerDrag != null && targetImage != null)
@@ -46,6 +49,29 @@ public class DropTarget : MonoBehaviour, IDropHandler, IPointerEnterHandler, IPo
             {
                 targetImage.color = highlightColor;
                 cardBehaviour.SetDragOverTargetScale(true);
+
+
+                if (outlineTargetGO != null)
+                {
+                    var renderer = outlineTargetGO.GetComponent<Renderer>();
+                    if (renderer != null && renderer.material.HasProperty("_OutlineEnabled"))
+                    {
+                        renderer.material.SetFloat("_OutlineEnabled", 1f); // Activa el outline
+                    }
+                }
+
+                // Si este DropTarget es de tipo Discard, haz un shake
+                if (myTargetType == TargetType.Discard)
+                {
+                    RectTransform rect = GetComponent<RectTransform>();
+                    if (rect != null)
+                    {
+                        rect.DOComplete(); // Detén shakes previos si los hay
+                        Vector2 originalPos = rect.anchoredPosition;
+                        rect.DOShakeAnchorPos(0.15f, 15f, 25, 0, false, false)
+                            .OnComplete(() => rect.anchoredPosition = originalPos);
+                    }
+                }
             }
         }
     }
@@ -55,6 +81,15 @@ public class DropTarget : MonoBehaviour, IDropHandler, IPointerEnterHandler, IPo
     {
         if (targetImage != null)
             targetImage.color = normalColor;
+
+        if (outlineTargetGO != null)
+        {
+            var renderer = outlineTargetGO.GetComponent<Renderer>();
+            if (renderer != null && renderer.material.HasProperty("_OutlineEnabled"))
+            {
+                renderer.material.SetFloat("_OutlineEnabled", 0f); // Desactiva el outline
+            }
+        }
 
         if (eventData.pointerDrag != null)
         {
@@ -66,6 +101,15 @@ public class DropTarget : MonoBehaviour, IDropHandler, IPointerEnterHandler, IPo
     // Se llama cuando un objeto dragueable se suelta en el área de este DropTarget
     public void OnDrop(PointerEventData eventData)
     {
+
+        if (outlineTargetGO != null)
+        {
+            var renderer = outlineTargetGO.GetComponent<Renderer>();
+            if (renderer != null && renderer.material.HasProperty("_OutlineEnabled"))
+            {
+                renderer.material.SetFloat("_OutlineEnabled", 0f); // Desactiva el outline
+            }
+        }
 
         if (TurnManager.Instance.CurrentPhase != TurnManager.TurnPhase.ActionPhase &&
             TurnManager.Instance.CurrentPhase != TurnManager.TurnPhase.DiscardPostShot)
@@ -155,6 +199,7 @@ public class DropTarget : MonoBehaviour, IDropHandler, IPointerEnterHandler, IPo
                         {
                             if (droppedCardData.type == CardType.Effect && PlayerStats.Instance.HasPlayedEffectCardThisTurn())
                             {
+                                AdviceMessageManager.Instance.ShowAdvice($"You have already played an effect card this turn.");
                                 Debug.LogWarning($"[DropTarget] Ya has jugado una carta de efecto este turno. No puedes dropear '{droppedCardData.cardID}'.");
                                 return; // Cancela el drop, la carta regresa a la mano.
                             }
@@ -163,6 +208,7 @@ public class DropTarget : MonoBehaviour, IDropHandler, IPointerEnterHandler, IPo
                                 // La carta DisarmCardData solo se puede jugar si hay un enemigo Y tiene un arma equipada.
                                 if (currentEnemyAI == null || !currentEnemyAI.HasWeaponEquipped)
                                 {
+                                    AdviceMessageManager.Instance.ShowAdvice($"The enemy is already disarmed.");
                                     Debug.LogWarning($"[DropTarget] No se puede usar la carta 'Desarmar'. El enemigo ya está desarmado o no hay enemigo activo.");
                                     return; // Cancela el drop si el enemigo ya está desarmado
                                 }
@@ -176,6 +222,7 @@ public class DropTarget : MonoBehaviour, IDropHandler, IPointerEnterHandler, IPo
                                 {
                                     if (PlayerStats.Instance.HasWeaponEquipped)
                                     {
+                                        AdviceMessageManager.Instance.ShowAdvice($"You already have a weapon equipped.");
                                         Debug.LogWarning($"[DropTarget] No se puede equipar '{revolverCard.cardID}'. El jugador ya tiene un arma equipada. La carta volverá a la mano.");
                                         return;
                                     }

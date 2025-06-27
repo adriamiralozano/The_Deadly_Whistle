@@ -286,11 +286,15 @@ public class CombosManager : MonoBehaviour
                 puntos[idx].SetCorrect();
             }
             currentIndex++;
-            
+
             if (currentIndex >= puntos.Count)
             {
                 Debug.Log("[CombosManager] ¡Combo COMPLETADO exitosamente!");
                 exitoCombo = true;
+                if (AudioManager.Instance != null)
+                {
+                    AudioManager.Instance.PlayReloadComplete();
+                }
                 terminado = true;
                 permitirClicks = false;
                 if (timeoutCoroutine != null)
@@ -298,6 +302,8 @@ public class CombosManager : MonoBehaviour
                 if (tiempoSlider != null)
                     tiempoSlider.gameObject.SetActive(false);
                 StartCoroutine(DesvanecerYPurgarPuntos(0.5f));
+                
+
             }
         }
         else

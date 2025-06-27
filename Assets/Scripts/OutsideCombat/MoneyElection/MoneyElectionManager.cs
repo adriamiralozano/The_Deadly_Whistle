@@ -59,14 +59,14 @@ public class MoneyElectionManager : MonoBehaviour
         //int recompensa = 200; // Recompensa fija de 200 de momento
         int dineroActual = SaveManager.Instance.LoadGame().playerMoney;
         dineroActualPrueba = dineroActual; ;
-        dineroActualText.text = $"Total money ....................... {dineroActualPrueba}";
+        dineroActualText.text = $"Total money ...................... {dineroActualPrueba}";
 
 
         int dineroFamilia = moneyRequestsPorActo[index].familia;
         int dineroBanda = moneyRequestsPorActo[index].banda;
-        RecompensaText.text = $"Day rewards ...................... +{dineroActual}"; //CAMBIAR EN UN FUTURO A RECOMPENSA DEL COMBATE
-        dineroFamiliaText.text = $"Family wastes .................... -{dineroFamilia}";
-        dineroBandaText.text = $"Gang wastes ...................... -{dineroBanda}";
+        RecompensaText.text = $"Day rewards ...................... {dineroActual}"; //CAMBIAR EN UN FUTURO A RECOMPENSA DEL COMBATE
+        dineroFamiliaText.text = $"Family wastes .................. -{dineroFamilia}";
+        dineroBandaText.text = $"Gang wastes ....................... -{dineroBanda}";
 
         checkboxFamilia.isOn = false;
         checkboxBanda.isOn = false;
@@ -87,17 +87,17 @@ public class MoneyElectionManager : MonoBehaviour
             if (NuevaCantidadFamilia <= 0)
             {
                 NuevaCantidadFamilia = 0;
-                dineroFamiliaText.text = $"Family wastes .................... {NuevaCantidadFamilia}";
+                dineroFamiliaText.text = $"Family wastes .................. {NuevaCantidadFamilia}";
                 Debug.Log($"DineroActual cuando On 1: {dineroActualPrueba}");
             }
             else
             {
-                dineroFamiliaText.text = $"Family wastes .................... -{NuevaCantidadFamilia}";
+                dineroFamiliaText.text = $"Family wastes .................. -{NuevaCantidadFamilia}";
                 Debug.Log($"DineroActual cuando On 2: {dineroActualPrueba}");
             }
             dineroActualPrueba = dineroActualPrueba - (cantidad - NuevaCantidadFamilia);
             Debug.Log($"DineroActual cuando On 3: {dineroActualPrueba}");
-            dineroActualText.text = $"Total money ....................... {dineroActualPrueba}";
+            dineroActualText.text = $"Total money ...................... {dineroActualPrueba}";
 
             boteFamilia = cantidad - NuevaCantidadFamilia;
             Debug.Log($"Bote familia: {boteFamilia}");
@@ -107,8 +107,8 @@ public class MoneyElectionManager : MonoBehaviour
             Debug.Log($"NuevaCantidad off: {NuevaCantidadFamilia}");
             dineroActualPrueba = dineroActualPrueba + (cantidad - NuevaCantidadFamilia);
             Debug.Log($"DineroTotal cuando Off familia: {dineroActualPrueba}");
-            dineroFamiliaText.text = $"Family wastes .................... -{cantidad}";
-            dineroActualText.text = $"Total money ....................... {dineroActualPrueba}";
+            dineroFamiliaText.text = $"Family wastes .................. -{cantidad}";
+            dineroActualText.text = $"Total money ...................... {dineroActualPrueba}";
         }
     }
 
@@ -124,17 +124,17 @@ public class MoneyElectionManager : MonoBehaviour
             if (NuevaCantidadBanda <= 0)
             {
                 NuevaCantidadBanda = 0;
-                dineroBandaText.text = $"Gang wastes ...................... {NuevaCantidadBanda}";
+                dineroBandaText.text = $"Gang wastes ....................... {NuevaCantidadBanda}";
                 Debug.Log($"DineroActual cuando On 1: {dineroActualPrueba}");
             }
             else
             {
-                dineroBandaText.text = $"Gang wastes ...................... -{NuevaCantidadBanda}";
+                dineroBandaText.text = $"Gang wastes ....................... -{NuevaCantidadBanda}";
                 Debug.Log($"DineroActual cuando On 2: {dineroActualPrueba}");
             }
             dineroActualPrueba = dineroActualPrueba - (cantidad - NuevaCantidadBanda);
             Debug.Log($"DineroActual cuando On 3: {dineroActualPrueba}");
-            dineroActualText.text = $"Total money ....................... {dineroActualPrueba}";
+            dineroActualText.text = $"Total money ...................... {dineroActualPrueba}";
 
             boteBanda = cantidad - NuevaCantidadBanda;
             Debug.Log($"Bote banda: {boteBanda}");
@@ -145,8 +145,8 @@ public class MoneyElectionManager : MonoBehaviour
             Debug.Log($"NuevaCantidad off: {NuevaCantidadBanda}");
             dineroActualPrueba = dineroActualPrueba + (cantidad - NuevaCantidadBanda);
             Debug.Log($"DineroTotal cuando Off banda: {dineroActualPrueba}");
-            dineroBandaText.text = $"Gang wastes ...................... -{cantidad}";
-            dineroActualText.text = $"Total money ....................... {dineroActualPrueba}";
+            dineroBandaText.text = $"Gang wastes ....................... -{cantidad}";
+            dineroActualText.text = $"Total money ...................... {dineroActualPrueba}";
         }
     }
 

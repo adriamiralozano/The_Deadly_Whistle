@@ -1,12 +1,15 @@
 using UnityEngine;
 using System.Linq;
+using TMPro;
 
 public class GameEndingManager : MonoBehaviour
 {
     public static GameEndingManager Instance { get; private set; }
 
-    public ContractDatabaseSO contractDatabase; // Asigna el asset en el inspector
-
+    public ContractDatabaseSO contractDatabase;
+    [Header("UI")]
+    [SerializeField] private GameObject endingPrefab; // Asigna tu prefab en el inspector
+    [SerializeField] private Transform canvasParent;
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -17,7 +20,33 @@ public class GameEndingManager : MonoBehaviour
         Instance = this;
         DontDestroyOnLoad(gameObject);
     }
+    public void ShowEndingUI()
+    {
+        GameEnding ending = GameStats.Instance.currentEnding;
+        string endingText = GetEndingText(ending);
 
+        GameObject instance = Instantiate(endingPrefab, canvasParent);
+
+        TextMeshProUGUI textComp = instance.GetComponentInChildren<TextMeshProUGUI>();
+        if (textComp != null)
+            textComp.text = endingText;
+    }
+    private string GetEndingText(GameEnding ending)
+    {
+        switch (ending)
+        {
+            case GameEnding.FinalBanda:
+                return "Final de la Banda: Has priorizado a la banda sobre la familia.";
+            case GameEnding.FinalFamilia:
+                return "Final de la Familia: Has priorizado a la familia sobre la banda.";
+            case GameEnding.FinalCalabozo:
+                return "Final Calabozo: Has acabado en prisión por tus actos ilegales.";
+            case GameEnding.FinalMixto:
+                return "Final Mixto: Has equilibrado tus intereses entre familia y banda.";
+            default:
+                return "Final desconocido.";
+        }
+    }
     public void DecideEnding()
     {
         GameStats stats = GameStats.Instance;

@@ -8,7 +8,9 @@ public class EscapeToMainMenu : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Escape))
+
+
+        if (Input.GetKeyDown(KeyCode.Escape) && SceneManager.GetActiveScene().name != "Combat_Test_Scene")
         {
             if (SaveManager.Instance != null)
             {
