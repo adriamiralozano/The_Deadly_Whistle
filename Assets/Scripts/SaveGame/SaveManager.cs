@@ -79,7 +79,7 @@ public class SaveManager : MonoBehaviour
     {
         Debug.Log("NewGame called. Creating default save data...");
         SaveData newSave = new SaveData();
-        newSave.currentAct = 0; // Tutorial
+        newSave.currentAct = 1; // Act1
         newSave.currentPhase = 0; // PreCombat
         newSave.playerMoney = 0; // Cantidad inicial de dinero del jugador
         newSave.familyMoney = 0;

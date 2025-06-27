@@ -3,7 +3,7 @@ using UnityEngine;
 public class ActManager : MonoBehaviour
 {
     public static ActManager Instance { get; private set; }
-    public GameAct CurrentAct { get; private set; } = GameAct.Tutorial;
+    public GameAct CurrentAct { get; private set; } = GameAct.Act1;
     public ActPhase CurrentPhase { get; private set; } = ActPhase.PreCombat;
 
     private void Awake()
