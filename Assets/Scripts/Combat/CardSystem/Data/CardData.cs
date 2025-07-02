@@ -13,7 +13,7 @@ public enum CardType
 public class CardData : ScriptableObject
 {
 
-    public Sprite artwork; // La imagen 2D de tu carta
+    public Sprite artwork; 
     public CardType type;
 
     [NonSerialized] public string cardID;

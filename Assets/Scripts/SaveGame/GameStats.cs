@@ -4,13 +4,9 @@ using UnityEngine;
 public class GameStats : MonoBehaviour
 {
     public static GameStats Instance { get; private set; }
-
-    // Stats importantes
     public int familyMoney;
     public int gangMoney;
     public int playerMoney;
-    
-    // Lista de contratos completados
     public List<string> completedContracts = new List<string>();
     public GameEnding currentEnding = GameEnding.None;
     
