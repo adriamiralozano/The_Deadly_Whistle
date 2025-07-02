@@ -2,14 +2,14 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-// ¡Importante! Esto hace que sea un ScriptableObject y le da un menuName.
+
 [CreateAssetMenu(fileName = "NewDeck", menuName = "Card System/Deck Data")]
-public class DeckData : ScriptableObject // <-- Debe heredar de ScriptableObject
+public class DeckData : ScriptableObject 
 {
     [SerializeField]
     private List<CardData> initialCards = new List<CardData>();
 
-    private const int MAX_DECK_SIZE = 20; // Ajustado a 10
+    private const int MAX_DECK_SIZE = 20; 
 
     public IReadOnlyList<CardData> InitialCards => initialCards;
 
