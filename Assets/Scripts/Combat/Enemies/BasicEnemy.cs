@@ -4,13 +4,9 @@ using System.Collections.Generic; // Necesario para List
 
 public class Enemy : MonoBehaviour
 {
-    // Asigna tu ScriptableObject de EnemyData aquí en el Inspector del Prefab del enemigo.
     [SerializeField] private EnemyData _enemyData;
 
-    // Propiedad pública para acceder a los datos del enemigo.
     public EnemyData Data => _enemyData;
-
-    // La vida actual del enemigo, que corresponde al número de corazones.
     public int CurrentHealth { get; private set; }
     public bool IsAlive => CurrentHealth > 0;
 
@@ -20,12 +16,12 @@ public class Enemy : MonoBehaviour
     [SerializeField] private GameObject heartUIPrefab;
     [Tooltip("Transform padre donde se instanciarán los corazones. Debe estar encima del enemigo.")]
     [SerializeField] private Transform heartUIParent;
-    private List<GameObject> activeHearts = new List<GameObject>(); // Lista para gestionar los GameObjects de los corazones.
+    private List<GameObject> activeHearts = new List<GameObject>(); 
     // ------------------------------------------
 
     // --- Referencia al componente de IA ---
-    private IEnemyAI _enemyAI; // Este será el 'cerebro' del enemigo
-    // --- FIN NUEVO ---
+    private IEnemyAI _enemyAI; 
+
 
     // --- Eventos (para que otros scripts puedan reaccionar a la vida del enemigo) ---
     public static event Action<Enemy, int> OnEnemyTookDamage;

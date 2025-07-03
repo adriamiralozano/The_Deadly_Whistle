@@ -15,13 +15,13 @@ public class CardBehaviour2 : MonoBehaviour,
     IPointerUpHandler,
     IPointerDownHandler
 {
-    // Bandera estática para controlar el dragging global ===
+    // Flag estática para controlar el dragging global ===
     public static bool IsAnyCardDragging = false;
     // ===============================================================
 
 
     private RectTransform rectTransform;
-    private Canvas parentCanvas; // El Canvas principal que contiene esta carta (ej. "HandCanvas")
+    private Canvas parentCanvas; // El Canvas principal que contiene esta carta 
     private Canvas cardCanvas;   // El Canvas propio de esta carta (para el sorting order)
     private CanvasGroup canvasGroup;
     private Selectable selectable;
@@ -56,7 +56,7 @@ public class CardBehaviour2 : MonoBehaviour,
     private int originalSortingOrder = -1; // Guarda el sorting order base de la carta
     public bool IsHovering => isHovering;
 
-    // === NUEVO: Variable para el desplazamiento aleatorio de la fase del idle tilt ===
+    // === Variable para el desplazamiento aleatorio de la fase del idle tilt ===
     private float randomIdlePhaseOffset;
     // =================================================================================
 
@@ -93,7 +93,7 @@ public class CardBehaviour2 : MonoBehaviour,
     private void Awake()
     {
         rectTransform = GetComponent<RectTransform>();
-        parentCanvas = GetComponentInParent<Canvas>(); // Canvas padre (ej. el de la mano)
+        parentCanvas = GetComponentInParent<Canvas>(); 
         canvasGroup = GetComponent<CanvasGroup>();
         selectable = GetComponent<Selectable>();
         layoutElement = GetComponent<LayoutElement>();
@@ -108,25 +108,19 @@ public class CardBehaviour2 : MonoBehaviour,
             gameObject.AddComponent<GraphicRaycaster>();
         }
 
-        // --- Configuración del Canvas de la carta para el orden de renderizado ---
-        // Esto asegura que esta carta siempre gestione su propio orden.
         cardCanvas.overrideSorting = true;
         cardCanvas.sortingLayerID = parentCanvas.sortingLayerID; // Hereda la capa de sorting del Canvas padre
         cardCanvas.renderMode = parentCanvas.renderMode; // Hereda el modo de renderizado
         cardCanvas.worldCamera = parentCanvas.worldCamera; // Hereda la cámara del Canvas padre
 
-        // Guarda el sorting order inicial de esta carta (será su orden "normal" o "idle")
         originalSortingOrder = cardCanvas.sortingOrder;
-        // --------------------------------------------------------------------------
 
         originalScale = transform.localScale;
         targetScale = originalScale;
         currentLocalOffset = Vector3.zero;
 
-        // === CAMBIO CLAVE 1: Inicializar el desplazamiento de fase aleatorio ===
-        // Esto se hace una sola vez al inicializar la carta, dándole un punto de partida único
-        randomIdlePhaseOffset = Random.Range(0f, 1000f); // Un valor aleatorio entre 0 y 1000
-        // ===================================================================
+
+        randomIdlePhaseOffset = Random.Range(0f, 1000f); 
     }
 
     private void Start()
@@ -154,8 +148,6 @@ public class CardBehaviour2 : MonoBehaviour,
         {
             return;
         }
-
-        //Debug.Log($"[CardBehaviour2] {gameObject.name} Update: trueBaseLayoutPosition={trueBaseLayoutPosition}, localPosition={rectTransform.localPosition}");
 
         rectTransform.rotation = Quaternion.Lerp(
             rectTransform.rotation,
@@ -213,8 +205,6 @@ public class CardBehaviour2 : MonoBehaviour,
                 float normX = Mathf.Clamp(offset.x / (rectTransform.rect.width * parentCanvas.scaleFactor * 0.5f), -1f, 1f);
                 float normY = Mathf.Clamp(offset.y / (rectTransform.rect.height * parentCanvas.scaleFactor * 0.5f), -1f, 1f);
 
-                // === CAMBIO 2a: Aplicar el offset aleatorio también en hover, si quieres que se desincronice ===
-                // Si quieres que el tilt del hover SIEMPRE sea sincronizado, quita el randomIdlePhaseOffset de estas dos líneas:
                 float sine = Mathf.Sin(Time.time * hoverAutoTiltAmount + randomIdlePhaseOffset);
                 float cosine = Mathf.Cos(Time.time * hoverAutoTiltAmount + randomIdlePhaseOffset);
 
@@ -239,26 +229,22 @@ public class CardBehaviour2 : MonoBehaviour,
                 idleTime += Time.deltaTime;
 
                 float circleSpeed = 0.7f;
-                // === CAMBIO 2b: Aumentar el 'radius' para una órbita más grande (más inclinación general) ===
-                float radius = 1.2f; // Prueba con 1.0f, 1.5f, 2.0f. Cuanto mayor, más acentuado el movimiento.
+                float radius = 1.2f; 
 
-                // === CAMBIO 2c: Aplicar el desplazamiento aleatorio a la fase del idle para desincronizar el inicio ===
                 float currentIdlePhase = (idleTime * circleSpeed) + randomIdlePhaseOffset;
                 float normX = Mathf.Cos(currentIdlePhase) * radius;
                 float normY = Mathf.Sin(currentIdlePhase) * radius;
 
-                // Aplicar el offset aleatorio para el componente automático del tilt del idle
                 float sine = Mathf.Sin(Time.time * hoverAutoTiltAmount + randomIdlePhaseOffset);
                 float cosine = Mathf.Cos(Time.time * hoverAutoTiltAmount + randomIdlePhaseOffset);
 
-                // === CAMBIO 2d: Multiplicador para acentuar el tilt en idle aún más ===
-                float idleTiltOverallMultiplier = 1.5f; // Prueba con 1.2f, 1.5f, 2.0f. Cuanto mayor, más fuerte el tilt.
+                float idleTiltOverallMultiplier = 1.5f; 
 
                 float tiltX = (normY * hoverManualTiltAmount + sine * hoverAutoTiltAmount) * idleTiltOverallMultiplier;
                 float tiltY = (-normX * hoverManualTiltAmount + cosine * hoverAutoTiltAmount) * idleTiltOverallMultiplier;
 
                 targetRotation = Quaternion.Euler(tiltX, tiltY, 0);
-                targetScale = originalScale; // Escala idle
+                targetScale = originalScale;
 
                 currentLocalOffset = Vector3.zero;
             }
@@ -395,20 +381,6 @@ public class CardBehaviour2 : MonoBehaviour,
         }
     }
 
-    /*     public void OnPointerClick(PointerEventData eventData)
-        {
-            Debug.Log("CLICK");
-            if (eventData.button == PointerEventData.InputButton.Left && !isDragging)
-            {
-                Debug.Log($"[CardBehaviour2] OnPointerClick llamado para la PREVIEW");
-                // Asume que tienes una referencia al sprite de la carta
-                var cardUI = GetComponent<CardUI>();
-                if (cardUI != null && cardUI.CardSprite != null)
-                {
-                    CardPreviewManager.Instance.ShowCard(cardUI.CardSprite);
-                }
-            }
-        } */
     public void OnPointerEnter(PointerEventData eventData)
     {
         if (isDragging || isReturning) return;
@@ -419,11 +391,10 @@ public class CardBehaviour2 : MonoBehaviour,
 
         if (cardCanvas != null)
         {
-            // Guarda el sorting order actual solo si no está en hover
             if (!isHovering)
                 originalSortingOrder = cardCanvas.sortingOrder;
 
-            cardCanvas.sortingOrder = hoverUISortingOrder; // 500 o el valor que tengas
+            cardCanvas.sortingOrder = hoverUISortingOrder; 
         }
         AudioManager.Instance?.PlayCardHover();
     }
@@ -528,7 +499,6 @@ public class CardBehaviour2 : MonoBehaviour,
 
         if (cardCanvas != null && !isDragging && !isReturning)
         {
-            // Restaura el sorting order original
             cardCanvas.sortingOrder = originalSortingOrder;
         }
     }
@@ -559,13 +529,12 @@ public class CardBehaviour2 : MonoBehaviour,
     private IEnumerator AnimateToCurrentAnchoredPosition(float duration)
     {
         Vector2 start = rectTransform.anchoredPosition;
-        yield return null; // Espera un frame para que el LayoutGroup actualice la posición
+        yield return null; 
         Vector2 end = rectTransform.anchoredPosition;
         float t = 0f;
         while (t < 1f)
         {
             t += Time.deltaTime / duration;
-            // Easing suave (ease in-out)
             float smoothT = t * t * (3f - 2f * t);
             rectTransform.anchoredPosition = Vector2.Lerp(start, end, smoothT);
             yield return null;
@@ -586,10 +555,7 @@ public class CardBehaviour2 : MonoBehaviour,
         if (moveCoroutine != null)
             StopCoroutine(moveCoroutine);
 
-        // Detenemos cualquier animación DOTween previa
         rectTransform.DOKill();
-
-        // Animamos hacia la posición actual del layout
         rectTransform.DOLocalMove(rectTransform.localPosition, duration).SetEase(Ease.InOutQuad);
 
     }
