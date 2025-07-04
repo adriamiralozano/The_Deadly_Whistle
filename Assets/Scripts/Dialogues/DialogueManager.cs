@@ -21,12 +21,10 @@ public class DialogueManager : MonoBehaviour
 
     void Start()
     {
-        // Asignar listeners
         previousOptionButton.onClick.AddListener(SelectPreviousOption);
         nextOptionButton.onClick.AddListener(SelectNextOption);
         selectOptionButton.onClick.AddListener(ConfirmSelection);
 
-        // Iniciar diálogo
         StartDialogue(startNode);
     }
 
@@ -46,10 +44,8 @@ public class DialogueManager : MonoBehaviour
 
     void UpdateDialogueUI()
     {
-        // Mostrar texto principal
         dialogueText.text = currentNode.dialogueText;
 
-        // Manejar visibilidad de controles de opción
         bool hasOptions = currentNode.options.Count > 0;
         bool hasMultipleOptions = currentNode.options.Count > 1;
         optionText.gameObject.SetActive(hasOptions);
@@ -59,10 +55,8 @@ public class DialogueManager : MonoBehaviour
 
         if (hasOptions)
         {
-            // Actualizar texto de opción
             optionText.text = currentNode.options[currentOptionIndex].optionText;
 
-            // Manejar interactividad de botones de navegación
             previousOptionButton.interactable = loopOptions || currentOptionIndex > 0;
             nextOptionButton.interactable = loopOptions || currentOptionIndex < currentNode.options.Count - 1;
         }
@@ -72,7 +66,6 @@ public class DialogueManager : MonoBehaviour
     {
         if (currentNode == null || currentNode.options.Count == 0) return;
 
-        // Detección de teclado
         if (Input.GetKeyDown(KeyCode.LeftArrow))
         {
             SelectPreviousOption();
@@ -81,7 +74,7 @@ public class DialogueManager : MonoBehaviour
         {
             SelectNextOption();
         }
-        else if (Input.GetKeyDown(KeyCode.Return)) // Enter para confirmar
+        else if (Input.GetKeyDown(KeyCode.Return))
         {
             ConfirmSelection();
         }
@@ -119,13 +112,10 @@ public class DialogueManager : MonoBehaviour
             return;
         }
 
-        // Disparar evento si existe
         if (currentNode.options[currentOptionIndex].onSelectEvent != null)
         {
             currentNode.options[currentOptionIndex].onSelectEvent.Invoke();
         }
-
-        // Navegar al siguiente nodo
         StartDialogue(currentNode.options[currentOptionIndex].nextNode);
     }
 

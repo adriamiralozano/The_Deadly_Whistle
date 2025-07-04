@@ -1,6 +1,5 @@
-// EnemyVisualManager.cs
 using UnityEngine;
-using System; // Necesario para Action
+using System; 
 
 public class EnemyVisualManager : MonoBehaviour
 {
@@ -19,27 +18,24 @@ public class EnemyVisualManager : MonoBehaviour
         if (spriteRenderer == null)
         {
             Debug.LogError("[EnemyVisualManager] No se encontró SpriteRenderer en este GameObject. Por favor, añade uno.");
-            enabled = false; // Deshabilita el script si no hay SpriteRenderer
+            enabled = false; 
             return;
         }
-
-        // Establecer el sprite inicial (opcional, el evento de la IA lo sobrescribirá)
         SetIdleEnemySprite();
     }
 
     void OnEnable()
     {
-        // Suscribirse al evento cuando este GameObject esté activo
         OutlawEnemyAI.OnEnemyWeaponStatusChanged += OnEnemyWeaponStatusChanged;
         Debug.Log("[EnemyVisualManager] Suscrito a OnEnemyWeaponStatusChanged.");
     }
 
     void OnDisable()
     {
-        // Desuscribirse del evento cuando este GameObject se desactive para evitar errores
         OutlawEnemyAI.OnEnemyWeaponStatusChanged -= OnEnemyWeaponStatusChanged;
         Debug.Log("[EnemyVisualManager] Desuscrito de OnEnemyWeaponStatusChanged.");
     }
+
     /// Manejador del evento que se dispara cuando el estado del arma equipada del enemigo cambia.
     private void OnEnemyWeaponStatusChanged(bool hasWeapon)
     {
@@ -51,7 +47,7 @@ public class EnemyVisualManager : MonoBehaviour
 
             if (AudioManager.Instance != null)
             {
-                AudioManager.Instance.PlayEnemyWeaponEquipped(); // Necesitarás crear este método en AudioManager
+                AudioManager.Instance.PlayEnemyWeaponEquipped();
             }
 
         }
@@ -60,10 +56,8 @@ public class EnemyVisualManager : MonoBehaviour
             SetIdleEnemySprite();
             Debug.Log("[EnemyVisualManager] Recibido evento: Enemigo Arma DESEQUipada. Cambiando sprite.");
 
-            // Opcional: Reproducir sonido de desequipar arma del enemigo aquí
         }
     }
-    /// Establece el sprite del enemigo a su versión "idle" (sin arma).
     public void SetIdleEnemySprite()
     {
         if (spriteRenderer != null && idleEnemySprite != null)
@@ -75,7 +69,6 @@ public class EnemyVisualManager : MonoBehaviour
             Debug.LogWarning("[EnemyVisualManager] Sprite 'Idle Enemy' no asignado en el Inspector.");
         }
     }
-    /// Establece el sprite del enemigo a su versión "equipada" (con arma).
     public void SetEquippedEnemySprite()
     {
         if (spriteRenderer != null && equippedEnemySprite != null)
@@ -109,5 +102,4 @@ public class EnemyVisualManager : MonoBehaviour
         if (spriteRenderer != null && originalSprite != null)
             spriteRenderer.sprite = originalSprite;
     }
-    // Puedes añadir métodos para animaciones, efectos, etc. aquí en el futuro.
 }

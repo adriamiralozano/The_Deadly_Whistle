@@ -21,12 +21,8 @@ public class MainMenuManager : MonoBehaviour
     [Header("Nombre de la escena inicial")]
     public string campamentoSceneName = "Campamento";
 
-    // Llama a este método desde el botón de historia (OnClick)
-
-
     private void Start()
     {
-        // Comprobar si hay guardado
         bool hasSave = File.Exists(Application.persistentDataPath + "/save.json");
         if (continueButton != null)
             continueButton.interactable = hasSave;
@@ -54,7 +50,6 @@ public class MainMenuManager : MonoBehaviour
         if (SaveManager.Instance != null)
             SaveManager.Instance.NewGame();
 
-        // Reinicia el estado de ActManager en memoria si existe
         if (ActManager.Instance != null)
             ActManager.Instance.LoadFromSave(SaveManager.Instance.LoadGame());
 
@@ -128,7 +123,6 @@ public class MainMenuManager : MonoBehaviour
     
     public void CleanupPersistentManagers()
     {
-        // Destruye el ActManager si existe
         if (ActManager.Instance != null)
             Destroy(ActManager.Instance.gameObject);
 

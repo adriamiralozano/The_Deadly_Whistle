@@ -11,9 +11,7 @@ public class TitleBounceIn : MonoBehaviour
     void Start()
     {
         originalPosition = transform.position;
-        // Coloca el título fuera de pantalla (arriba)
         transform.position = originalPosition + Vector3.up * startYOffset;
-        // Anima hacia la posición original con rebote
         transform.DOMoveY(originalPosition.y, animDuration)
                  .SetEase(Ease.OutBounce);
     }

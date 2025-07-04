@@ -6,7 +6,7 @@ public class ContractManager : MonoBehaviour
     public static ContractSO PendingAcceptedContract = null;
     
     private ContractSO acceptedContract;
-    private SaveData preContractSave; // Guardado antes de elegir contrato
+    private SaveData preContractSave; 
 
     void Awake()
     {
@@ -17,24 +17,21 @@ public class ContractManager : MonoBehaviour
         }
         Instance = this;
 
-        // Si hay un contrato pendiente, lo asignamos al entrar en la escena de combate
         if (PendingAcceptedContract != null)
         {
             acceptedContract = PendingAcceptedContract;
             Debug.Log($"[ContractManager] Contrato transferido a escena de combate: {acceptedContract.Title}");
-            PendingAcceptedContract = null; // Limpiamos la variable estática
+            PendingAcceptedContract = null; 
         }
     }
     public void SavePreContractState()
     {
-        // Guarda el estado actual antes de elegir contrato
         preContractSave = new SaveData();
         preContractSave.currentAct = (int)ActManager.Instance.CurrentAct;
         preContractSave.currentPhase = (int)ActManager.Instance.CurrentPhase;
         preContractSave.familyMoney = GameStats.Instance.familyMoney;
         preContractSave.gangMoney = GameStats.Instance.gangMoney;
         preContractSave.playerMoney = GameStats.Instance.playerMoney;
-        //preContractSave.completedContracts = new System.Collections.Generic.List<string>(GameStats.Instance.completedContracts);
         
         Debug.Log("Estado pre-contrato guardado");
     }
@@ -62,15 +59,12 @@ public class ContractManager : MonoBehaviour
         {
             Debug.Log($"¡Contrato ganado! Recompensa: {acceptedContract.Price}");
             
-            // Añade dinero al jugador
             GameStats.Instance.playerMoney += acceptedContract.Price;
             
-            // Añade contrato a lista de completados
             GameStats.Instance.AddCompletedContract(acceptedContract.Title);
             
             Debug.Log($"Dinero del jugador actualizado: {GameStats.Instance.playerMoney}");
             
-            // Limpia el contrato
             acceptedContract = null;
             preContractSave = null;
         }
@@ -85,7 +79,6 @@ public class ContractManager : MonoBehaviour
             // Restaura el estado pre-contrato
             RestorePreContractState();
             
-            // Limpia el contrato
             acceptedContract = null;
         }
     }

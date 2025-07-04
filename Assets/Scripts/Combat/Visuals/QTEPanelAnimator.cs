@@ -29,26 +29,20 @@ public class QTEPanelAnimator : MonoBehaviour
         if (canvasGroup == null)
             canvasGroup = GetComponent<CanvasGroup>();
             
-        // Configurar posición inicial (fuera de pantalla arriba)
         SetupInitialPosition();
     }
     
     private void SetupInitialPosition()
     {
-        // Guardar la posición objetivo (centro de pantalla)
         targetPosition = panelRect.anchoredPosition;
         
-        // Calcular posición inicial (fuera de pantalla arriba)
         startPosition = new Vector2(targetPosition.x, Screen.height + panelRect.rect.height);
         
-        // Posicionar fuera de pantalla inicialmente
         panelRect.anchoredPosition = startPosition;
         
-        // Hacer invisible inicialmente
         if (canvasGroup != null)
             canvasGroup.alpha = 0f;
         
-        // Desactivar el panel inicialmente
         gameObject.SetActive(false);
     }
     
@@ -77,16 +71,12 @@ public class QTEPanelAnimator : MonoBehaviour
         
         panelRect.anchoredPosition = startPosition;
         
-        // Fade in rápido
         if (canvasGroup != null)
         {
             canvasGroup.alpha = 0f;
             canvasGroup.DOFade(1f, 0.2f);
         }
 
-
-
-        // Animación de caída con rebote
         panelRect.DOAnchorPos(targetPosition, fallDuration)
             .SetEase(fallEase);
             
@@ -94,7 +84,7 @@ public class QTEPanelAnimator : MonoBehaviour
         {
             AudioManager.Instance.PlayQTEPanelIn();
         }
-        yield return new WaitForSeconds(fallDuration + 0.3f); // Esperar a que termine la animación
+        yield return new WaitForSeconds(fallDuration + 0.3f);
         isAnimating = false;
     }
 
@@ -102,17 +92,13 @@ public class QTEPanelAnimator : MonoBehaviour
     private IEnumerator HidePanelCoroutine()
     {
         isAnimating = true;
-
-        // Animación de salida hacia arriba
         Vector2 exitPosition = new Vector2(targetPosition.x, Screen.height + panelRect.rect.height);
 
-        // Fade out
         if (canvasGroup != null)
         {
             canvasGroup.DOFade(0f, 0.3f);
         }
 
-        // Mover hacia arriba
         panelRect.DOAnchorPos(exitPosition, 0.5f)
             .SetEase(Ease.InBack)
             .OnComplete(() =>
@@ -123,12 +109,8 @@ public class QTEPanelAnimator : MonoBehaviour
         if (blockerOverlay != null)
             blockerOverlay.SetActive(false);
         yield return new WaitForSeconds(0.5f);
-        
-
-        
     }
     
-    // Método para resetear la posición sin animación
     public void ResetPosition()
     {
         panelRect.DOKill();

@@ -72,7 +72,6 @@ public class AudioManager : MonoBehaviour
         }
         else
         {
-            // Si quieres que la música se detenga al salir de la escena de combate:
             musicSource.Stop();
         }
     }
@@ -100,20 +99,16 @@ public class AudioManager : MonoBehaviour
     {
         if (clip == null) return;
 
-        // Crea un GameObject temporal solo para reproducir este sonido.
         GameObject soundGameObject = new GameObject("SFX_" + clip.name);
         AudioSource tempAudioSource = soundGameObject.AddComponent<AudioSource>();
 
-        // Configura y reproduce el sonido.
         tempAudioSource.clip = clip;
         tempAudioSource.volume = volume;
         tempAudioSource.Play();
 
-        // Destruye el GameObject temporal después de que el clip haya terminado.
         Destroy(soundGameObject, clip.length);
     }
 
-    // Métodos de conveniencia
     public void PlayCardDraw() => PlaySFX(cardDrawClip);
     public void PlayCardHover() => PlaySFX(cardHoverClip);
     public void PlayWeaponEquipped() => PlaySFX(WeaponEquippedSound);
