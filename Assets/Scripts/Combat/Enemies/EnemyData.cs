@@ -8,6 +8,6 @@ public class EnemyData : ScriptableObject
     public GameObject enemyPrefab;
 
     [Tooltip("Número de corazones/vidas del enemigo.")]
-    public int maxHealth = 5; // ¡Establece esto a 5 para tu enemigo base!
+    public int maxHealth = 5; 
     
 }

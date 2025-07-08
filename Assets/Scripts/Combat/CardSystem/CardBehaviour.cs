@@ -32,7 +32,7 @@ public class CardBehaviour : MonoBehaviour,
     [SerializeField] private float hoverShakeStrength = 8f;
     [SerializeField] private float hoverExitDelay = 0.2f; //Retrasar la salida del hover para evitar el parpadeo
     [SerializeField] private float hoverEnterDelay = 0.02f; //Retrasar la entrada del hover para evitar el parpadeo
-    [SerializeField] private float shakeCooldown = 0.2f; // Tiempo mínimo entre shakes (en segundos)
+    [SerializeField] private float shakeCooldown = 0.2f; // Tiempo mínimo entre shakes
 
     [Header("Drag Settings")]
     [SerializeField] private float lerpSpeed = 10f;
@@ -126,7 +126,6 @@ public class CardBehaviour : MonoBehaviour,
             );
         }
 
-        // Aplica la interpolación suave SIEMPRE
         rectTransform.rotation = Quaternion.Lerp(
             rectTransform.rotation,
             targetRotation,
@@ -146,7 +145,6 @@ public class CardBehaviour : MonoBehaviour,
         isDragging = true;
         canvasGroup.blocksRaycasts = false;
 
-        // Escalado al iniciar el drag
         if (scaleCoroutine != null)
             StopCoroutine(scaleCoroutine);
         scaleCoroutine = StartCoroutine(ScaleCard(originalScale * hoverScale));
@@ -177,7 +175,6 @@ public class CardBehaviour : MonoBehaviour,
         isDragging = false;
         canvasGroup.blocksRaycasts = true;
 
-        // Vuelve al tamaño original al soltar la carta
         if (scaleCoroutine != null)
             StopCoroutine(scaleCoroutine);
         scaleCoroutine = StartCoroutine(ScaleCard(originalScale));
@@ -268,7 +265,6 @@ public class CardBehaviour : MonoBehaviour,
         isIdle = false;
         isHovering = true;
 
-        // Solo permite un shake si ha pasado suficiente tiempo desde el último
         if (Time.time - lastShakeTime > shakeCooldown)
         {
             lastShakeTime = Time.time;

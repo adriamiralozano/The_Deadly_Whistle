@@ -1,11 +1,10 @@
-// CardManager.cs
 using UnityEngine;
 using System.Collections.Generic;
 using TMPro;
 using System;
 using System.Linq;
 using UnityEngine.UI;
-using DG.Tweening; // Asegúrate de tener DOTween instalado para animaciones
+using DG.Tweening;
 using System.Collections;
 
 public class CardManager : MonoBehaviour
@@ -21,7 +20,6 @@ public class CardManager : MonoBehaviour
     [Header("Animación de cartas")]
     [SerializeField] private float cardMoveDuration = 0.35f;
 
-    // --- REFERENCIAS DE UI DE CARTA ---
     [Header("Card UI References")]
     [SerializeField] private GameObject cardUIPrefab;
     [SerializeField] private Transform handContainer;
@@ -32,7 +30,6 @@ public class CardManager : MonoBehaviour
     private List<CardData> discardPile = new List<CardData>();
     private List<CardData> playedCardsThisTurn = new List<CardData>();
 
-    // Mapea el instanceID de la CardData (string) a su GameObject de UI correspondiente.
     private Dictionary<string, GameObject> handUIInstances = new Dictionary<string, GameObject>();
 
     private const int MAX_HAND_SIZE = 5;
@@ -41,9 +38,7 @@ public class CardManager : MonoBehaviour
     public static event Action OnCardDiscarded;
     public static event Action<CardData> OnCardPlayed;
 
-    public int TotalDamage = 0; // Para llevar un conteo de daño total infligido
-
-    // Singleton instance
+    public int TotalDamage = 0;
     public static CardManager Instance { get; private set; }
 
 
@@ -63,8 +58,6 @@ public class CardManager : MonoBehaviour
     {
         TurnManager.OnRequestDrawCard += DrawCard;
         TurnManager.OnRequestHandCount += GetHandCount;
-        // MANTENEMOS ESTA SUSCRIPCIÓN para que el log también aparezca
-        // al inicio del turno (antes de la fase de robo, si es tu flujo).
         TurnManager.OnTurnStart += UpdateRevolverStatusLog;
     }
 
@@ -124,7 +117,6 @@ public class CardManager : MonoBehaviour
             currentDeck[k] = currentDeck[n];
             currentDeck[n] = value;
         }
-        /* Debug.Log("[CardManager] Mazo barajado."); */
     }
 
     public void DrawCard()
@@ -172,7 +164,6 @@ public class CardManager : MonoBehaviour
 
         UpdateDeckCountDisplay();
         OnHandCountUpdated?.Invoke(playerHand.Count);
-        /* Debug.Log($"[CardManager] Carta robada: {drawnCardData.cardID} (Instance ID: {drawnCardData.instanceID}). Mazo restante: {currentDeck.Count}. Cartas en mano: {playerHand.Count}."); */
         UpdateHandVisuals();
     }
 
@@ -192,8 +183,6 @@ public class CardManager : MonoBehaviour
             {
                 Debug.LogWarning($"[CardManager] No se encontró la instancia UI para la carta '{cardToDiscard.cardID}' (Instance ID: {cardToDiscard.instanceID}) en handUIInstances al descartar. Esto puede indicar un problema de sincronización.");
             }
-
-            /* Debug.Log($"[CardManager] Carta '{cardToDiscard.cardID}' (Instance ID: {cardToDiscard.instanceID}) descartada. Cartas en mano: {playerHand.Count}. Cartas en descarte: {discardPile.Count}."); */
             OnHandCountUpdated?.Invoke(playerHand.Count);
             OnCardDiscarded?.Invoke();
             UpdateDiscardPileCountDisplay();
@@ -238,8 +227,7 @@ public class CardManager : MonoBehaviour
     }
 
 
-    /// <returns>True si la carta fue descartada exitosamente, false en caso contrario.</returns>
-    public bool AttemptManualDiscard(CardData cardToDiscard) // <--- ¡Asegúrate de que este método está en tu archivo!
+    public bool AttemptManualDiscard(CardData cardToDiscard)
     {
         // 1. Asegurarse de que la carta esté en la mano
         if (!playerHand.Contains(cardToDiscard))
@@ -276,10 +264,6 @@ public class CardManager : MonoBehaviour
             return false;
         }
 
-        // Si todas las condiciones se cumplen, proceder con el descarte interno
-        /* Debug.Log($"[CardManager] Intentando descartar carta '{cardToDiscard.cardID}' (Instance ID: {cardToDiscard.instanceID}). Mano actual antes: {playerHand.Count}."); */
-
-        // Llamada a la función interna que hace el trabajo real de mover la carta y destruir la UI
         DiscardCardInternal(cardToDiscard);
         return true;
     }
@@ -287,7 +271,6 @@ public class CardManager : MonoBehaviour
 
     private void UpdateHandVisuals()
     {
-        // Elimina cartas que ya no están en la mano
         var keysToRemove = handUIInstances.Keys.Except(playerHand.Select(c => c.instanceID)).ToList();
         foreach (var key in keysToRemove)
         {
@@ -295,7 +278,6 @@ public class CardManager : MonoBehaviour
             handUIInstances.Remove(key);
         }
 
-        // Instancia solo las cartas nuevas
         foreach (var cardData in playerHand)
         {
             if (!handUIInstances.ContainsKey(cardData.instanceID))
@@ -311,7 +293,6 @@ public class CardManager : MonoBehaviour
             }
         }
 
-        // Distribuye las cartas en línea centrada (puedes ajustar spacing)
         float spacing = 120f;
         float startX = -((playerHand.Count - 1) * spacing) / 2f;
 
@@ -328,11 +309,9 @@ public class CardManager : MonoBehaviour
             var rect = cardGO.GetComponent<RectTransform>();
             var behaviour = cardGO.GetComponent<CardBehaviour2>();
 
-            // Protección extra
             if (rect == null || behaviour == null || rect.Equals(null) || cardGO == null)
                 continue;
 
-            // Ajusta el sorting order del Canvas ---
             var canvas = cardGO.GetComponent<Canvas>();
             if (canvas != null && (behaviour == null || !behaviour.IsHovering))
             {
@@ -383,7 +362,7 @@ public class CardManager : MonoBehaviour
 
     public int CountCardsInHand(string targetCardID)
     {
-        if (playerHand == null) // <-- CAMBIO: Usar 'playerHand'
+        if (playerHand == null)
         {
             Debug.LogWarning("[CardManager] La lista 'playerHand' es nula al intentar contar cartas.");
             return 0;
@@ -396,7 +375,7 @@ public class CardManager : MonoBehaviour
     }
     public void DiscardSpecificCardsFromHand(string targetCardID, int countToDiscard)
     {
-        if (playerHand == null) // <-- CAMBIO: Usar 'playerHand'
+        if (playerHand == null)
         {
             Debug.LogWarning("[CardManager] La lista 'playerHand' es nula al intentar descartar cartas específicas.");
             return;
@@ -410,8 +389,7 @@ public class CardManager : MonoBehaviour
 
         List<CardData> cardsFoundAndToDiscard = new List<CardData>();
 
-        // Itera la mano para encontrar las cartas a remover, hasta que encuentres la cantidad necesaria.
-        foreach (CardData card in playerHand) // <-- CAMBIO: Usar 'playerHand'
+        foreach (CardData card in playerHand)
         {
             if (card != null && card.cardID == targetCardID)
             {
@@ -426,7 +404,7 @@ public class CardManager : MonoBehaviour
         int actualDiscardedCount = 0;
         foreach (CardData card in cardsFoundAndToDiscard)
         {
-            if (playerHand.Remove(card)) // <-- CAMBIO: Usar 'playerHand'
+            if (playerHand.Remove(card))
             {
                 discardPile.Add(card);
                 actualDiscardedCount++;
@@ -458,11 +436,6 @@ public class CardManager : MonoBehaviour
         }
     }
 
-    // --- NUEVO MÉTODO PÚBLICO PARA QUE TurnManager LLAME ---
-    /// <summary>
-    /// Solicita al CardManager que actualice el mensaje de debug del Revolver
-    /// basándose en las balas actuales en mano.
-    /// </summary>
     public void RequestRevolverStatusUpdate()
     {
         if (TurnManager.Instance != null)
@@ -475,12 +448,9 @@ public class CardManager : MonoBehaviour
         }
     }
 
-
-    /// Comprueba si el Revolver está equipado y actualiza el mensaje de debug sobre los disparos disponibles.
-    /// Se llama al inicio de cada turno.
-    private void UpdateRevolverStatusLog(int turnNumber) // <-- MANTENEMOS ESTE MÉTODO PRIVADO
+    private void UpdateRevolverStatusLog(int turnNumber)
     {
-        Debug.Log($"[CardManager] Actualizando estado del Revolver al inicio del turno {turnNumber}..."); // Use turnNumber if you want
+        Debug.Log($"[CardManager] Actualizando estado del Revolver al inicio del turno {turnNumber}...");
 
         if (PlayerStats.Instance == null)
         {
@@ -489,7 +459,7 @@ public class CardManager : MonoBehaviour
         }
 
         // 1. Comprobar si hay un arma equipada
-        if (!PlayerStats.Instance.HasWeaponEquipped || PlayerStats.Instance.CurrentEquippedWeapon == null) // Añadida comprobación de null
+        if (!PlayerStats.Instance.HasWeaponEquipped || PlayerStats.Instance.CurrentEquippedWeapon == null)
         {
             Debug.Log("[CardManager] No hay arma equipada actualmente.");
             return;
@@ -499,12 +469,10 @@ public class CardManager : MonoBehaviour
         if (PlayerStats.Instance.CurrentEquippedWeapon is RevolverCardData revolverCard)
         {
             // El Revolver está equipado, ahora contamos las balas
-            int bulletCount = CountCardsInHand("Caliber45Bullet"); // <-- Usa el mismo ID que en tus SO de bala
+            int bulletCount = CountCardsInHand("Caliber45Bullet"); 
             int shotsToFire = Mathf.Min(bulletCount, 3); // Límite de 3 disparos
 
-            // --- ESTE ES EL MENSAJE ACTUALIZADO CADA TURNO ---
             Debug.Log($"[REVOLVER STATUS DEBUG - Turno {turnNumber}] Revolver '{revolverCard.cardID}' equipado. Puedes hacer {shotsToFire} ataque(s) con las balas Calibre .45 disponibles en tu mano ({bulletCount} balas encontradas).");
-            // ----------------------------------------------------
         }
         else
         {
@@ -582,14 +550,12 @@ public class CardManager : MonoBehaviour
     }
     private IEnumerator DisparoConQTECoroutine(CombosManager combosManager, int shotsToFire)
     {
-        // NO mostrar el panel aquí - ya se mostró en HandleShotPhase()
         TotalDamage = 0;
         yield return new WaitForSeconds(1.1f);
 
         int aciertos = 0;
         for (int i = 0; i < shotsToFire; i++)
         {
-            // Usar el método que NO muestra panel
             combosManager.EmpezarQuickTimeEventsWithoutPanel();
             yield return new WaitUntil(() => combosManager.Terminado);
 
@@ -600,7 +566,6 @@ public class CardManager : MonoBehaviour
             yield return new WaitForSeconds(0.05f);
         }
 
-        // Ocultar el panel al final de todos los QTEs
         if (combosManager != null)
         {
             combosManager.HideQTEPanel();
@@ -609,7 +574,7 @@ public class CardManager : MonoBehaviour
         Enemy targetEnemy = FindObjectOfType<Enemy>();
         if (targetEnemy != null && aciertos > 0)
         {
-            AddAchievedShots(aciertos); // Añade los disparos acertados al total
+            AddAchievedShots(aciertos);
             Debug.Log($"[CardManager] {aciertos} disparos impactaron a '{targetEnemy.Data.enemyName}' tras QTEs.");
         }
         else if (aciertos == 0)
@@ -648,7 +613,6 @@ public class CardManager : MonoBehaviour
             Debug.Log("[CardManager] Se encontró la carta de la Biblia en la mano. Usándola para revivir.");
             DiscardCardInternal(bibleCard);
 
-            // 1. Curar al Jugador
             if (PlayerStats.Instance != null)
             {
                 PlayerStats.Instance.Heal(3);
@@ -659,7 +623,7 @@ public class CardManager : MonoBehaviour
                 Debug.LogError("[CardManager] PlayerStats.Instance es null. No se puede curar al jugador.");
             }
 
-            Enemy enemy = FindObjectOfType<Enemy>(); // <--- This line is the one to make sure is correct
+            Enemy enemy = FindObjectOfType<Enemy>();
             if (enemy != null)
             {
                 int healAmountForEnemy = 2;
@@ -681,19 +645,18 @@ public class CardManager : MonoBehaviour
 
     public bool AttemptUseCoverCard()
     {
-        // Busca la primera carta en la mano con el cardID "CoverCard".
         CardData coverCard = playerHand.FirstOrDefault(card => card != null && card.cardID == "CoverCard");
 
         if (coverCard != null)
         {
             Debug.Log("[CardManager] Se encontró la carta de Cover en la mano. Usándola para bloquear el daño.");
-            DiscardCardInternal(coverCard); // Descarta la carta de Cover.
-            return true; // La CoverCard fue usada con éxito para bloquear el daño.
+            DiscardCardInternal(coverCard);
+            return true;
         }
         else
         {
             Debug.Log("[CardManager] No se encontró la carta de Cover en la mano. El daño será aplicado.");
-            return false; // La CoverCard no fue encontrada.
+            return false;
         }
     }
 

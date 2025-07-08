@@ -1,6 +1,6 @@
 using UnityEngine;
 using System;
-using System.Collections.Generic; // Necesario para List
+using System.Collections.Generic;
 
 public class Enemy : MonoBehaviour
 {
@@ -18,10 +18,7 @@ public class Enemy : MonoBehaviour
     [SerializeField] private Transform heartUIParent;
     private List<GameObject> activeHearts = new List<GameObject>(); 
     // ------------------------------------------
-
-    // --- Referencia al componente de IA ---
     private IEnemyAI _enemyAI; 
-
 
     // --- Eventos (para que otros scripts puedan reaccionar a la vida del enemigo) ---
     public static event Action<Enemy, int> OnEnemyTookDamage;
@@ -31,18 +28,15 @@ public class Enemy : MonoBehaviour
 
     protected virtual void Awake()
     {
-        // Verifica si se ha asignado un EnemyData. Es crucial para que el enemigo funcione.
         if (_enemyData == null)
         {
             Debug.LogError($"El enemigo '{name}' no tiene asignado un EnemyData ScriptableObject en su Inspector.", this);
             return;
         }
 
-        // Inicializa la vida actual con la vida máxima definida en el EnemyData.
         CurrentHealth = _enemyData.maxHealth;
         Debug.Log($"Enemigo '{_enemyData.enemyName}' inicializado con {CurrentHealth} corazón/es de vida.");
 
-        // --- Buscar e Inicializar el componente de IA ---
         _enemyAI = GetComponent<IEnemyAI>(); // Intenta obtener el componente de IA en este GameObject
         if (_enemyAI == null)
         {
@@ -56,7 +50,7 @@ public class Enemy : MonoBehaviour
         }
         else
         {
-            _enemyAI.Initialize(this); // Pasa una referencia a esta instancia de Enemy a la IA
+            _enemyAI.Initialize(this); 
         }
         // --- FIN ACTUALIZADO ---
 
@@ -88,27 +82,23 @@ public class Enemy : MonoBehaviour
         }
     }
 
-    /// Lógica cuando el enemigo es derrotado.
     protected virtual void Die()
     {
         CurrentHealth = 0; 
         Debug.LogWarning($"{_enemyData.enemyName} HA SIDO DERROTADO.");
         OnEnemyDied?.Invoke(this); 
 
-        // Deshabilitar el componente de IA cuando el enemigo muere
         if (_enemyAI is MonoBehaviour aiMonoBehaviour) 
         {
             aiMonoBehaviour.enabled = false;
         }
     }
 
-    /// Método para que el enemigo realice su acción de turno.
-    /// Delega la lógica de comportamiento al componente de IA.
-    public virtual void PerformTurnAction() // Ya no recibe CardManager ni PlayerStats directamente aquí
+    public virtual void PerformTurnAction()
     {
         if (_enemyAI != null && (_enemyAI is MonoBehaviour aiMonoBehaviour && aiMonoBehaviour.enabled))
         {
-            _enemyAI.PerformTurnAction(); // Llama al método de la IA
+            _enemyAI.PerformTurnAction();
         }
         else
         {
@@ -116,7 +106,6 @@ public class Enemy : MonoBehaviour
         }
     }
 
-    /// Instancia los GameObjects de los corazones basándose en la vida máxima.
     private void InitializeHeartUI()
     {
         if (heartUIPrefab == null || heartUIParent == null)
@@ -139,7 +128,6 @@ public class Enemy : MonoBehaviour
         }
     }
 
-    /// Actualiza el color de los corazones según la vida actual del enemigo.
     private void UpdateHeartUI()
     {
         for (int i = 0; i < activeHearts.Count; i++)
@@ -162,7 +150,6 @@ public class Enemy : MonoBehaviour
         }
     }
 
-    /// Intenta disparar al jugador. Este método es llamado por la IA.
     public virtual void TryShootPlayer()
     {
         if (PlayerStats.Instance != null && PlayerStats.Instance.CanBeDamaged())

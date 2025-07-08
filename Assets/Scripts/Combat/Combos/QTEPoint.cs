@@ -7,7 +7,7 @@ public class QTEPoint : MonoBehaviour, IPointerClickHandler
     [SerializeField] public Image image;
     [SerializeField] public Sprite defaultSprite;
     [SerializeField] public Sprite pressedSprite;
-    [SerializeField] public Sprite failSprite; // Nuevo sprite para el estado fail
+    [SerializeField] public Sprite failSprite;
 
     public int index;
     private CombosManager manager;
@@ -26,7 +26,7 @@ public class QTEPoint : MonoBehaviour, IPointerClickHandler
         }
 
         image.sprite = defaultSprite;
-        image.color = Color.white; // Asegura que el color no afecte la sprite
+        image.color = Color.white;
         Debug.Log($"[QTEPoint] Punto {idx} inicializado como elemento UI puro");
     }
 
@@ -35,7 +35,7 @@ public class QTEPoint : MonoBehaviour, IPointerClickHandler
         if (image != null)
         {
             var color = image.color;
-            color.a = 0.3f; // Semi-transparente
+            color.a = 0.3f;
             image.color = color;
         }
     }

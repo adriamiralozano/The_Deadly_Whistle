@@ -20,7 +20,6 @@ public class CardPreviewManager : MonoBehaviour
         else
             Instance = this;
 
-        // Si no está asignado en el inspector, lo busca en la MainCamera
         if (blurVolume == null && Camera.main != null)
             blurVolume = Camera.main.GetComponent<PostProcessVolume>();
 
@@ -32,7 +31,7 @@ public class CardPreviewManager : MonoBehaviour
     public void ShowCard(Sprite cardSprite)
     {
         cardImage.sprite = cardSprite;
-        AdjustPreviewScale(); // <-- aquí
+        AdjustPreviewScale();
         previewCanvas.SetActive(true);
         if (blurVolume != null)
             blurVolume.enabled = true;
@@ -61,16 +60,11 @@ public class CardPreviewManager : MonoBehaviour
 
     void AdjustPreviewScale()
     {
-        // Porcentaje de la altura de pantalla que quieres que ocupe la carta (por ejemplo, 40%)
         float targetHeightPercent = 0.6f;
-
-        // Obtén el RectTransform de la carta
         RectTransform rt = cardImage.rectTransform;
 
-        // Calcula la altura deseada en píxeles
         float targetHeight = Screen.height * targetHeightPercent;
 
-        // Ajusta el tamaño manteniendo la proporción del sprite
         float aspect = rt.sizeDelta.x / rt.sizeDelta.y;
         rt.sizeDelta = new Vector2(targetHeight * aspect, targetHeight);
     }

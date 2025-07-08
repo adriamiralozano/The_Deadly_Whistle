@@ -15,9 +15,7 @@ public class CardBehaviour2 : MonoBehaviour,
     IPointerUpHandler,
     IPointerDownHandler
 {
-    // Flag estática para controlar el dragging global ===
     public static bool IsAnyCardDragging = false;
-    // ===============================================================
 
 
     private RectTransform rectTransform;
