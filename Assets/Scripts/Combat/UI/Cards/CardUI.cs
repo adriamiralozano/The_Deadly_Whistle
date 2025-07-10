@@ -1,16 +1,15 @@
 using UnityEngine;
-using UnityEngine.UI; // Necesario para acceder al componente Image
+using UnityEngine.UI;
 
 public class CardUI : MonoBehaviour
 {
-    private CardData cardData; // Referencia a los datos de la carta
-    private Image cardImage; // Referencia al componente Image del GameObject principal
+    private CardData cardData;
+    private Image cardImage;
     public Sprite CardSprite => cardData != null ? cardData.artwork : null;
 
 
     void Awake()
     {
-        // Obtener la referencia al componente Image en el mismo GameObject
         cardImage = GetComponent<Image>();
         if (cardImage == null)
         {
@@ -22,14 +21,12 @@ public class CardUI : MonoBehaviour
     {
         cardData = data;
 
-        // Carga el artwork si existe
         if (cardImage != null && data.artwork != null)
         {
             cardImage.sprite = data.artwork;
         }
         else if (cardImage != null)
         {
-            // Si no hay artwork, asegura que el sprite sea nulo para no mostrar un sprite anterior
             cardImage.sprite = null;
         }
 

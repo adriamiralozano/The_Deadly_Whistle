@@ -52,11 +52,10 @@ public class SaveManager : MonoBehaviour
         return null;
     }
 
-    private SaveData GatherCurrentGameData() //
+    private SaveData GatherCurrentGameData()
     {
         SaveData data = new SaveData();
 
-        // Ejemplo: Recoge el acto actual
         if (ActManager.Instance != null)
         {
             data.currentAct = (int)ActManager.Instance.CurrentAct;
@@ -81,14 +80,10 @@ public class SaveManager : MonoBehaviour
         SaveData newSave = new SaveData();
         newSave.currentAct = 1; // Act1
         newSave.currentPhase = 0; // PreCombat
-        newSave.playerMoney = 0; // Cantidad inicial de dinero del jugador
+        newSave.playerMoney = 0; 
         newSave.familyMoney = 0;
         newSave.gangMoney = 0;
         newSave.completedContracts = new List<string>();
-        /*         newSave.deckCardIDs = new List<string>();
-                newSave.dialogueStates = new Dictionary<string, int>();
-                newSave.completedContracts = new List<string>();
-                newSave.failedContracts = new List<string>(); */
         SaveGame(newSave);
         Debug.Log("Contenido del guardado tras NewGame: " + File.ReadAllText(savePath));
     }

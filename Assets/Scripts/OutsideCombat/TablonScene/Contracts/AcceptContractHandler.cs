@@ -47,7 +47,6 @@ public class AcceptContractHandler : MonoBehaviour
             return;
         }
 
-        // Si llegamos aquí, todo está bien
         Debug.Log("Todas las validaciones pasadas, procediendo con el contrato...");
 
         // Guarda el estado antes de elegir contrato

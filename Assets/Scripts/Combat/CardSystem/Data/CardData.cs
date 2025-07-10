@@ -1,6 +1,5 @@
 using UnityEngine;
-using System; // Necesario para Guid
-
+using System;
 public enum CardType
 {
     None,

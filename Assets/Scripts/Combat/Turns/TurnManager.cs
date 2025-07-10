@@ -1,8 +1,7 @@
-// TurnManager.cs
 using UnityEngine;
-using System; // Para Action y Func
-using TMPro; // Para TextMeshProUGUI
-using System.Collections; // Para Coroutines
+using System;
+using TMPro;
+using System.Collections;
 using UnityEngine.UI;
 using DG.Tweening;
 
@@ -11,9 +10,9 @@ public class TurnManager : MonoBehaviour
 {
     // --- Referencias UI ---
     [Header("UI References")]
-    [SerializeField] private TextMeshProUGUI turnPhaseText; // Para el texto de fase de turno
-    [SerializeField] private TextMeshProUGUI handCountText; // Para el conteo de la mano
-    [SerializeField] private GameObject enemyTurnBanner; // Para mostrar un banner durante el turno del enemigo
+    [SerializeField] private TextMeshProUGUI turnPhaseText;
+    [SerializeField] private TextMeshProUGUI handCountText;
+    [SerializeField] private GameObject enemyTurnBanner;
 
     // --- Singleton ---
     public static TurnManager Instance { get; private set; }
@@ -27,13 +26,13 @@ public class TurnManager : MonoBehaviour
     private Vector3 enemyGOOriginalScale;
     private Vector2 turnIndicatorOriginalPos;
 
-    [SerializeField] private GameObject TurnIndicatorGO; // Asigna el prefab del indicador de turno en el Inspector
-    [SerializeField] private GameObject EnemyGO; // Asigna el prefab del enemigo en el Inspector
-    [SerializeField] private GameObject playerGO; // Asigna el prefab del jugador en el Inspector
+    [SerializeField] private GameObject TurnIndicatorGO;
+    [SerializeField] private GameObject EnemyGO;
+    [SerializeField] private GameObject playerGO;
     [SerializeField] private GameObject groupedSpritesGO;
-    [SerializeField] public Enemy activeEnemy; // Referencia al enemigo actual en la escena. ¡Asigna esto en el Inspector!
+    [SerializeField] public Enemy activeEnemy;
     [SerializeField] private GameObject backgroundGO;
-    [SerializeField] private GameObject zoomBackgroundGO; // Asigna el sprite para el zoom en el inspector
+    [SerializeField] private GameObject zoomBackgroundGO;
     private Sprite originalSprite;
 
 
@@ -64,7 +63,7 @@ public class TurnManager : MonoBehaviour
     private TurnPhase currentTurnPhase = TurnPhase.None;
     public TurnPhase CurrentPhase { get { return currentTurnPhase; } }
 
-    // Para optimizar actualizaciones de UI
+    // optimizar actualizaciones de UI
     private string lastTurnPhaseText = "";
     private string lastHandCountText = "";
 
@@ -90,7 +89,6 @@ public class TurnManager : MonoBehaviour
             Instance = this;
         }
 
-        // --- Obtener referencias de componentes en el mismo GameObject ---
         playerStats = GetComponent<PlayerStats>();
         cardManager = GetComponent<CardManager>();
 
@@ -103,18 +101,16 @@ public class TurnManager : MonoBehaviour
         if (activeEnemy == null)
             Debug.LogWarning("[TurnManager] No hay un enemigo activo asignado en el Inspector.", this);
     }
-
-    // --- Suscripción/Desuscripción a Eventos ---
     void OnEnable()
     {
         CardManager.OnHandCountUpdated += UpdateHandCountDisplay;
-        OutlawEnemyAI.OnEnemyTurnCompleted += OnEnemyTurnCompleted; // Suscribirse al evento
+        OutlawEnemyAI.OnEnemyTurnCompleted += OnEnemyTurnCompleted;
     }
 
     void OnDisable()
     {
         CardManager.OnHandCountUpdated -= UpdateHandCountDisplay;
-        OutlawEnemyAI.OnEnemyTurnCompleted -= OnEnemyTurnCompleted; // Desuscribirse del evento
+        OutlawEnemyAI.OnEnemyTurnCompleted -= OnEnemyTurnCompleted;
     }
 
     // --- Métodos de Inicio ---
@@ -133,19 +129,15 @@ public class TurnManager : MonoBehaviour
         StartGame();
     }
 
-    /// Inicia el juego y el primer turno del jugador.
     public void StartGame()
     {
-        // currentTurnNumber se mantiene en 0 aquí. Será incrementado a 1 en StartPlayerTurn() la primera vez.
-        // --- ¡CAMBIO CRUCIAL AQUÍ! ELIMINAMOS currentTurnNumber++; ---
         Debug.Log("Juego iniciado. Preparando la fase de preparación inicial.");
-        SetPhase(TurnPhase.Preparation); // Solo aquí se usa Preparation
+        SetPhase(TurnPhase.Preparation);
     }
 
-    /// Inicia el turno del jugador y avanza a la primera fase (Robo).
     public void StartPlayerTurn()
     {
-        currentTurnNumber++; // Esto asegura que el primer turno sea el Turno 1
+        currentTurnNumber++;
         Debug.Log($"--- INICIO DEL TURNO {currentTurnNumber} DEL JUGADOR ---");
 
         OnTurnStart?.Invoke(currentTurnNumber);
@@ -158,7 +150,6 @@ public class TurnManager : MonoBehaviour
         SetPhase(TurnPhase.DrawPhase);
     }
 
-    /// Cambia la fase actual del turno y maneja la lógica asociada a cada fase.
     private void SetPhase(TurnPhase newPhase)
     {
         if (currentTurnPhase == newPhase) return;
@@ -222,8 +213,6 @@ public class TurnManager : MonoBehaviour
                 break;
         }
     }
-
-    /// Avanza a la siguiente fase del turno del jugador, basada en la fase actual.
     public void AdvancePhase()
     {
 
@@ -277,7 +266,6 @@ public class TurnManager : MonoBehaviour
                 break;
         }
     }
-    // --- Métodos de Manejo de Fases Específicas ---
     private void HandleDrawPhase()
     {
         Debug.Log("Iniciando Fase de Robo...");
@@ -287,33 +275,28 @@ public class TurnManager : MonoBehaviour
     private void HandleActionPhase()
     {
         Debug.Log("Iniciando Fase de Acción: Realiza tus jugadas.");
-        // El jugador debe usar el botón "End Turn" (o barra espaciadora) para terminar esta fase.
     }
 
-    /// Corrutina para manejar la fase de fin de turno. Permite limpieza y prepara el siguiente turno.
     private IEnumerator HandleEndTurnPhaseRoutine()
     {
         Debug.Log("Iniciando Fase de Fin de Turno: Limpieza y preparación...");
-        OnPlayerTurnEnded?.Invoke(); // Notifica que el turno del jugador ha terminado.
+        OnPlayerTurnEnded?.Invoke();
 
         Debug.Log("Preparando el siguiente turno...");
-        currentTurnPhase = TurnPhase.None; // Resetea la fase para que StartPlayerTurn comience desde None.
+        currentTurnPhase = TurnPhase.None;
 
-        yield return null; // Un frame de espera para asegurar que todo se procese.
+        yield return null;
 
         SetPhase(TurnPhase.EnemyTurn);
     }
 
-    // --- Interacción con el Jugador (desde UI o input) ---
-    /// Método llamado por el botón "End Turn" para intentar avanzar la fase.
     public void EndPlayerTurnButton()
     {
-        // Si estamos en la fase de acción y la mano aún excede el límite, no se permite terminar el turno.
         if (currentTurnPhase == TurnPhase.ActionPhase && CheckIfHandExceedsLimit())
         {
             AdviceMessageManager.Instance.ShowAdvice("To pass the turn you must discard.");    
             Debug.LogWarning("No puedes terminar el turno. Debes descartar cartas para reducir tu mano al límite.");
-            return; // Sale del método sin avanzar la fase.
+            return;
         }
         if (currentTurnPhase != TurnPhase.ActionPhase)
         {
@@ -324,18 +307,17 @@ public class TurnManager : MonoBehaviour
             else
             {
                 Debug.LogWarning("No puedes terminar el turno fuera de la Fase de Acción.");
-                return; // Sale del método sin avanzar la fase.
+                return;
             }
         }
 
         Debug.Log("Solicitud de finalizar turno del jugador.");
-        AdvancePhase(); // Si las condiciones son adecuadas, avanza a la siguiente fase.
+        AdvancePhase();
     }
 
 
     // --- Métodos Auxiliares ---
 
-    /// Comprueba si la mano del jugador excede el tamaño máximo permitido.
     private bool CheckIfHandExceedsLimit()
     {
         if (OnRequestHandCount != null)
@@ -346,7 +328,6 @@ public class TurnManager : MonoBehaviour
         return false;
     }
 
-    /// Obtiene el conteo actual de cartas en la mano del jugador.
     private int GetHandCount()
     {
         if (OnRequestHandCount != null)
@@ -358,7 +339,6 @@ public class TurnManager : MonoBehaviour
 
     // --- Métodos de Actualización de UI ---
 
-    /// Actualiza el texto de la fase de turno en la UI.
     private void UpdateTurnPhaseDisplay()
     {
         if (turnPhaseText != null)
@@ -375,11 +355,6 @@ public class TurnManager : MonoBehaviour
             Debug.LogWarning("[TurnManager] turnPhaseText no asignado en el Inspector.");
         }
     }
-
-    /// <summary>
-    /// Actualiza el texto del conteo de la mano en la UI.
-    /// Es público porque es llamado por el evento OnHandCountUpdated de CardManager.
-    /// </summary>
     public void UpdateHandCountDisplay(int handCount)
     {
         if (handCountText != null)
@@ -414,14 +389,13 @@ public class TurnManager : MonoBehaviour
         Debug.Log("Turno del enemigo: esperando 1 segundo antes de la acción...");
         yield return new WaitForSeconds(1f);
 
-        enemyTurnCompleted = false; // Resetea la bandera
+        enemyTurnCompleted = false;
 
         if (activeEnemy != null && activeEnemy.IsAlive)
         {
             Debug.Log($"Turno del enemigo: {activeEnemy.Data.enemyName} realizando su acción...");
             activeEnemy.PerformTurnAction();
 
-            // NUEVO: Espera hasta que el enemigo complete todas sus acciones
             yield return new WaitUntil(() => enemyTurnCompleted);
         }
         else
@@ -447,15 +421,11 @@ public class TurnManager : MonoBehaviour
 
     private IEnumerator DrawCardsAndLogRevolverRoutine()
     {
-        // currentTurnNumber es el turno que *acaba* de empezar, por lo que para el primer robo (Turno 1), queremos robar todas.
-        // Si currentTurnNumber es 0 (estado inicial), deberíamos robar 5 cartas para la mano inicial.
-        // El primer turno de juego es el número 1. Entonces, si currentTurnNumber es 1, se roban todas las cartas.
-        // Si currentTurnNumber es > 1, se roba 1 carta.
 
-        int cardsToDraw = 1; // Por defecto, robar 1 carta
-        if (currentTurnNumber == 1) // Si estamos en el primer turno de juego
+        int cardsToDraw = 1; 
+        if (currentTurnNumber == 1) 
         {
-            cardsToDraw = MAX_HAND_SIZE; // Robar 5 cartas para la mano inicial
+            cardsToDraw = MAX_HAND_SIZE;
         }
 
         Debug.Log($"[TurnManager] Robando {cardsToDraw} carta(s).");
@@ -478,7 +448,6 @@ public class TurnManager : MonoBehaviour
 
         AdvancePhase();
     }
-    /// Método llamado por el botón "Fire Revolver" para intentar disparar el Revolver.
     public void OnFireRevolverButtonPressed()
     {
         // 1. Verificar la fase actual del turno
@@ -513,8 +482,8 @@ public class TurnManager : MonoBehaviour
     private IEnumerator HandlePreparationPhaseRoutine()
     {
         Debug.Log("Fase de preparación inicial...");
-        yield return new WaitForSeconds(1f); // Espera 1 segundo
-        StartPlayerTurn(); // Ahora sí, inicia el primer turno normalmente
+        yield return new WaitForSeconds(1f);
+        StartPlayerTurn();
     }
 
 
@@ -530,7 +499,6 @@ public class TurnManager : MonoBehaviour
     {
         Debug.Log("Iniciando Fase de Disparo (ShotPhase). Mostrando panel QTE...");
 
-        // Mostrar el panel QTE al entrar en ShotPhase
         CombosManager combosManager = FindObjectOfType<CombosManager>();
         if (combosManager != null)
         {
@@ -549,7 +517,6 @@ public class TurnManager : MonoBehaviour
         var enemyVisual = FindObjectOfType<EnemyVisualManager>();
         Enemy targetEnemy = activeEnemy;
 
-        // Guarda el sprite original del enemigo
         Sprite enemyOriginalSprite = null;
         Sprite playerOriginalSprite = null;
         SpriteRenderer enemySpriteRenderer = null;
@@ -557,7 +524,6 @@ public class TurnManager : MonoBehaviour
 
         if (playerShotEffects != null)
         {
-            // Desactiva todos primero
             foreach (var go in playerShotEffects)
                 if (go != null) go.SetActive(false);
 
@@ -579,22 +545,17 @@ public class TurnManager : MonoBehaviour
             playerVisual.SetRevolverShotSprite();
         }
 
-        // Ambos fondos activos SIEMPRE
         backgroundGO.SetActive(true);
         zoomBackgroundGO.SetActive(true);
 
-        // Referencias
         var bgRenderer = backgroundGO.GetComponent<SpriteRenderer>();
         var zoomBgRenderer = zoomBackgroundGO.GetComponent<SpriteRenderer>();
 
-        // Sorting orders originales
         int bgOrder = bgRenderer.sortingOrder;
         int zoomOrder = zoomBgRenderer.sortingOrder;
 
-        // Poner el fondo de zoom delante
         zoomBgRenderer.sortingOrder = bgOrder + 1;
 
-        // Transforms
         Transform bgTransform = backgroundGO.transform;
         Transform zoomBgTransform = zoomBackgroundGO.transform;
         Transform playerTransform = playerGO != null ? playerGO.transform : null;
@@ -777,7 +738,6 @@ public class TurnManager : MonoBehaviour
             bgTransform.rotation = Quaternion.Lerp(bgTargetRot, bgOriginalRot, t);
             zoomBgTransform.rotation = Quaternion.Lerp(zoomBgTargetRot, zoomBgOriginalRot, t);
 
-            // NO hagas crossfade: el fondo de zoom siempre opaco
             zoomBgRenderer.color = new Color(1f, 1f, 1f, 1f);
 
             if (playerTransform != null)
@@ -814,7 +774,6 @@ public class TurnManager : MonoBehaviour
 
         // Restaurar sorting order original
 
-
         yield return new WaitForSeconds(0.2f);
 
         if (enemySpriteRenderer != null && enemyOriginalSprite != null)
@@ -838,7 +797,7 @@ public class TurnManager : MonoBehaviour
         FadeOut(miObjetoUI, 0.0f);
         var playerVisual = FindObjectOfType<PlayerVisualManager>();
         var enemyVisual = FindObjectOfType<EnemyVisualManager>();
-        Enemy targetPlayer = playerStats != null ? playerStats.GetComponent<Enemy>() : null; // Si tienes un método específico para dañar al jugador, úsalo
+        Enemy targetPlayer = playerStats != null ? playerStats.GetComponent<Enemy>() : null; 
 
         // Guarda el sprite original del enemigo y del player
         Sprite enemyOriginalSprite = null;
@@ -859,7 +818,7 @@ public class TurnManager : MonoBehaviour
             playerSpriteRenderer = playerVisual.GetComponent<SpriteRenderer>();
             if (playerSpriteRenderer != null)
                 playerOriginalSprite = playerSpriteRenderer.sprite;
-            playerVisual.SetPlayerShotedSprite(); // O crea un método para "herido"
+            playerVisual.SetPlayerShotedSprite(); 
         }
 
         backgroundGO.SetActive(true);
@@ -971,7 +930,6 @@ public class TurnManager : MonoBehaviour
                     AudioManager.Instance.PlayBangSound();
                 shotsActivated++;
                 nextShotTime += shotInterval;
-                // Aquí puedes aplicar daño al jugador si lo deseas
 
                 ShakeTransformsDOTween(new Transform[] { bgTransform, zoomBgTransform, playerTransform, enemyTransform }, 0.15f, 0.8f);
                 yield return new WaitForSeconds(0.15f);
@@ -1024,7 +982,6 @@ public class TurnManager : MonoBehaviour
             bgTransform.rotation = Quaternion.Lerp(bgTargetRot, bgOriginalRot, t);
             zoomBgTransform.rotation = Quaternion.Lerp(zoomBgTargetRot, zoomBgOriginalRot, t);
 
-            // NO hagas crossfade: el fondo de zoom siempre opaco
             zoomBgRenderer.color = new Color(1f, 1f, 1f, 1f);
 
             if (playerTransform != null)
@@ -1057,9 +1014,6 @@ public class TurnManager : MonoBehaviour
             enemyTransform.localScale = enemyOriginal;
             enemyTransform.position = enemyPosOriginal;
         }
-
-        // Restaurar sorting order original
-
 
         yield return new WaitForSeconds(0.2f);
 
@@ -1187,7 +1141,7 @@ public class TurnManager : MonoBehaviour
         }
 
         target.SetActive(true);
-        canvasGroup.alpha = 0f; // Asegura que empieza transparente
+        canvasGroup.alpha = 0f; 
         canvasGroup.DOFade(1f, duration);
     }
 

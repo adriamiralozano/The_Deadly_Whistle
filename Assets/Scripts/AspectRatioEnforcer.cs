@@ -16,7 +16,6 @@ public class AspectRatioEnforcer : MonoBehaviour
 
     void Update()
     {
-        // Opcional: solo si quieres que se adapte en caliente al cambiar la resolución
         UpdateViewport();
     }
 
@@ -27,7 +26,6 @@ public class AspectRatioEnforcer : MonoBehaviour
 
         if (scaleHeight < 1.0f)
         {
-            // Letterbox: barras negras arriba y abajo
             Rect rect = cam.rect;
 
             rect.width = 1.0f;
@@ -39,7 +37,6 @@ public class AspectRatioEnforcer : MonoBehaviour
         }
         else
         {
-            // Pillarbox: barras negras a los lados
             float scaleWidth = 1.0f / scaleHeight;
 
             Rect rect = cam.rect;

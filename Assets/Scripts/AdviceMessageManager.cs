@@ -8,8 +8,8 @@ public class AdviceMessageManager : MonoBehaviour
     public static AdviceMessageManager Instance { get; private set; }
 
     [Header("UI Settings")]
-    [SerializeField] private GameObject advicePrefab; // Arrastra aquí tu prefab del mensaje
-    [SerializeField] private Transform parentCanvas;  // Arrastra aquí el Canvas principal de tu UI
+    [SerializeField] private GameObject advicePrefab;
+    [SerializeField] private Transform parentCanvas;
 
     [Header("Animation Timings")]
     [SerializeField] private float fadeInDuration = 0.5f;
@@ -18,7 +18,6 @@ public class AdviceMessageManager : MonoBehaviour
 
     private void Awake()
     {
-        // Configuración del Singleton
         if (Instance != null && Instance != this)
         {
             Destroy(gameObject);
@@ -37,10 +36,8 @@ public class AdviceMessageManager : MonoBehaviour
             return;
         }
 
-        // Instancia el prefab como hijo del canvas
         GameObject adviceInstance = Instantiate(advicePrefab, parentCanvas);
 
-        // Busca los componentes necesarios en el prefab instanciado
         TextMeshProUGUI textComponent = adviceInstance.GetComponentInChildren<TextMeshProUGUI>();
         CanvasGroup canvasGroup = adviceInstance.GetComponent<CanvasGroup>();
 
@@ -56,17 +53,15 @@ public class AdviceMessageManager : MonoBehaviour
             canvasGroup = adviceInstance.AddComponent<CanvasGroup>();
         }
 
-        // Configura el texto y la opacidad inicial
         textComponent.text = message;
         canvasGroup.alpha = 0f;
 
-        // Crea y ejecuta la secuencia de animación con DOTween
         Sequence sequence = DOTween.Sequence();
         sequence.Append(canvasGroup.DOFade(1f, fadeInDuration))  // Fade In
                 .AppendInterval(displayDuration)                 // Espera
                 .Append(canvasGroup.DOFade(0f, fadeOutDuration)) // Fade Out
                 .OnComplete(() => {
-                    Destroy(adviceInstance); // Destruye el objeto al finalizar
+                    Destroy(adviceInstance); 
                 });
     }
 }

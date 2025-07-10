@@ -14,7 +14,6 @@ public class PauseManager : MonoBehaviour
 
     private void Awake()
     {
-        // Configuración del Singleton
         if (Instance != null && Instance != this)
         {
             Destroy(gameObject);
@@ -22,14 +21,11 @@ public class PauseManager : MonoBehaviour
         else
         {
             Instance = this;
-            // Opcional: si quieres que el manager persista entre escenas
-            // DontDestroyOnLoad(gameObject); 
         }
     }
 
     private void Start()
     {
-        // Asegúrate de que el menú de pausa esté oculto al empezar
         if (pauseMenuUI != null)
         {
             pauseMenuUI.SetActive(false);
@@ -42,7 +38,6 @@ public class PauseManager : MonoBehaviour
 
     void Update()
     {
-        // Escucha la tecla 'Escape' para pausar o reanudar
         if (Input.GetKeyDown(KeyCode.Escape))
         {
             if (isPaused)
@@ -67,7 +62,7 @@ public class PauseManager : MonoBehaviour
         {
             postProcessVolume.enabled = false;
         }
-        Time.timeScale = 1f; // Restaura el flujo del tiempo
+        Time.timeScale = 1f; 
         isPaused = false;
         Debug.Log("Game Resumed.");
     }
@@ -83,19 +78,16 @@ public class PauseManager : MonoBehaviour
         {
             postProcessVolume.enabled = true;
         }
-        Time.timeScale = 0f; // Congela el tiempo del juego
+        Time.timeScale = 0f;
         isPaused = true;
         Debug.Log("Game Paused.");
     }
 
-    // --- Métodos Opcionales para Botones del Menú ---
 
 
     public void LoadMenu()
     {
-        // ¡Importante! Asegúrate de reanudar el tiempo antes de cambiar de escena.
         Time.timeScale = 1f;
-        // Cambia "MainMenuScene" por el nombre real de tu escena de menú
         SceneManager.LoadScene("MainMenuScene");
     }
 
@@ -108,7 +100,6 @@ public class PauseManager : MonoBehaviour
 
     public void LoadTablonScene()
     {
-        // Restaura el tiempo antes de cambiar de escena para evitar problemas.
         Time.timeScale = 1f;
         SceneManager.LoadScene("Tablon");
         Debug.Log("Loading Tablon scene...");
@@ -122,7 +113,6 @@ public class PauseManager : MonoBehaviour
             SaveManager.Instance.SaveCurrentGame();
             Debug.Log("Partida guardada antes de volver al menú principal.");
         }
-        // Asegúrate de que el tiempo se reanude antes de cambiar de escena.
         Time.timeScale = 1f;
         SceneManager.LoadScene("MainMenu");
         Debug.Log("Returning to Main Menu...");

@@ -31,7 +31,7 @@ public class CombosManager : MonoBehaviour
     public bool ExitoCombo => exitoCombo;
     private bool desvaneciendo = false;
     public bool Desvaneciendo => desvaneciendo;
-    private bool permitirClicks = false; // NUEVA variable para controlar clicks
+    private bool permitirClicks = false;
 
     private List<Vector2> posicionesQTE = new List<Vector2>();
 
@@ -69,25 +69,21 @@ public class CombosManager : MonoBehaviour
             StopCoroutine(timeoutCoroutine);
         timeoutCoroutine = StartCoroutine(QTETimeoutCoroutine());
         
-        // PERMITIR clicks después de un pequeño delay
         StartCoroutine(HabilitarClicksConDelay());
     }
 
     public void ShowQTEPanel()
     {
-        // Solo muestra el panel, sin iniciar QTEs
         if (panelAnimator != null)
         {
             panelAnimator.ShowPanel();
         }
         
-        // NUEVO: Forzar que el contenedor de puntos QTE esté por encima del panel
         EnsureQTEPointsOnTop();
     }
 
     public void HideQTEPanel()
     {
-        // Solo oculta el panel
         if (panelAnimator != null)
         {
             panelAnimator.HidePanel();
@@ -98,7 +94,6 @@ public class CombosManager : MonoBehaviour
     {
         if (!terminado) return;
 
-        // Asegurar que los puntos estén por encima antes de crearlos
         EnsureQTEPointsOnTop();
         
         if (tiempoSlider != null)
@@ -112,7 +107,7 @@ public class CombosManager : MonoBehaviour
             if (p != null) Destroy(p.gameObject);
         puntos.Clear();
         currentIndex = 0;
-        permitirClicks = false; // RESETEAR
+        permitirClicks = false;
 
         GenerarPosicionesQTE();
 
@@ -126,16 +121,13 @@ public class CombosManager : MonoBehaviour
             StopCoroutine(timeoutCoroutine);
         timeoutCoroutine = StartCoroutine(QTETimeoutCoroutine());
         
-        // PERMITIR clicks después de un pequeño delay
         StartCoroutine(HabilitarClicksConDelay());
     }
 
-    // Asegurar que los puntos estén por encima antes de crearlos
     private void EnsureQTEPointsOnTop()
     {
         if (contenedor != null)
         {
-            // Solo mover al final de la jerarquía para asegurar render order
             contenedor.SetAsLastSibling();
             Debug.Log("[CombosManager] Contenedor QTE movido al final de la jerarquía");
         }
@@ -143,7 +135,7 @@ public class CombosManager : MonoBehaviour
 
     private IEnumerator HabilitarClicksConDelay()
     {
-        yield return new WaitForSeconds(0.3f); // Esperar a que se cree el primer punto
+        yield return new WaitForSeconds(0.3f);
         permitirClicks = true;
         Debug.Log("[CombosManager] ¡Clicks habilitados!");
     }
@@ -189,7 +181,6 @@ public class CombosManager : MonoBehaviour
         float puntoRadio = ((RectTransform)puntoPrefab.transform).rect.width * 0.5f;
         float radioMinimo = puntoRadio * 2f;
 
-        // Calcula los márgenes internos
         float margen = puntoRadio;
 
         for (int i = 0; i < cantidadPuntos; i++)
@@ -209,7 +200,6 @@ public class CombosManager : MonoBehaviour
 
                 pos = ultimoPunto + offset;
 
-                // Aplica el margen para que no se salgan del contenedor
                 pos.x = Mathf.Clamp(
                     pos.x,
                     contenedor.rect.xMin + margen,
@@ -246,7 +236,6 @@ public class CombosManager : MonoBehaviour
         falloDetectado = false;
         exitoCombo = false;
 
-        // VOLVER al método original: crear puntos progresivamente
         for (int i = 0; i < posicionesQTE.Count; i++)
         {
             if (falloDetectado) break;
@@ -267,7 +256,6 @@ public class CombosManager : MonoBehaviour
         Debug.Log($"[CombosManager] Todos los puntos QTE creados. Total: {puntos.Count}");
     }
 
-    // Llama esto desde QTEPoint
     public void PulsarPunto(int idx)
     {
         Debug.Log($"[CombosManager] PulsarPunto llamado - Índice: {idx}, CurrentIndex: {currentIndex}, Terminado: {terminado}, PermitirClicks: {permitirClicks}");
@@ -331,7 +319,6 @@ public class CombosManager : MonoBehaviour
         }
     }
 
-    // Instancia los puntos que faltan tras el fallo, en rojo y alpha reducido
     private IEnumerator MostrarRestantesFallidos()
     {
         for (int i = puntos.Count; i < posicionesQTE.Count; i++)
@@ -343,7 +330,6 @@ public class CombosManager : MonoBehaviour
             rect.anchoredPosition = posicionesQTE[i];
             puntos.Add(qtePoint);
             qtePoint.SetFail(0.5f);
-            // No hay yield aquí, todos aparecen instantáneamente
         }
         yield break;
     }
@@ -353,7 +339,6 @@ public class CombosManager : MonoBehaviour
         desvaneciendo = true;
         Debug.Log("Combo terminado. ¿Éxito?: " + exitoCombo);
         float tiempo = 0f;
-        // Guarda el color inicial de cada punto
         List<Image> images = new List<Image>();
         List<Color> coloresIniciales = new List<Color>();
         foreach (var p in puntos)
@@ -370,7 +355,6 @@ public class CombosManager : MonoBehaviour
             float t = tiempo / duracion;
             for (int i = 0; i < images.Count; i++)
             {
-                // Verifica que la imagen y su GameObject sigan existiendo y activos
                 if (images[i] != null && images[i].gameObject != null && images[i].gameObject.activeInHierarchy)
                 {
                     var color = coloresIniciales[i];
@@ -382,7 +366,6 @@ public class CombosManager : MonoBehaviour
             yield return null;
         }
 
-        // Asegura alpha 0 y desactiva
         foreach (var p in puntos)
             if (p != null) p.gameObject.SetActive(false);
         puntos.Clear();

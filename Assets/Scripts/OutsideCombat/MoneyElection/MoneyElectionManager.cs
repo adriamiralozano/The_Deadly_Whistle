@@ -34,7 +34,6 @@ public class MoneyElectionManager : MonoBehaviour
     // Lista inicializada con los valores para cada acto
     public List<MoneyRequest> moneyRequestsPorActo = new List<MoneyRequest>()
     {
-        //new MoneyRequest() { familia = 40, banda = 10 },   // Tutorial
         new MoneyRequest() { familia = 50, banda = 20 },   // Acto 1
         new MoneyRequest() { familia = 65, banda = 35 },   // Acto 2
         new MoneyRequest() { familia = 100, banda = 50 }   // Acto 3
@@ -56,7 +55,6 @@ public class MoneyElectionManager : MonoBehaviour
 
         string titulo = acto == 0 ? "DAY 1" : $"DAY {dia}";
         tituloDiaText.text = titulo;
-        //int recompensa = 200; // Recompensa fija de 200 de momento
         int dineroActual = SaveManager.Instance.LoadGame().playerMoney;
         dineroActualPrueba = dineroActual; ;
         dineroActualText.text = $"Total money ...................... {dineroActualPrueba}";
@@ -64,7 +62,7 @@ public class MoneyElectionManager : MonoBehaviour
 
         int dineroFamilia = moneyRequestsPorActo[index].familia;
         int dineroBanda = moneyRequestsPorActo[index].banda;
-        RecompensaText.text = $"Day rewards ...................... {dineroActual}"; //CAMBIAR EN UN FUTURO A RECOMPENSA DEL COMBATE
+        RecompensaText.text = $"Day rewards ...................... {dineroActual}";
         dineroFamiliaText.text = $"Family wastes .................. -{dineroFamilia}";
         dineroBandaText.text = $"Gang wastes ....................... -{dineroBanda}";
 

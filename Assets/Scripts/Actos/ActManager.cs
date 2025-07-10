@@ -21,66 +21,40 @@ public class ActManager : MonoBehaviour
 
     void Start()
     {
-        Debug.Log("=== ACTMANAGER START ===");
-        Debug.Log("ActManager Start iniciado. Persistent Data Path: " + Application.persistentDataPath);
-        
         SaveData data = SaveManager.Instance.LoadGame();
         if (data != null)
-        {
-            Debug.Log($"📊 Datos de guardado encontrados:");
-            Debug.Log($"   currentAct: {data.currentAct}");
-            Debug.Log($"   currentPhase: {data.currentPhase}");
-            
+        {         
             LoadFromSave(data);
-            Debug.Log($"✅ ActManager: Datos cargados - Acto: {CurrentAct}, Fase: {CurrentPhase}");
         }
-        else
-        {
-            Debug.Log("⚠️ ActManager: No hay datos de guardado, usando valores por defecto");
-            Debug.Log($"   Valores por defecto - Acto: {CurrentAct}, Fase: {CurrentPhase}");
-        }
-        Debug.Log("=== ACTMANAGER START COMPLETADO ===");
     }
 
     private void Update()
     {
-        // Solo para pruebas: avanzar de acto al pulsar la tecla A
-        if (Input.GetKeyDown(KeyCode.A))
-        {
-            AdvanceAct();
-            Debug.Log("Acto avanzado manualmente. Acto actual: " + CurrentAct);
-        }
-        if (Input.GetKeyDown(KeyCode.S))
-        {
-            RetrocedeAct();
-            Debug.Log("Acto retrocedido manualmente. Acto actual: " + CurrentAct);
-        }
+        /*if (Input.GetKeyDown(KeyCode.A))
+                {
+                    AdvanceAct();
+                    Debug.Log("Acto avanzado manualmente. Acto actual: " + CurrentAct);
+                }
+                if (Input.GetKeyDown(KeyCode.S))
+                {
+                    RetrocedeAct();
+                    Debug.Log("Acto retrocedido manualmente. Acto actual: " + CurrentAct);
+                } */
 
-        // Mostrar el acto actual al pulsar la tecla B
-        if (Input.GetKeyDown(KeyCode.B))
-        {
-            Debug.Log("Acto actual: " + CurrentAct);
-        }
-
-        if (Input.GetKeyDown(KeyCode.V))
-        {
-            Debug.Log("Fase actual: " + CurrentPhase);
-        }
-
-        if (Input.GetKeyDown(KeyCode.P))
-        {
-            AdvancePhase();
-            Debug.Log("Fase cambiada manualmente. Nueva fase: " + CurrentPhase);
-        }
-        if (Input.GetKeyDown(KeyCode.I))
+        /*if (Input.GetKeyDown(KeyCode.P))
+                {
+                    AdvancePhase();
+                    Debug.Log("Fase cambiada manualmente. Nueva fase: " + CurrentPhase);
+                } */
+        
+        /*if (Input.GetKeyDown(KeyCode.I))
         {
             if (GameStats.Instance != null)
             {
                 GameStats.Instance.playerMoney += 50;
                 SaveManager.Instance.SaveCurrentGame();
-                Debug.Log($"Dinero añadido. Nuevo playerMoney: {GameStats.Instance.playerMoney}");
             }
-        }
+        } */
     }
 
     public void LoadFromSave(SaveData data)
@@ -100,7 +74,6 @@ public class ActManager : MonoBehaviour
             CurrentPhase = ActPhase.PreCombat;
             SaveManager.Instance.SaveCurrentGame();
             Debug.Log("¡Acto avanzado! Nuevo acto: " + CurrentAct + ", fase: " + CurrentPhase);
-            // QUITAR EL EVENTO - Los contratos se cargarán cuando entres al Tablón
         }
         else
         {
@@ -116,7 +89,6 @@ public class ActManager : MonoBehaviour
             CurrentPhase = ActPhase.PreCombat;
             SaveManager.Instance.SaveCurrentGame();
             Debug.Log("¡Acto retrocedido! Nuevo acto: " + CurrentAct + ", fase: " + CurrentPhase);
-            // QUITAR EL EVENTO
         }
         else
         {

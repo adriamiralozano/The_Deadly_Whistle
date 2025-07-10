@@ -4,7 +4,7 @@ using UnityEngine.SceneManagement;
 public class EscapeToMainMenu : MonoBehaviour
 {
     [Header("Nombre de la escena del menú principal")]
-    public string mainMenuSceneName = "MainMenu"; // Cambia si tu escena se llama diferente
+    public string mainMenuSceneName = "MainMenu"; 
 
     void Update()
     {
@@ -20,7 +20,4 @@ public class EscapeToMainMenu : MonoBehaviour
             SceneManager.LoadScene(mainMenuSceneName);
         }
     }
-
-    // Este método debe recopilar el estado actual del juego
-
 }

@@ -10,7 +10,6 @@ public class DialogueNode : ScriptableObject
     
     public List<DialogueOption> options;
 
-    // Validación para el Inspector
     private void OnValidate()
     {
         if (options == null) options = new List<DialogueOption>();
@@ -24,5 +23,5 @@ public class DialogueOption
     [TextArea(1, 3)]
     public string optionText = "Continue...";
     public DialogueNode nextNode;
-    public UnityEvent onSelectEvent; // Opcional: para acciones al seleccionar
+    public UnityEvent onSelectEvent; 
 }

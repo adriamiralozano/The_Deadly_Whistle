@@ -6,7 +6,7 @@ public class SpriteHoverScaler : MonoBehaviour
     [SerializeField] private float scaleMultiplier = 1.15f;
     [SerializeField] private float scaleSpeed = 0.15f;
     [Header("Cambio de escena")]
-    [SerializeField] private string sceneToLoad; // Nombre de la escena a cargar
+    [SerializeField] private string sceneToLoad; 
 
     private Vector3 originalScale;
     private Coroutine scaleCoroutine;

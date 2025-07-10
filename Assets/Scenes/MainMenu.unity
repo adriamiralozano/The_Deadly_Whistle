@@ -1495,6 +1495,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   contractDatabase: {fileID: 11400000, guid: d5c52cd6c071da345a51f8466c610f8d, type: 2}
+  endingPrefab: {fileID: 0}
+  canvasParent: {fileID: 0}
 --- !u!114 &1035226254
 MonoBehaviour:
   m_ObjectHideFlags: 0

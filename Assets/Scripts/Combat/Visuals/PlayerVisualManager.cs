@@ -20,25 +20,21 @@ public class PlayerVisualManager : MonoBehaviour
             return;
         }
 
-        SetIdleSprite();    // Establece el sprite inicial del jugador a "idle"
+        SetIdleSprite();
     }
 
-    // --- NUEVO: Suscripción y Desuscripción a Eventos ---
+    // ---  Suscripción y Desuscripción a Eventos ---
     private void OnEnable()
     {
-        // Nos suscribimos al evento de PlayerStats
         PlayerStats.OnWeaponEquippedStatusChanged += OnWeaponStatusChanged;
         Debug.Log("[PlayerVisualManager] Suscrito a PlayerStats.OnWeaponEquippedStatusChanged.");
     }
 
     private void OnDisable()
     {
-        // Es crucial desuscribirse cuando el GameObject se desactiva o destruye
         PlayerStats.OnWeaponEquippedStatusChanged -= OnWeaponStatusChanged;
         Debug.Log("[PlayerVisualManager] Desuscrito de PlayerStats.OnWeaponEquippedStatusChanged.");
     }
-
-    /// Manejador del evento que se dispara cuando el estado del arma equipada del jugador cambia.
 
     private void OnWeaponStatusChanged(bool hasWeapon)
     {
@@ -47,7 +43,7 @@ public class PlayerVisualManager : MonoBehaviour
             SetRevolverEquippedSprite();
             Debug.Log("[PlayerVisualManager] Recibido evento: Arma EQUipada. Cambiando sprite.");
 
-            // --- NUEVO: Reproducir el sonido del arma equipada ---
+            // --- Reproducir el sonido del arma equipada ---
             if (AudioManager.Instance != null)
             {
                 AudioManager.Instance.PlayWeaponEquipped();
@@ -63,10 +59,8 @@ public class PlayerVisualManager : MonoBehaviour
         {
             SetIdleSprite();
             Debug.Log("[PlayerVisualManager] Recibido evento: Arma DESEQUipada. Cambiando sprite.");
-            // Opcional: Podrías añadir un sonido para desequipar aquí si lo deseas
         }
     }
-    /// Establece el sprite del jugador a la versión "idle" (sin arma).
     public void SetIdleSprite()
     {
         if (playerSpriteRenderer != null && idlePlayerSprite != null)
@@ -78,8 +72,6 @@ public class PlayerVisualManager : MonoBehaviour
             Debug.LogWarning("PlayerVisualManager: El sprite 'Idle Player' no está asignado. No se puede mostrar.");
         }
     }
-
-    /// Establece el sprite del jugador a la versión con el revólver equipado.
     public void SetRevolverEquippedSprite()
     {
         if (playerSpriteRenderer != null && playerRevolverEquippedSprite != null)

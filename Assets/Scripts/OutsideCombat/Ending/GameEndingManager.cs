@@ -8,7 +8,7 @@ public class GameEndingManager : MonoBehaviour
 
     public ContractDatabaseSO contractDatabase;
     [Header("UI")]
-    [SerializeField] private GameObject endingPrefab; // Asigna tu prefab en el inspector
+    [SerializeField] private GameObject endingPrefab; 
     [SerializeField] private Transform canvasParent;
     private void Awake()
     {
@@ -52,7 +52,6 @@ public class GameEndingManager : MonoBehaviour
         GameStats stats = GameStats.Instance;
         GameEnding ending = GameEnding.None;
 
-        // Usar el array del ScriptableObject contenedor
         var completedContractSOs = contractDatabase.allContracts
             .Where(c => stats.completedContracts.Contains(c.Title))
             .ToList();
