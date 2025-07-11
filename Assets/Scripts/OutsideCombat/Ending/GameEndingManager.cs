@@ -107,5 +107,7 @@ public class GameEndingManager : MonoBehaviour
     {
         GameEnding ending = DecideEnding();
         ShowEndingUI(ending);
+
+        SaveManager.Instance.NewGame();
     }
 }
