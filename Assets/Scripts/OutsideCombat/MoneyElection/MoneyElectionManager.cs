@@ -170,7 +170,6 @@ public class MoneyElectionManager : MonoBehaviour
             if (ActManager.Instance.CurrentAct == GameAct.Act3)
             {
                 ActManager.Instance.AdvanceAct();
-                GameEndingManager.Instance.DecideEnding();
                 UnityEngine.SceneManagement.SceneManager.LoadScene("GameEnding");
             }
             else
